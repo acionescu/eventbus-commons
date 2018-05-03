@@ -1,0 +1,28 @@
+package net.segoia.event.eventbus.peers.core;
+
+import net.segoia.event.eventbus.peers.vo.auth.id.NodeIdentity;
+
+public class IdentityException extends RuntimeException {
+
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 1524357609581246839L;
+
+    private NodeIdentity<?> nodeIdentity;
+
+    public IdentityException(String message, Throwable cause) {
+	super(message, cause);
+	// TODO Auto-generated constructor stub
+    }
+
+    public IdentityException(String message, Throwable cause, NodeIdentity<?> nodeIdentity) {
+	super(message, cause);
+	this.nodeIdentity = nodeIdentity;
+    }
+
+    public NodeIdentity<?> getNodeIdentity() {
+	return nodeIdentity;
+    }
+
+}
