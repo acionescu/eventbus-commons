@@ -25,6 +25,14 @@ public class SpkiFullNodeIdentity extends NodeIdentity<SpkiFullIdentityType> {
     public SpkiFullNodeIdentity(KeyDef keyDef) {
 	super(new SpkiFullIdentityType(keyDef));
     }
+    
+    
+
+    public SpkiFullNodeIdentity() {
+	super(null);
+    }
+
+
 
     public String getPubKey() {
 	return pubKey;

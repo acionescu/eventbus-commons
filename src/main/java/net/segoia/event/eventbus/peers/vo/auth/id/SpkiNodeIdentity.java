@@ -23,6 +23,14 @@ public class SpkiNodeIdentity extends NodeIdentity<SpkiNodeIdentityType> {
 	super(new SpkiNodeIdentityType(algorithm, keySize));
 	this.publicKey = publicKey;
     }
+    
+    
+
+    public SpkiNodeIdentity() {
+	super(null);
+    }
+
+
 
     public String getPublicKey() {
 	return publicKey;
