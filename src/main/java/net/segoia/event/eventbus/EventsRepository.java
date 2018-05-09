@@ -48,6 +48,8 @@ public abstract class EventsRepository {
 
     public abstract String getEventType(Class<?> c);
     
+    public abstract void mapEvent(String eventType, Class<?> c);
+    
     public abstract Event fromJson(String json);
     
     public abstract String toJson(Event event);

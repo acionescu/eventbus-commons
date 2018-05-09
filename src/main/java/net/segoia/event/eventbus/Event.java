@@ -75,6 +75,7 @@ public class Event implements Cloneable {
     public Event(String et) {
 	this.et = et;
 	initFromEventType();
+	EventsRepository.getInstance().mapEvent(et, getClass());
     }
 
     public Event(String et, String topic) {

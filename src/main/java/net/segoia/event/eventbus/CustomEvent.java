@@ -21,14 +21,20 @@ public abstract class CustomEvent<D> extends Event {
     public CustomEvent(Class<?> clazz) {
 	super(clazz);
     }
-        
 
     public CustomEvent(Class<?> clazz, D data) {
 	super(clazz);
 	this.data = data;
     }
 
-
+    public CustomEvent(String et, D data) {
+	super(et);
+	this.data = data;
+    }
+    
+    public CustomEvent(String et) {
+	super(et);
+    }
 
     protected D data;
 
@@ -38,35 +44,35 @@ public abstract class CustomEvent<D> extends Event {
     public D getData() {
 	return data;
     }
-    
+
     public void setData(D data) {
 	this.data = data;
     }
-    
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see net.segoia.event.eventbus.Event#clone()
      */
     @Override
     public CustomEvent<D> clone() {
-	
-	 CustomEvent<D> ne = (CustomEvent<D>)super.clone();
-	 
-	 ne.data = data;
-	 
-	 return ne;
+
+	CustomEvent<D> ne = (CustomEvent<D>) super.clone();
+
+	ne.data = data;
+
+	return ne;
     }
 
-
-
-
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.lang.Object#toString()
      */
     @Override
     public String toString() {
 	StringBuilder builder = new StringBuilder();
-	builder.append(getClass().getSimpleName()+" [");
+	builder.append(getClass().getSimpleName() + " [");
 	if (super.toString() != null)
 	    builder.append("toString()=").append(super.toString()).append(", ");
 	if (data != null)
@@ -75,10 +81,9 @@ public abstract class CustomEvent<D> extends Event {
 	return builder.toString();
     }
 
-
-
-
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.lang.Object#hashCode()
      */
     @Override
@@ -89,10 +94,9 @@ public abstract class CustomEvent<D> extends Event {
 	return result;
     }
 
-
-
-
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.lang.Object#equals(java.lang.Object)
      */
     @Override
@@ -112,7 +116,4 @@ public abstract class CustomEvent<D> extends Event {
 	return true;
     }
 
-    
-    
-    
 }
