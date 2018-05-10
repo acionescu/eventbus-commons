@@ -16,25 +16,40 @@
  */
 package net.segoia.event.eventbus;
 
-import net.segoia.event.conditions.Condition;
+public abstract class EventDispatcherWrapper implements EventDispatcher{
+    protected EventDispatcher nestedDispatcher;
 
-public class BlockingFilteringEventProcessor extends FilteringEventProcessor {
-    
-    
-
-    public BlockingFilteringEventProcessor() {
+    public EventDispatcherWrapper(EventDispatcher nestedDispatcher) {
 	super();
-	// TODO Auto-generated constructor stub
-    }
-
-    public BlockingFilteringEventProcessor(EventDispatcher eventDispatcher) {
-	super(eventDispatcher);
-	// TODO Auto-generated constructor stub
+	this.nestedDispatcher = nestedDispatcher;
     }
 
     @Override
-    protected FilteringEventDispatcher createEventDispatcherForCondition(Condition condition) {
-	return EBusVM.getInstance().buildBlockingFilteringEventDispatcher(condition);
+    public void registerListener(EventContextListener listener) {
+	nestedDispatcher.registerListener(listener);
+    }
+
+    @Override
+    public void registerListener(EventContextListener listener, int priority) {
+	nestedDispatcher.registerListener(listener, priority);
+    }
+
+    @Override
+    public void removeListener(EventContextListener listener) {
+	nestedDispatcher.registerListener(listener);
+
+    }
+    
+    @Override
+    public void start() {
+	nestedDispatcher.start();
+	
+    }
+
+    @Override
+    public void stop() {
+	nestedDispatcher.stop();
+	
     }
 
 }

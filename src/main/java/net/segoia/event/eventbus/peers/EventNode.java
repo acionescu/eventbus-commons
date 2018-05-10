@@ -1,5 +1,5 @@
 /**
- * event-bus - An event bus framework for event driven programming
+ * eventbus-commons - Core classes for net.segoia.event-bus framework
  * Copyright (C) 2016  Adrian Cristian Ionescu - https://github.com/acionescu
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,10 +17,10 @@
 package net.segoia.event.eventbus.peers;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import net.segoia.event.conditions.Condition;
 import net.segoia.event.conditions.EventClassMatchCondition;
@@ -419,7 +419,7 @@ public abstract class EventNode {
 	    }
 	} else {
 	    /* see if this has forwardTo peers */
-	    Set<String> forwardTo = event.getForwardTo();
+	    List<String> forwardTo = event.getForwardTo();
 	    if (!forwardTo.isEmpty()) {
 		/* check if we're targeted by this event */
 		forUs = forwardTo.remove(getId());

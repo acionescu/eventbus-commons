@@ -1,5 +1,5 @@
 /**
- * event-bus - An event bus framework for event driven programming
+ * eventbus-commons - Core classes for net.segoia.event-bus framework
  * Copyright (C) 2016  Adrian Cristian Ionescu - https://github.com/acionescu
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,10 +16,9 @@
  */
 package net.segoia.event.eventbus.peers;
 
-import java.util.Set;
+import java.util.List;
 
 import net.segoia.event.eventbus.Event;
-import net.segoia.event.eventbus.peers.vo.bind.ConnectToPeerRequest;
 
 /**
  * A context that is aware of peer events as well as local events
@@ -38,7 +37,7 @@ public class GlobalAgentEventNodeContext extends LocalAgentEventNodeContext{
 	peersManager.forwardTo(event, peerId);
     }
     
-    public void forwardTo(Event event, Set<String> peerIds) {
+    public void forwardTo(Event event, List<String> peerIds) {
 	peersManager.forwardTo(event, peerIds);
     }
     

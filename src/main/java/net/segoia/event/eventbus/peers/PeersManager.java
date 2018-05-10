@@ -1,5 +1,5 @@
 /**
- * event-bus - An event bus framework for event driven programming
+ * eventbus-commons - Core classes for net.segoia.event-bus framework
  * Copyright (C) 2016  Adrian Cristian Ionescu - https://github.com/acionescu
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -301,7 +301,7 @@ public class PeersManager extends GlobalEventNodeAgent {
     // return peerRelay;
     // }
 
-    protected void forwardTo(Event event, Set<String> peerIds) {
+    protected void forwardTo(Event event, List<String> peerIds) {
 	/* check if if we are targeted by the event as well */
 	// if (peerIds.contains(getLocalNodeId())) {
 	// postInternally(event);
@@ -350,7 +350,7 @@ public class PeersManager extends GlobalEventNodeAgent {
 	    /* if we want to forward messages via this relay, we have to add the nodes in the forwardTo field */
 	    String via = re.getKey();
 
-	    Set<String> ftp = peersByVia.get(via);
+	    List<String> ftp = new ArrayList(peersByVia.get(via));
 	    if (ftp != null) {
 		/* if our rules forbid us to forward to this node, then don't bother */
 		if (!isEventForwardingAllowed(ec, via)) {
@@ -371,7 +371,7 @@ public class PeersManager extends GlobalEventNodeAgent {
 
     protected void forwardToAllKnown(Event event) {
 	EventContext ec = new EventContext(event, null);
-	Set<String> targetedPeers = getKnownPeers(ec);
+	List<String> targetedPeers = new ArrayList(getKnownPeers(ec));
 
 	event.setForwardTo(targetedPeers);
 	forwardTo(event, targetedPeers);

@@ -18,7 +18,6 @@ package net.segoia.event.eventbus;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -33,13 +32,13 @@ import java.util.Set;
  */
 public class EventHeader implements Cloneable {
     private Map<String, Object> params;
-    private Set<String> tags;
+    private List<String> tags;
 
     /**
      * Hold the id of the event that caused this event to be triggered
      */
     private String causeEventId;
-    
+
     /**
      * The reference to the event that caused this event
      */
@@ -66,10 +65,10 @@ public class EventHeader implements Cloneable {
     private String to;
 
     /**
-     * The event should be forwarded to these nodes 
+     * The event should be forwarded to these nodes
      */
-    private Set<String> forwardTo = new HashSet<>();
-    
+    private List<String> forwardTo = new ArrayList<>();
+
     /**
      * Use this to mark the event as handled
      */
@@ -77,7 +76,7 @@ public class EventHeader implements Cloneable {
 
     public EventHeader() {
 	params = new HashMap<>();
-	tags = new HashSet<>();
+	tags = new ArrayList<>();
     }
 
     /*
@@ -90,10 +89,10 @@ public class EventHeader implements Cloneable {
 
 	try {
 	    EventHeader c = (EventHeader) super.clone();
-	    
+
 	    /* do a shallow copy for these */
 	    c.params = new HashMap<>(params);
-	    c.tags = new HashSet<String>(tags);
+	    c.tags = new ArrayList<String>(tags);
 	    c.relayedBy = new ArrayList<String>(relayedBy);
 	    c.spawnedEventsIds = new LinkedHashSet<>(spawnedEventsIds);
 
@@ -111,7 +110,12 @@ public class EventHeader implements Cloneable {
     }
 
     public EventHeader addTag(String tag) {
-	tags.add(tag);
+	if (tags == null) {
+	    tags = new ArrayList<>();
+	}
+	if (!tags.contains(tag)) {
+	    tags.add(tag);
+	}
 	return this;
     }
 
@@ -133,7 +137,7 @@ public class EventHeader implements Cloneable {
     /**
      * @return the tags
      */
-    public Set<String> getTags() {
+    public List<String> getTags() {
 	return tags;
     }
 
@@ -217,13 +221,13 @@ public class EventHeader implements Cloneable {
 	    }
 	}
     }
-    
+
     public void removeLastRelay() {
-	int li = relayedBy.size()-1;
-	if(li >=0 ) {
+	int li = relayedBy.size() - 1;
+	if (li >= 0) {
 	    relayedBy.remove(li);
-	    if(li==0) {
-		from=null;
+	    if (li == 0) {
+		from = null;
 	    }
 	}
     }
@@ -236,7 +240,7 @@ public class EventHeader implements Cloneable {
 	}
 	return null;
     }
-    
+
     public void clearRelays() {
 	relayedBy.clear();
 	from = null;
@@ -245,48 +249,88 @@ public class EventHeader implements Cloneable {
     /**
      * @return the forwardTo
      */
-    public Set<String> getForwardTo() {
+    public List<String> getForwardTo() {
 	return forwardTo;
+    }
+
+    public void clearForwardTo() {
+	forwardTo.clear();
     }
 
     /**
      * @param forwardTo
      *            the forwardTo to set
      */
-    public void setForwardTo(Set<String> forwardTo) {
+    public void setForwardTo(List<String> forwardTo) {
 	this.forwardTo = forwardTo;
     }
 
     public void addForwardTo(String nodeId) {
-	forwardTo.add(nodeId);
+	if (forwardTo == null) {
+	    forwardTo = new ArrayList<>();
+	}
+	if (!forwardTo.contains(nodeId)) {
+	    forwardTo.add(nodeId);
+	}
     }
-    
+
     public void setHandled() {
-	this.handled=true;
+	this.handled = true;
     }
 
     /**
      * @return the handled
      */
     public boolean isHandled() {
-        return handled;
+	return handled;
     }
-    
-    
+
+    public void setTo(String to) {
+	this.to = to;
+    }
 
     /**
      * @return the causeEvent
      */
     public Event getCauseEvent() {
-        return causeEvent;
+	return causeEvent;
     }
 
     /**
-     * @param causeEvent the causeEvent to set
+     * @param causeEvent
+     *            the causeEvent to set
      */
     public void setCauseEvent(Event causeEvent) {
-        this.causeEvent = causeEvent;
-        setCauseEventId(causeEvent.getId());
+	this.causeEvent = causeEvent;
+	setCauseEventId(causeEvent.getId());
+    }
+
+    public String getFrom() {
+	return from;
+    }
+
+    public void setFrom(String from) {
+	this.from = from;
+    }
+
+    public String getTo() {
+	return to;
+    }
+
+    public void setTags(List<String> tags) {
+	this.tags = tags;
+    }
+
+    public void setSpawnedEventsIds(Set<String> spawnedEventsIds) {
+	this.spawnedEventsIds = spawnedEventsIds;
+    }
+
+    public void setRelayedBy(List<String> relayedBy) {
+	this.relayedBy = relayedBy;
+    }
+
+    public void setHandled(boolean handled) {
+	this.handled = handled;
     }
 
     /*

@@ -16,25 +16,19 @@
  */
 package net.segoia.event.eventbus;
 
-import net.segoia.event.conditions.Condition;
 
-public class BlockingFilteringEventProcessor extends FilteringEventProcessor {
-    
-    
+public class DelegatingEventDispatcher extends EventDispatcherWrapper {
+    private EventDispatcher delegateDispatcher;
 
-    public BlockingFilteringEventProcessor() {
-	super();
-	// TODO Auto-generated constructor stub
-    }
-
-    public BlockingFilteringEventProcessor(EventDispatcher eventDispatcher) {
-	super(eventDispatcher);
-	// TODO Auto-generated constructor stub
+    public DelegatingEventDispatcher(EventDispatcher nestedDispatcher, EventDispatcher delegateDispatcher) {
+	super(nestedDispatcher);
+	this.delegateDispatcher = delegateDispatcher;
     }
 
     @Override
-    protected FilteringEventDispatcher createEventDispatcherForCondition(Condition condition) {
-	return EBusVM.getInstance().buildBlockingFilteringEventDispatcher(condition);
+    public boolean dispatchEvent(EventContext ec) {
+	ec.setDelegateDispatcher(nestedDispatcher);
+	return delegateDispatcher.dispatchEvent(ec);
     }
 
 }

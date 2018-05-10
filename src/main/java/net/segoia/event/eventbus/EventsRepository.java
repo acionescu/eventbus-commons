@@ -29,29 +29,64 @@ public abstract class EventsRepository {
     protected boolean isLoaded;
 
     protected Set<String> loadedForEventType = new HashSet<>();
-    
+
     public static EventsRepository instance;
-    
+
     public static EventsRepository getInstance() {
 	return instance;
     }
 
-    public abstract void checkLoaded();
+    public synchronized void checkLoaded() {
+	if (!isLoaded) {
+	    load();
+	}
+    }
 
-    public abstract boolean checkLoaded(String eventType);
+    public synchronized boolean checkLoaded(String eventType) {
+	if (!loadedForEventType.contains(eventType)) {
+	    load();
+	    loadedForEventType.add(eventType);
+	    return false;
+	}
+	return true;
+    }
 
     public abstract void load();
 
     public abstract void processClass(Class c);
 
-    public abstract Class<Event> getEventClass(String eventType);
+    public Class<Event> getEventClass(String eventType) {
+	checkLoaded();
+	Class<?> c = eventTypes.get(eventType);
+	if (c == null) {
+	    if (!checkLoaded(eventType)) {
+		c = eventTypes.get(eventType);
+		if (c == null) {
+		    return Event.class;
+		}
+	    } else {
+		return Event.class;
+	    }
+	}
+	return (Class<Event>) c;
+    }
 
-    public abstract String getEventType(Class<?> c);
-    
-    public abstract void mapEvent(String eventType, Class<?> c);
-    
+    public String getEventType(Class<?> c) {
+	String t = classToEt.get(c);
+	if (t == null) {
+	    processClass(c);
+	    t = classToEt.get(c);
+	}
+	return t;
+    }
+
+    public void mapEvent(String eventType, Class<?> c) {
+	eventTypes.put(eventType, c);
+	classToEt.put(c, eventType);
+    }
+
     public abstract Event fromJson(String json);
-    
+
     public abstract String toJson(Event event);
 
 }

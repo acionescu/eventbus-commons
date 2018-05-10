@@ -18,6 +18,7 @@ package net.segoia.event.eventbus;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -66,6 +67,13 @@ public class Event implements Cloneable {
     private Map<String, Object> params = new HashMap<>();
 
     private transient boolean initialized = false;
+
+    /**
+     * This is here for dynamic object creation
+     */
+    public Event() {
+	super();
+    }
 
     public Event(Class<?> clazz) {
 	/* try to determine event type by from its class. Only works if the class is annotated with EventType */
@@ -187,13 +195,11 @@ public class Event implements Cloneable {
 
     public static Event fromJson(String json, Event cause) {
 	Event e = fromJson(json);
-	if(cause != null) {
+	if (cause != null) {
 	    cause.setAsCauseFor(e);
 	}
 	return e;
     }
-    
-   
 
     public Object getParam(String key) {
 	return params.get(key);
@@ -286,7 +292,7 @@ public class Event implements Cloneable {
      */
     public Event setAsCauseFor(Event newEvent) {
 	newEvent.header.setCauseEvent(this);
-	
+
 	return newEvent;
     }
 
@@ -449,7 +455,7 @@ public class Event implements Cloneable {
     /**
      * @return the forwardTo
      */
-    public Set<String> getForwardTo() {
+    public List<String> getForwardTo() {
 	return header.getForwardTo();
     }
 
@@ -457,7 +463,7 @@ public class Event implements Cloneable {
      * @param forwardTo
      *            the forwardTo to set
      */
-    public void setForwardTo(Set<String> forwardTo) {
+    public void setForwardTo(List<String> forwardTo) {
 	header.setForwardTo(forwardTo);
     }
 
@@ -480,21 +486,53 @@ public class Event implements Cloneable {
     public Event getCauseEvent() {
 	return header.getCauseEvent();
     }
-    
+
     public String getCauseEventId() {
 	return header.getCauseEventId();
     }
-    
-    public Map<String,Object> getHeaderParams(){
+
+    public Map<String, Object> getHeaderParams() {
 	return header.getParams();
     }
-    
-    public Set<String> getTags() {
+
+    public List<String> getTags() {
 	return header.getTags();
     }
-    
-    public Map<String, Object> getParams(){
-	return Collections.unmodifiableMap(params);
+
+    public Map<String, Object> getParams() {
+	return params;
+    }
+
+    public EventHeader getHeader() {
+	return header;
+    }
+
+    public void setEt(String et) {
+	this.et = et;
+    }
+
+    public void setScope(String scope) {
+	this.scope = scope;
+    }
+
+    public void setCategory(String category) {
+	this.category = category;
+    }
+
+    public void setName(String name) {
+	this.name = name;
+    }
+
+    public void setTopic(String topic) {
+	this.topic = topic;
+    }
+
+    public void setHeader(EventHeader header) {
+	this.header = header;
+    }
+
+    public void setParams(Map<String, Object> params) {
+	this.params = params;
     }
 
     /*
