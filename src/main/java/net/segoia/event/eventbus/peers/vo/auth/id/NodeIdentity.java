@@ -22,6 +22,12 @@ public abstract class NodeIdentity<T extends IdentityType> {
      * Data that certifies this particular type of identity
      */
     private NodeIdentityCertificationData certificationData;
+    
+    
+
+    public NodeIdentity() {
+	super();
+    }
 
     public NodeIdentity(T type) {
 	super();

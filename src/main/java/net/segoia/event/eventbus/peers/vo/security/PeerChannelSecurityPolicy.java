@@ -24,7 +24,7 @@ package net.segoia.event.eventbus.peers.vo.security;
  */
 public class PeerChannelSecurityPolicy {
     /**
-     * The communicatin policy for this channel
+     * The communication policy for this channel
      */
     private ChannelCommunicationPolicy communicationPolicy;
 

@@ -27,7 +27,7 @@ public class SpkiNodeIdentity extends NodeIdentity<SpkiNodeIdentityType> {
     
 
     public SpkiNodeIdentity() {
-	super(null);
+	super(new SpkiNodeIdentityType());
     }
 
 
