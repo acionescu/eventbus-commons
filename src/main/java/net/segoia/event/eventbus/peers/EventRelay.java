@@ -24,6 +24,7 @@ import net.segoia.event.eventbus.EventContext;
 import net.segoia.event.eventbus.peers.core.EventTransceiver;
 import net.segoia.event.eventbus.peers.core.PeerDataEvent;
 import net.segoia.event.eventbus.peers.core.PeerDataListener;
+import net.segoia.event.eventbus.peers.vo.PeerErrorData;
 import net.segoia.event.eventbus.peers.vo.PeerLeavingReason;
 
 /**
@@ -192,4 +193,12 @@ public abstract class EventRelay implements PeerDataListener {
         return transceiver;
     }
 
+    @Override
+    public void onPeerError(PeerErrorData errorData) {
+	getRemoteEventListener().onPeerError(errorData);
+	
+    }
+
+    
+    
 }

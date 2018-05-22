@@ -14,18 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.segoia.event.eventbus.peers.events;
+package net.segoia.event.eventbus.peers;
 
-import net.segoia.event.eventbus.CustomEvent;
-import net.segoia.event.eventbus.EventType;
-import net.segoia.event.eventbus.peers.vo.PeerInfo;
+import net.segoia.event.eventbus.CustomEventContext;
+import net.segoia.event.eventbus.Event;
 
-@EventType("EBUS:PEER:NEW")
-public class NewPeerEvent extends CustomEvent<PeerInfo>{
-    public static final String ET="EBUS:PEER:NEW";
-    
-    public NewPeerEvent(PeerInfo data) {
-	super(ET, data);
-    }
-
+public interface CustomEventHandler<E extends Event> {
+    void handleEvent(CustomEventContext<E> event);
 }

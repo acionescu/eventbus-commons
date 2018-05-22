@@ -17,39 +17,43 @@
 package net.segoia.event.eventbus.peers.vo;
 
 public class ErrorData {
-    private String reason;
+    private int code;
+    private String message;
 
-    public ErrorData(String reason) {
+    public ErrorData(int code, String message) {
 	super();
-	this.reason = reason;
+	this.code = code;
+	this.message = message;
     }
 
-    /**
-     * @return the reason
-     */
-    public String getReason() {
-        return reason;
+    public ErrorData() {
+	super();
     }
 
-    /**
-     * @param reason the reason to set
-     */
-    public void setReason(String reason) {
-        this.reason = reason;
+    public ErrorData(String message) {
+	super();
+	this.message = message;
     }
 
-    /* (non-Javadoc)
-     * @see java.lang.Object#toString()
-     */
+    public int getCode() {
+	return code;
+    }
+
+    public void setCode(int code) {
+	this.code = code;
+    }
+
+    public String getMessage() {
+	return message;
+    }
+
+    public void setMessage(String message) {
+	this.message = message;
+    }
+
     @Override
     public String toString() {
-	StringBuilder builder = new StringBuilder();
-	builder.append("ErrorData [");
-	if (reason != null)
-	    builder.append("reason=").append(reason);
-	builder.append("]");
-	return builder.toString();
+	return "ErrorData [code=" + code + ", message=" + message + "]";
     }
-    
-    
+
 }

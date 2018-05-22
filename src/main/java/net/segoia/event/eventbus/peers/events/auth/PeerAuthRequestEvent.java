@@ -21,11 +21,39 @@ import net.segoia.event.eventbus.EventType;
 import net.segoia.event.eventbus.peers.vo.auth.PeerAuthRequest;
 
 @EventType("PEER:AUTH:REQUEST")
-public class PeerAuthRequestEvent extends CustomEvent<PeerAuthRequest>{
+public class PeerAuthRequestEvent extends CustomEvent<PeerAuthRequest> {
+    public static final String ET = "PEER:AUTH:REQUEST";
+
+    public PeerAuthRequestEvent(String et, PeerAuthRequest data) {
+	super(et, data);
+	// TODO Auto-generated constructor stub
+    }
+
+    public PeerAuthRequestEvent(String et) {
+	super(et);
+	// TODO Auto-generated constructor stub
+    }
 
     public PeerAuthRequestEvent(PeerAuthRequest data) {
-	super(PeerAuthRequestEvent.class, data);
-	
+	super(ET, data);
+
+    }
+
+    public PeerAuthRequestEvent() {
+	super(ET);
+	// TODO Auto-generated constructor stub
+    }
+
+    @Override
+    public PeerAuthRequest getData() {
+	// TODO Auto-generated method stub
+	return super.getData();
+    }
+
+    @Override
+    public void setData(PeerAuthRequest data) {
+	// TODO Auto-generated method stub
+	super.setData(data);
     }
 
 }

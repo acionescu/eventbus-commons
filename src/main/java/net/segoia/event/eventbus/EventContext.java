@@ -38,6 +38,11 @@ public class EventContext {
     private EventDispatcher delegateDispatcher;
     
     private EventHandle eventHandle;
+    
+    /**
+     * A flag that can be set by listeners to reflect the fact that this event has been properly processed
+     */
+    private boolean processed;
 
     public EventContext(Event event) {
 	super();
@@ -158,6 +163,14 @@ public class EventContext {
 
     public void setEventHandle(EventHandle eventHandle) {
         this.eventHandle = eventHandle;
+    }
+
+    public boolean isProcessed() {
+        return processed;
+    }
+
+    public void setProcessed(boolean processed) {
+        this.processed = processed;
     }
     
 }

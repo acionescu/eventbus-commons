@@ -21,6 +21,7 @@ import net.segoia.event.eventbus.Event;
 import net.segoia.event.eventbus.peers.comm.CommProtocolEventTransceiver;
 import net.segoia.event.eventbus.peers.comm.PeerCommManager;
 import net.segoia.event.eventbus.peers.core.EventTransceiver;
+import net.segoia.event.eventbus.peers.core.PeerCommErrorEvent;
 import net.segoia.event.eventbus.peers.events.PeerAcceptedEvent;
 import net.segoia.event.eventbus.peers.events.PeerLeavingEvent;
 import net.segoia.event.eventbus.peers.events.session.PeerSessionStartedEvent;
@@ -42,6 +43,7 @@ import net.segoia.event.eventbus.peers.security.EventNodeSecurityManager;
 import net.segoia.event.eventbus.peers.security.PeerCommContext;
 import net.segoia.event.eventbus.peers.security.SignCommOperationOutput;
 import net.segoia.event.eventbus.peers.vo.NodeInfo;
+import net.segoia.event.eventbus.peers.vo.PeerErrorData;
 import net.segoia.event.eventbus.peers.vo.PeerInfo;
 import net.segoia.event.eventbus.peers.vo.PeerLeavingData;
 import net.segoia.event.eventbus.peers.vo.PeerLeavingReason;
@@ -369,6 +371,12 @@ public class PeerManager implements PeerEventListener {
     public void onPeerLeaving(PeerLeavingReason reason) {
 	postEvent(new PeerLeavingEvent(
 		new PeerLeavingData(reason, new PeerInfo(peerId, peerType, peerContext.getPeerInfo()))));
+    }
+
+    @Override
+    public void onPeerError(PeerErrorData errorData) {
+	errorData.setPeerInfo(new PeerInfo(peerId, peerType, peerContext.getPeerInfo()));
+	postEvent(new PeerCommErrorEvent(errorData));
     }
 
 }

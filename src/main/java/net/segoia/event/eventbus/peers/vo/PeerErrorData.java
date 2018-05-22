@@ -14,11 +14,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.segoia.event.eventbus.peers;
+package net.segoia.event.eventbus.peers.vo;
 
-import net.segoia.event.eventbus.CustomEventContext;
-import net.segoia.event.eventbus.Event;
+public class PeerErrorData extends ErrorData {
+    private PeerInfo peerInfo;
 
-public interface EventHandler<E extends Event> {
-    void handleEvent(CustomEventContext<E> event);
+    public PeerErrorData() {
+	super();
+    }
+
+    public PeerErrorData(int code, String message) {
+	super(code, message);
+    }
+
+    public PeerErrorData(String message) {
+	super(message);
+    }
+
+    public PeerInfo getPeerInfo() {
+	return peerInfo;
+    }
+
+    public void setPeerInfo(PeerInfo peerInfo) {
+	this.peerInfo = peerInfo;
+    }
+
 }

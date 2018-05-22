@@ -22,9 +22,9 @@ import net.segoia.event.eventbus.EventContext;
 import net.segoia.event.eventbus.EventContextListener;
 
 public class CustomEventListener<E extends Event> implements EventContextListener {
-    protected EventHandler<E> eventHandler;
+    protected CustomEventHandler<E> eventHandler;
 
-    public CustomEventListener(EventHandler<E> eventHandler) {
+    public CustomEventListener(CustomEventHandler<E> eventHandler) {
 	super();
 	this.eventHandler = eventHandler;
     }

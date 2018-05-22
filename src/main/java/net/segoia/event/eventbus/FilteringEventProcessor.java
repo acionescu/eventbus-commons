@@ -23,28 +23,35 @@ import net.segoia.event.conditions.Condition;
 import net.segoia.event.conditions.EventClassMatchCondition;
 import net.segoia.event.conditions.StrictEventMatchCondition;
 import net.segoia.event.eventbus.peers.CustomEventListener;
-import net.segoia.event.eventbus.peers.EventHandler;
+import net.segoia.event.eventbus.peers.CustomEventHandler;
 
 public class FilteringEventProcessor extends SimpleEventProcessor {
     private Map<Condition, FilteringEventDispatcher> conditionedListeners = new HashMap<>();
-    
+
     private CustomEventContextListenerFactory eventListenerFactory = new DefaultCustomEventContextListenerFactory();
+    private EventHandler eventNotProcessedHandler;
 
     public FilteringEventProcessor() {
 	super();
     }
-    
-    
 
     public FilteringEventProcessor(CustomEventContextListenerFactory eventListenerFactory) {
 	super();
 	this.eventListenerFactory = eventListenerFactory;
     }
 
-
-
     public FilteringEventProcessor(EventDispatcher eventDispatcher) {
 	super(eventDispatcher);
+    }
+
+    @Override
+    public boolean processEvent(EventContext ec) {
+
+	boolean p = super.processEvent(ec);
+	if (!ec.isProcessed() && eventNotProcessedHandler != null) {
+	    eventNotProcessedHandler.handleEvent(ec);
+	}
+	return p;
     }
 
     protected FilteringEventDispatcher getListenerForCondition(Condition condition, int priority) {
@@ -113,28 +120,37 @@ public class FilteringEventProcessor extends SimpleEventProcessor {
 	getListenerForCondition(condition, cPriority).registerListener(listener);
     }
 
-    public <E extends Event> void addEventHandler(EventHandler<E> handler) {
+    public <E extends Event> void addEventHandler(CustomEventHandler<E> handler) {
 	registerListener(getCustomEventListener(handler));
     }
 
-    public <E extends Event> void addEventHandler(EventHandler<E> handler, int priority) {
+    public <E extends Event> void addEventHandler(CustomEventHandler<E> handler, int priority) {
 	registerListener(getCustomEventListener(handler), priority);
     }
 
-    public <E extends Event> void addEventHandler(Condition condition, EventHandler<E> handler) {
+    public <E extends Event> void addEventHandler(Condition condition, CustomEventHandler<E> handler) {
 	registerListener(condition, getCustomEventListener(handler));
     }
 
-    public <E extends Event> void addEventHandler(Class<E> eventClass, EventHandler<E> handler) {
+    public <E extends Event> void addEventHandler(Class<E> eventClass, CustomEventHandler<E> handler) {
 	addEventHandler(new EventClassMatchCondition(eventClass), handler);
     }
 
-    public <E extends Event> void addEventHandler(String eventType, EventHandler<E> handler) {
+    public <E extends Event> void addEventHandler(String eventType, CustomEventHandler<E> handler) {
 	addEventHandler(new StrictEventMatchCondition(eventType), handler);
     }
 
-    protected <E extends Event> CustomEventListener<E> getCustomEventListener(EventHandler<E> handler) {
-//	return new CustomEventListener<>(handler);
+    protected <E extends Event> CustomEventListener<E> getCustomEventListener(CustomEventHandler<E> handler) {
+	// return new CustomEventListener<>(handler);
 	return eventListenerFactory.build(handler);
     }
+
+    public EventHandler getEventNotProcessedHandler() {
+	return eventNotProcessedHandler;
+    }
+
+    public void setEventNotProcessedHandler(EventHandler eventNotProcessedHandler) {
+	this.eventNotProcessedHandler = eventNotProcessedHandler;
+    }
+
 }

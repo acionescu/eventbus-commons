@@ -34,9 +34,11 @@ public class FilteringEventDispatcher implements EventDispatcher, EventContextLi
 
     public void onEvent(EventContext ec) {
 	if (condition.test(ec)) {
-	    dispatchEvent(ec);
+	    boolean processed = dispatchEvent(ec);
+	    if (processed) {
+		ec.setProcessed(processed);
+	    }
 	}
-
     }
 
     @Override

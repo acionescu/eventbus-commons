@@ -22,9 +22,10 @@ import net.segoia.event.eventbus.peers.vo.PeerInfo;
 
 @EventType("EBUS:PEER:LEFT")
 public class PeerLeftEvent extends CustomEvent<PeerInfo>{
+    public static final String ET="EBUS:PEER:LEFT";
 
     public PeerLeftEvent(PeerInfo data) {
-	super(PeerLeftEvent.class, data);
+	super(ET, data);
     }
 
 }

@@ -22,10 +22,38 @@ import net.segoia.event.eventbus.peers.vo.auth.ProtocolConfirmation;
 
 @EventType("PEER:PROTOCOL:CONFIRMED")
 public class PeerProtocolConfirmedEvent extends CustomEvent<ProtocolConfirmation> {
+    public static final String ET="PEER:PROTOCOL:CONFIRMED";
 
-    public PeerProtocolConfirmedEvent(ProtocolConfirmation data) {
-	super(PeerProtocolConfirmedEvent.class);
-	this.data = data;
+    public PeerProtocolConfirmedEvent(String et, ProtocolConfirmation data) {
+	super(et, data);
+	// TODO Auto-generated constructor stub
     }
 
+    public PeerProtocolConfirmedEvent(String et) {
+	super(et);
+	// TODO Auto-generated constructor stub
+    }
+
+    public PeerProtocolConfirmedEvent(ProtocolConfirmation data) {
+	super(ET,data);
+    }
+
+    public PeerProtocolConfirmedEvent() {
+	super(ET);
+	// TODO Auto-generated constructor stub
+    }
+
+    @Override
+    public ProtocolConfirmation getData() {
+	// TODO Auto-generated method stub
+	return super.getData();
+    }
+
+    @Override
+    public void setData(ProtocolConfirmation data) {
+	// TODO Auto-generated method stub
+	super.setData(data);
+    }
+    
+    
 }

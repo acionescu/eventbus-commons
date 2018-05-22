@@ -43,6 +43,10 @@ public class SessionKeyData {
     
     
 
+    public SessionKeyData() {
+	super();
+    }
+
     public SessionKeyData(String sessionToken, KeyDef keyDef) {
 	super();
 	this.sessionToken = sessionToken;

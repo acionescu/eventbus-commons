@@ -16,6 +16,7 @@
  */
 package net.segoia.event.eventbus.peers.core;
 
+import net.segoia.event.eventbus.peers.vo.PeerErrorData;
 import net.segoia.event.eventbus.peers.vo.PeerLeavingReason;
 
 /**
@@ -47,5 +48,7 @@ public interface EventTransceiver {
      * @return - The communication channel type ( e.g. ws, wss, http, https, etc.. )
      */
     String getChannel();
+    
+    void onPeerError(PeerErrorData errorData);
     
 }

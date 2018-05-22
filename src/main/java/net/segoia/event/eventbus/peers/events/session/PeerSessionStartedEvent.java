@@ -22,9 +22,36 @@ import net.segoia.event.eventbus.peers.vo.session.SessionStartedData;
 
 @EventType("PEER:SESSION:STARTED")
 public class PeerSessionStartedEvent extends CustomEvent<SessionStartedData> {
+    public static final String ET = "PEER:SESSION:STARTED";
+
+    public PeerSessionStartedEvent(String et, SessionStartedData data) {
+	super(et, data);
+	// TODO Auto-generated constructor stub
+    }
+
+    public PeerSessionStartedEvent(String et) {
+	super(et);
+	// TODO Auto-generated constructor stub
+    }
 
     public PeerSessionStartedEvent(SessionStartedData data) {
-	super(PeerSessionStartedEvent.class, data);
+	super(ET, data);
+    }
+
+    public PeerSessionStartedEvent() {
+	super(ET);
+    }
+
+    @Override
+    public SessionStartedData getData() {
+	// TODO Auto-generated method stub
+	return super.getData();
+    }
+
+    @Override
+    public void setData(SessionStartedData data) {
+	// TODO Auto-generated method stub
+	super.setData(data);
     }
 
 }

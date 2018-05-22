@@ -21,10 +21,39 @@ import net.segoia.event.eventbus.EventType;
 import net.segoia.event.eventbus.peers.vo.auth.ServiceAccessIdRequestRejectedReason;
 
 @EventType("SERVICE:ACCESS_ID:REQUEST_REJECTED")
-public class ServiceAccessIdRequestRjectedEvent extends CustomEvent<ServiceAccessIdRequestRejectedReason>{
+public class ServiceAccessIdRequestRjectedEvent extends CustomEvent<ServiceAccessIdRequestRejectedReason> {
+    public static final String ET = "SERVICE:ACCESS_ID:REQUEST_REJECTED";
 
-    public ServiceAccessIdRequestRjectedEvent(ServiceAccessIdRequestRejectedReason data) {
-	super(ServiceAccessIdRequestRjectedEvent.class, data);
+    public ServiceAccessIdRequestRjectedEvent(String et, ServiceAccessIdRequestRejectedReason data) {
+	super(et, data);
+	// TODO Auto-generated constructor stub
     }
 
+    public ServiceAccessIdRequestRjectedEvent(String et) {
+	super(et);
+	// TODO Auto-generated constructor stub
+    }
+
+    public ServiceAccessIdRequestRjectedEvent(ServiceAccessIdRequestRejectedReason data) {
+	super(ET, data);
+    }
+
+    public ServiceAccessIdRequestRjectedEvent() {
+	super(ET);
+	// TODO Auto-generated constructor stub
+    }
+
+    @Override
+    public ServiceAccessIdRequestRejectedReason getData() {
+	// TODO Auto-generated method stub
+	return super.getData();
+    }
+
+    @Override
+    public void setData(ServiceAccessIdRequestRejectedReason data) {
+	// TODO Auto-generated method stub
+	super.setData(data);
+    }
+    
+    
 }

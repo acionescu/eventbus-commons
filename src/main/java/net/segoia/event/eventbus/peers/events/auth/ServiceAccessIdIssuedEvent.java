@@ -22,9 +22,38 @@ import net.segoia.event.eventbus.peers.vo.auth.ServiceAccessIdIssuedData;
 
 @EventType("SERVICE:ACCESS_ID:ISSUED")
 public class ServiceAccessIdIssuedEvent extends CustomEvent<ServiceAccessIdIssuedData> {
+    public static final String ET="SERVICE:ACCESS_ID:ISSUED";
 
-    public ServiceAccessIdIssuedEvent(ServiceAccessIdIssuedData data) {
-	super(ServiceAccessIdIssuedEvent.class, data);
+    public ServiceAccessIdIssuedEvent(String et, ServiceAccessIdIssuedData data) {
+	super(et, data);
+	// TODO Auto-generated constructor stub
     }
 
+    public ServiceAccessIdIssuedEvent(String et) {
+	super(et);
+	// TODO Auto-generated constructor stub
+    }
+
+    public ServiceAccessIdIssuedEvent(ServiceAccessIdIssuedData data) {
+	super(ET, data);
+    }
+
+    public ServiceAccessIdIssuedEvent() {
+	super(ET);
+	// TODO Auto-generated constructor stub
+    }
+
+    @Override
+    public ServiceAccessIdIssuedData getData() {
+	// TODO Auto-generated method stub
+	return super.getData();
+    }
+
+    @Override
+    public void setData(ServiceAccessIdIssuedData data) {
+	// TODO Auto-generated method stub
+	super.setData(data);
+    }
+    
+    
 }

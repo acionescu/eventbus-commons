@@ -22,9 +22,10 @@ import net.segoia.event.eventbus.peers.vo.PeerLeavingData;
 
 @EventType("EBUS:PEER:LEAVING")
 public class PeerLeavingEvent extends CustomEvent<PeerLeavingData> {
+    public static final String ET="EBUS:PEER:LEAVING";
 
     public PeerLeavingEvent(PeerLeavingData data) {
-	super(PeerLeavingEvent.class, data);
+	super(ET, data);
     }
 
 }

@@ -50,6 +50,9 @@ public class BindToPeerState extends PeerManagerState {
 	registerPeerEventProcessor(PeerBindAcceptedEvent.class, (c) -> {
 	    handlePeerBindAccepted(c);
 	});
+	setPeerEventNotProcessedHandler((ec)->{
+	    throw new RuntimeException("Expected "+PeerBindAcceptedEvent.class.getName() +" but got "+ec.getEvent().getClass());
+	});
     }
     
     protected void handlePeerBindAccepted(PeerEventContext<PeerBindAcceptedEvent> c) {
@@ -72,6 +75,7 @@ public class BindToPeerState extends PeerManagerState {
 
 	peerManager.goToState(PeerManager.AUTH_TO_PEER);
 	peerManager.forwardToPeer(new PeerAuthRequestEvent(peerAuthRequest));
+	event.setHandled();
     }
 
 }

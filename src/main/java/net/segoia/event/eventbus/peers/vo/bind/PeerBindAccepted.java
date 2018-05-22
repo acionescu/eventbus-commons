@@ -21,6 +21,9 @@ import net.segoia.event.eventbus.peers.vo.NodeInfo;
 public class PeerBindAccepted {
     private NodeInfo nodeInfo;
 
+    public PeerBindAccepted() {
+	super();
+    }
 
     public PeerBindAccepted(NodeInfo nodeInfo) {
 	super();

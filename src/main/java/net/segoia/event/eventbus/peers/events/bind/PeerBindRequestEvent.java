@@ -21,7 +21,17 @@ import net.segoia.event.eventbus.EventType;
 import net.segoia.event.eventbus.PeerBindRequest;
 
 @EventType("PEER:BIND:REQUEST")
-public class PeerBindRequestEvent extends CustomEvent<PeerBindRequest>{
+public class PeerBindRequestEvent extends CustomEvent<PeerBindRequest> {
+
+    public PeerBindRequestEvent(String et, PeerBindRequest data) {
+	super(et, data);
+	// TODO Auto-generated constructor stub
+    }
+
+    public PeerBindRequestEvent(String et) {
+	super(et);
+	// TODO Auto-generated constructor stub
+    }
 
     public PeerBindRequestEvent(PeerBindRequest pr) {
 	super(PeerBindRequestEvent.class);

@@ -362,15 +362,15 @@ public abstract class EventNode {
 	addBusHandler(new StrictEventMatchCondition(eventType), handler);
     }
 
-    protected <E extends Event> void addEventHandler(Class<E> eventClass, EventHandler<E> handler) {
+    protected <E extends Event> void addEventHandler(Class<E> eventClass, CustomEventHandler<E> handler) {
 	addEventHandler(eventClass, new CustomEventListener<>(handler));
     }
 
-    protected <E extends Event> void addEventHandler(String eventType, EventHandler<E> handler) {
+    protected <E extends Event> void addEventHandler(String eventType, CustomEventHandler<E> handler) {
 	addEventHandler(eventType, new CustomEventListener<>(handler));
     }
 
-    protected void addEventHandler(Condition cond, EventHandler<?> handler) {
+    protected void addEventHandler(Condition cond, CustomEventHandler<?> handler) {
 	addBusHandler(cond, new CustomEventListener<>(handler));
     }
 
@@ -379,11 +379,11 @@ public abstract class EventNode {
 	internalBus.registerListener(cond, handler);
     }
 
-    protected <E extends Event> void addEventHandler(EventHandler<E> handler) {
+    protected <E extends Event> void addEventHandler(CustomEventHandler<E> handler) {
 	addBusHandler(new CustomEventListener<>(handler));
     }
 
-    protected <E extends Event> void addEventHandler(EventHandler<E> handler, int priority) {
+    protected <E extends Event> void addEventHandler(CustomEventHandler<E> handler, int priority) {
 	addBusHandler(new CustomEventListener<>(handler), priority);
     }
 

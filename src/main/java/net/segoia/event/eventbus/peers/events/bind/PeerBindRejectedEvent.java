@@ -21,9 +21,20 @@ import net.segoia.event.eventbus.EventType;
 import net.segoia.event.eventbus.peers.vo.bind.PeerBindRejected;
 
 @EventType("PEER:BIND:REJECTED")
-public class PeerBindRejectedEvent extends CustomEvent<PeerBindRejected>{
+public class PeerBindRejectedEvent extends CustomEvent<PeerBindRejected> {
+    public static final String ET="PEER:BIND:REJECTED";
+
+    public PeerBindRejectedEvent(String et, PeerBindRejected data) {
+	super(et, data);
+	// TODO Auto-generated constructor stub
+    }
+
+    public PeerBindRejectedEvent(String et) {
+	super(et);
+	// TODO Auto-generated constructor stub
+    }
 
     public PeerBindRejectedEvent(PeerBindRejected data) {
-	super(PeerBindRejectedEvent.class, data);
+	super(ET, data);
     }
 }

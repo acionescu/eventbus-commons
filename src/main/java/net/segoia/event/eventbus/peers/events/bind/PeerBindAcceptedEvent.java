@@ -21,11 +21,40 @@ import net.segoia.event.eventbus.EventType;
 import net.segoia.event.eventbus.peers.vo.bind.PeerBindAccepted;
 
 @EventType("PEER:BIND:ACCEPTED")
-public class PeerBindAcceptedEvent extends CustomEvent<PeerBindAccepted>{
+public class PeerBindAcceptedEvent extends CustomEvent<PeerBindAccepted> {
+    public static final String ET="PEER:BIND:ACCEPTED";
+    
+    public PeerBindAcceptedEvent() {
+   	super(ET);
+   	// TODO Auto-generated constructor stub
+       }
+
+    public PeerBindAcceptedEvent(String et, PeerBindAccepted data) {
+	super(et, data);
+	// TODO Auto-generated constructor stub
+    }
+
+    public PeerBindAcceptedEvent(String et) {
+	super(et);
+	// TODO Auto-generated constructor stub
+    }
 
     public PeerBindAcceptedEvent(PeerBindAccepted pbr) {
-	super(PeerBindAcceptedEvent.class);
-	this.data = pbr;
+	super(ET,pbr);
     }
+
+    @Override
+    public PeerBindAccepted getData() {
+	// TODO Auto-generated method stub
+	return super.getData();
+    }
+
+    @Override
+    public void setData(PeerBindAccepted data) {
+	// TODO Auto-generated method stub
+	super.setData(data);
+    }
+    
+    
 
 }

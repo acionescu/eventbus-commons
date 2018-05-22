@@ -17,7 +17,7 @@
 package net.segoia.event.eventbus;
 
 import net.segoia.event.conditions.Condition;
-import net.segoia.event.eventbus.peers.EventHandler;
+import net.segoia.event.eventbus.peers.CustomEventHandler;
 
 public class FilteringEventBus extends SimpleEventBus {
 
@@ -89,27 +89,27 @@ public class FilteringEventBus extends SimpleEventBus {
 	getProcessor().registerListener(condition, cPriority, listener);
     }
 
-    public <E extends Event> void addEventHandler(EventHandler<E> handler) {
+    public <E extends Event> void addEventHandler(CustomEventHandler<E> handler) {
 	// registerListener(getCustomEventListener(handler));
 	getProcessor().addEventHandler(handler);
     }
 
-    public <E extends Event> void addEventHandler(EventHandler<E> handler, int priority) {
+    public <E extends Event> void addEventHandler(CustomEventHandler<E> handler, int priority) {
 	// registerListener(getCustomEventListener(handler), priority);
 	getProcessor().addEventHandler(handler, priority);
     }
 
-    public <E extends Event> void addEventHandler(Condition condition, EventHandler<E> handler) {
+    public <E extends Event> void addEventHandler(Condition condition, CustomEventHandler<E> handler) {
 	// registerListener(condition, getCustomEventListener(handler));
 	getProcessor().addEventHandler(condition, handler);
     }
 
-    public <E extends Event> void addEventHandler(Class<E> eventClass, EventHandler<E> handler) {
+    public <E extends Event> void addEventHandler(Class<E> eventClass, CustomEventHandler<E> handler) {
 	// addEventHandler(new EventClassMatchCondition(eventClass), handler);
 	getProcessor().addEventHandler(eventClass, handler);
     }
 
-    public <E extends Event> void addEventHandler(String eventType, EventHandler<E> handler) {
+    public <E extends Event> void addEventHandler(String eventType, CustomEventHandler<E> handler) {
 	// addEventHandler(new StrictEventMatchCondition(eventType), handler);
 	getProcessor().addEventHandler(eventType, handler);
     }

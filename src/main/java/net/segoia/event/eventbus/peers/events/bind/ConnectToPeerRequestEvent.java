@@ -22,9 +22,10 @@ import net.segoia.event.eventbus.peers.vo.bind.ConnectToPeerRequest;
 
 @EventType("PEER:CONNECT:REQUEST")
 public class ConnectToPeerRequestEvent extends CustomEvent<ConnectToPeerRequest>{
+    public static final String ET="PEER:CONNECT:REQUEST";
 
     public ConnectToPeerRequestEvent(ConnectToPeerRequest data) {
-	super(ConnectToPeerRequestEvent.class, data);
+	super(ET, data);
     }
 
 }

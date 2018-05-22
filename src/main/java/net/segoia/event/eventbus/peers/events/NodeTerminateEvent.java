@@ -23,10 +23,10 @@ import net.segoia.event.eventbus.peers.EventNodeInfo;
 
 @EventType("EBUS:REQUEST:TERMINATE")
 public class NodeTerminateEvent extends CustomEvent<EventNodeInfo>{
+    public static final String ET="EBUS:REQUEST:TERMINATE";
 
     public NodeTerminateEvent(EventNode node) {
-	super(NodeTerminateEvent.class);
-	this.data = new EventNodeInfo(node);
+	super(ET,  new EventNodeInfo(node));
     }
 
 }

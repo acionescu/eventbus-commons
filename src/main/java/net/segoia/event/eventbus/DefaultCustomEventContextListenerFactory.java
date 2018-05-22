@@ -17,12 +17,12 @@
 package net.segoia.event.eventbus;
 
 import net.segoia.event.eventbus.peers.CustomEventListener;
-import net.segoia.event.eventbus.peers.EventHandler;
+import net.segoia.event.eventbus.peers.CustomEventHandler;
 
 public class DefaultCustomEventContextListenerFactory implements CustomEventContextListenerFactory{
 
     @Override
-    public <E extends Event> CustomEventListener<E> build(EventHandler<E> handler) {
+    public <E extends Event> CustomEventListener<E> build(CustomEventHandler<E> handler) {
 	return new CustomEventListener<>(handler);
     }
 

@@ -22,9 +22,10 @@ import net.segoia.event.eventbus.peers.vo.PeerData;
 
 @EventType("PEER:DATA:EVENT")
 public class PeerDataEvent extends CustomEvent<PeerData>{
+    public static final String ET="PEER:DATA:EVENT";
 
     public PeerDataEvent(PeerData data) {
-	super(PeerDataEvent.class,data);
+	super(ET,data);
     }
 
 }

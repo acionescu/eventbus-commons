@@ -21,6 +21,7 @@ import net.segoia.event.eventbus.peers.vo.security.EventNodeSecurityPolicy;
 
 /**
  * Public information about a node
+ * 
  * @author adi
  *
  */
@@ -28,6 +29,10 @@ public class NodeInfo {
     private String nodeId;
     private NodeAuth nodeAuth;
     private EventNodeSecurityPolicy securityPolicy;
+
+    public NodeInfo() {
+	super();
+    }
 
     public NodeInfo(String nodeId) {
 	super();

@@ -35,19 +35,19 @@ public class LocalAgentEventNodeContext {
 	this.nodeContext = nodeContext;
     }
 
-    public <E extends Event> void addEventHandler(Class<E> eventClass, EventHandler<E> handler) {
+    public <E extends Event> void addEventHandler(Class<E> eventClass, CustomEventHandler<E> handler) {
 	nodeContext.getNode().addEventHandler(eventClass, handler);
     }
 
-    public <E extends Event> void addEventHandler(String eventType, EventHandler<E> handler) {
+    public <E extends Event> void addEventHandler(String eventType, CustomEventHandler<E> handler) {
 	nodeContext.getNode().addEventHandler(eventType, handler);
     }
 
-    public <E extends Event> void addEventHandler(EventHandler<E> handler) {
+    public <E extends Event> void addEventHandler(CustomEventHandler<E> handler) {
 	nodeContext.getNode().addEventHandler(handler);
     }
 
-    public <E extends Event> void addEventHandler(Condition cond, EventHandler<E> handler) {
+    public <E extends Event> void addEventHandler(Condition cond, CustomEventHandler<E> handler) {
 	nodeContext.getNode().addEventHandler(cond, handler);
     }
 

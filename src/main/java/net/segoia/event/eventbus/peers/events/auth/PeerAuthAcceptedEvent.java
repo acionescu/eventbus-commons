@@ -21,10 +21,36 @@ import net.segoia.event.eventbus.EventType;
 import net.segoia.event.eventbus.peers.vo.auth.PeerAuthAccepted;
 
 @EventType("PEER:AUTH:ACCEPTED")
-public class PeerAuthAcceptedEvent extends CustomEvent<PeerAuthAccepted>{
+public class PeerAuthAcceptedEvent extends CustomEvent<PeerAuthAccepted> {
+    public static final String ET="PEER:AUTH:ACCEPTED";
 
-    public PeerAuthAcceptedEvent(PeerAuthAccepted data) {
-	super(PeerAuthAcceptedEvent.class, data);
+    public PeerAuthAcceptedEvent(String et, PeerAuthAccepted data) {
+	super(et, data);
     }
 
+    public PeerAuthAcceptedEvent(String et) {
+	super(et);
+    }
+
+    public PeerAuthAcceptedEvent(PeerAuthAccepted data) {
+	super(ET, data);
+    }
+
+    public PeerAuthAcceptedEvent() {
+	super(ET);
+    }
+
+    @Override
+    public PeerAuthAccepted getData() {
+	// TODO Auto-generated method stub
+	return super.getData();
+    }
+
+    @Override
+    public void setData(PeerAuthAccepted data) {
+	// TODO Auto-generated method stub
+	super.setData(data);
+    }
+    
+    
 }

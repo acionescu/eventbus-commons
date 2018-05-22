@@ -21,10 +21,37 @@ import net.segoia.event.eventbus.EventType;
 import net.segoia.event.eventbus.peers.vo.auth.PeerAuthRejected;
 
 @EventType("PEER:AUTH:REJECTED")
-public class PeerAuthRejectedEvent extends CustomEvent<PeerAuthRejected>{
+public class PeerAuthRejectedEvent extends CustomEvent<PeerAuthRejected> {
+    public static final String ET = "PEER:AUTH:REJECTED";
 
-    public PeerAuthRejectedEvent( PeerAuthRejected data) {
-	super(PeerAuthRejectedEvent.class, data);
+    public PeerAuthRejectedEvent(String et, PeerAuthRejected data) {
+	super(et, data);
+	// TODO Auto-generated constructor stub
     }
 
+    public PeerAuthRejectedEvent(String et) {
+	super(et);
+    }
+
+    public PeerAuthRejectedEvent(PeerAuthRejected data) {
+	super(ET, data);
+    }
+
+    public PeerAuthRejectedEvent() {
+	super(ET);
+    }
+
+    @Override
+    public PeerAuthRejected getData() {
+	// TODO Auto-generated method stub
+	return super.getData();
+    }
+
+    @Override
+    public void setData(PeerAuthRejected data) {
+	// TODO Auto-generated method stub
+	super.setData(data);
+    }
+    
+    
 }

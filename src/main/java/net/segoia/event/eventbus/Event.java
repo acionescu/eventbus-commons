@@ -16,7 +16,6 @@
  */
 package net.segoia.event.eventbus;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
