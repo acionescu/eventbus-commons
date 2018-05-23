@@ -22,9 +22,10 @@ import net.segoia.event.eventbus.peers.vo.bind.DisconnectFromPeerRequest;
 
 @EventType("PEER:DISCONNECT:REQUEST")
 public class DisconnectFromPeerRequestEvent extends CustomEvent<DisconnectFromPeerRequest>{
+    public static final String ET="PEER:DISCONNECT:REQUEST";
 
     public DisconnectFromPeerRequestEvent(DisconnectFromPeerRequest data) {
-	super(DisconnectFromPeerRequestEvent.class, data);
+	super(ET, data);
     }
 
 }
