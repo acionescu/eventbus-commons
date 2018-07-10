@@ -25,7 +25,7 @@ package net.segoia.event.eventbus;
  * @author adi
  *
  */
-public class SimpleEventBus implements EventBus, Cloneable {
+public class SimpleEventBus implements EventBus/*, Cloneable*/ {
     protected SimpleEventProcessor processor;
     private EventBusConfig config = new EventBusConfig();
 
@@ -142,20 +142,19 @@ public class SimpleEventBus implements EventBus, Cloneable {
     }
 
     /*
-     * (non-Javadoc)
-     * 
-     * @see java.lang.Object#clone()
-     */
-    @Override
-    public SimpleEventBus clone() {
-	try {
-	    return (SimpleEventBus) super.clone();
-	} catch (CloneNotSupportedException e) {
-	    // TODO Auto-generated catch block
-	    e.printStackTrace();
-	}
-	return null;
-    }
+//     * (non-Javadoc)
+//     * 
+//     * @see java.lang.Object#clone()
+//     */
+//    public SimpleEventBus clone() {
+//	try {
+//	    return (SimpleEventBus) super.clone();
+//	} catch (CloneNotSupportedException e) {
+//	    // TODO Auto-generated catch block
+//	    e.printStackTrace();
+//	}
+//	return null;
+//    }
 
     @Override
     public void start() {

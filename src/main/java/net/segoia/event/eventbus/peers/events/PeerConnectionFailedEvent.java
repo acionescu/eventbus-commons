@@ -14,24 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.segoia.event.eventbus.peers.security;
+package net.segoia.event.eventbus.peers.events;
 
-import java.security.Signature;
+import net.segoia.event.eventbus.CustomEvent;
+import net.segoia.event.eventbus.EventType;
+import net.segoia.event.eventbus.peers.vo.PeerErrorData;
 
-public class SignatureBasedOperationWorker {
-    private Signature signature;
-
-    public SignatureBasedOperationWorker(Signature signature) {
-	super();
-	this.signature = signature;
-    }
-
-    public Signature getSignature() {
-	return signature;
-    }
-
-    public void setSignature(Signature signature) {
-	this.signature = signature;
+@EventType("PEER:CONNECTION:FAILED")
+public class PeerConnectionFailedEvent extends CustomEvent<PeerErrorData>{
+    public static final String ET="PEER:CONNECTION:FAILED";
+    
+    public PeerConnectionFailedEvent(PeerErrorData data) {
+	super(ET, data);
     }
 
 }

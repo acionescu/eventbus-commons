@@ -35,11 +35,15 @@ public class NodeIdentityProfile {
      */
     private String parentIdentityKey;
 
+    private String rootIdentityKey;
+
     private List<String> childIdentityKeysList;
 
     private List<String> roles;
-    
+
     private long lastAuthTs;
+
+    private long lastUpdateTs;
 
     public NodeIdentityProfile(NodeIdentity<?> identity) {
 	super();
@@ -131,11 +135,27 @@ public class NodeIdentityProfile {
     }
 
     public long getLastAuthTs() {
-        return lastAuthTs;
+	return lastAuthTs;
     }
 
     public void setLastAuthTs(long lastAuthTs) {
-        this.lastAuthTs = lastAuthTs;
+	this.lastAuthTs = lastAuthTs;
+    }
+
+    public String getRootIdentityKey() {
+	return rootIdentityKey;
+    }
+
+    public void setRootIdentityKey(String rootIdentityKey) {
+	this.rootIdentityKey = rootIdentityKey;
+    }
+
+    public long getLastUpdateTs() {
+	return lastUpdateTs;
+    }
+
+    public void setLastUpdateTs(long lastUpdateTs) {
+	this.lastUpdateTs = lastUpdateTs;
     }
 
 }

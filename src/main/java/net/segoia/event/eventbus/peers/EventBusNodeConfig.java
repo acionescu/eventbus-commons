@@ -49,7 +49,7 @@ public class EventBusNodeConfig {
     /**
      * A helper class
      */
-    private EventNodeHelper helper = new EventNodeHelper();
+    private EventNodeHelper helper;
 
     private PeersManagerConfig peersManagerConfig;
 

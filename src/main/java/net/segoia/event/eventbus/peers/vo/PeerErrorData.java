@@ -18,7 +18,8 @@ package net.segoia.event.eventbus.peers.vo;
 
 public class PeerErrorData extends ErrorData {
     private PeerInfo peerInfo;
-
+    private String transceiverId;
+    
     public PeerErrorData() {
 	super();
     }
@@ -39,4 +40,14 @@ public class PeerErrorData extends ErrorData {
 	this.peerInfo = peerInfo;
     }
 
+    public String getTransceiverId() {
+        return transceiverId;
+    }
+
+    public void setTransceiverId(String transceiverId) {
+        this.transceiverId = transceiverId;
+    }
+
+    
+    
 }

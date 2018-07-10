@@ -19,10 +19,12 @@ package net.segoia.event.eventbus;
 import net.segoia.event.conditions.Condition;
 import net.segoia.event.eventbus.builders.DefaultComponentEventBuilder;
 import net.segoia.event.eventbus.peers.NodeManager;
+import net.segoia.event.eventbus.peers.util.EventNodeHelper;
 
 public abstract class EBusVM {
     private FilteringEventBus systemBus;
     private String systemBusConfigFile = "ebus.json";
+    protected EventNodeHelper helper;
 
     private static EBusVM instance;
     public static boolean debugEnabled;
@@ -98,4 +100,10 @@ public abstract class EBusVM {
 	    Condition condition) {
 	return new BlockingFilteringEventDispatcher(condition);
     }
+
+    public EventNodeHelper getHelper() {
+        return helper;
+    }
+    
+    
 }

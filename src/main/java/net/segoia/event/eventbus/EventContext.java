@@ -60,7 +60,7 @@ public class EventContext {
 	    ec.visitListener(lifecycleListener);
 	}
 	else {
-	    throw new UnsupportedOperationException("Event context for event "+event.getId()+" has no lifecycle listener defined");
+	    throw new RuntimeException("Event context for event "+event.getId()+" has no lifecycle listener defined");
 	}
     }
 

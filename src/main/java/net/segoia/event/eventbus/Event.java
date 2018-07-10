@@ -20,7 +20,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 
 import net.segoia.event.eventbus.constants.EventConstants;
 
@@ -95,7 +94,7 @@ public class Event implements Cloneable {
 	    throw new IllegalArgumentException("Event type cannot be null");
 	}
 
-	String[] etArray = et.split(etSep);
+	String[] etArray = EBusVM.getInstance().getHelper().splitString(et,etSep);
 	if (etArray.length != 3) {
 	    throw new IllegalArgumentException("Event type should have the format <scope>:<category>:<name>");
 	}
@@ -159,7 +158,7 @@ public class Event implements Cloneable {
      * {@link #toString()}
      */
     protected void lazyInit() {
-	this.id = UUID.randomUUID().toString();
+	this.id = EBusVM.getInstance().getHelper().generateEventId();
 	if (et == null) {
 	    /**
 	     * event type - we can formalize this as: <scope>:<category>:<name> ( e.g. system:error:db-connection-failed
@@ -235,7 +234,7 @@ public class Event implements Cloneable {
 
     public Event addParam(String key, Object value) {
 	if (isClosed()) {
-	    throw new UnsupportedOperationException("This event is closed");
+	    throw new RuntimeException("This event is closed");
 	}
 	params.put(key, value);
 	return this;
@@ -294,15 +293,20 @@ public class Event implements Cloneable {
 
 	return newEvent;
     }
+    
+    public Event copy() {
+	return fromJson(toJson());
+    }
 
     public Event clone() {
 	doInit();
 	Event newEvent;
 	try {
-	    newEvent = (Event) super.clone();
-
-	    newEvent.header = header.clone();
-	} catch (CloneNotSupportedException e) {
+//	    newEvent = (Event) super.clone();
+//	    newEvent.header = header.clone();
+	    
+	    newEvent = copy();
+	} catch (Exception e) {
 	    e.printStackTrace();
 	    return null;
 	}

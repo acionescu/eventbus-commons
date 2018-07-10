@@ -23,31 +23,34 @@ import net.segoia.event.eventbus.EventContext;
 public class OrCondition extends AggregatedCondition {
 
     public OrCondition(String id, Condition[] subconditions) {
-	super(id, subconditions);
+        super(id, subconditions);
     }
-    
-    public OrCondition(Condition... subconditions){
-	super(buildId(subconditions),subconditions);
+
+    public OrCondition(Condition... subconditions) {
+        super(buildId(subconditions), subconditions);
     }
-    
+
     private static String buildId(Condition... subconditions) {
-	StringBuffer out = new StringBuffer();
-	out.append(subconditions[0].getId());
-	Arrays.stream(subconditions).skip(1).map(c -> "|" + c.getId()).forEach(out::append);
-	return out.toString();
+        StringBuffer out = new StringBuffer();
+        out.append(subconditions[0].getId());
+//	Arrays.stream(subconditions).skip(1).map(c -> "|" + c.getId()).forEach(out::append);
+        for (int i = 1; i < subconditions.length; i++) {
+            out.append("|").append(subconditions[i].getId());
+        }
+        return out.toString();
     }
 
     @Override
     public boolean test(EventContext input) {
-	if (subconditions == null || subconditions.length == 0) {
-	    return false;
-	}
-	for (Condition c : subconditions) {
-	    if (c.test(input)) {
-		return true;
-	    }
-	}
-	return false;
+        if (subconditions == null || subconditions.length == 0) {
+            return false;
+        }
+        for (Condition c : subconditions) {
+            if (c.test(input)) {
+                return true;
+            }
+        }
+        return false;
     }
 
 }

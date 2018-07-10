@@ -23,7 +23,7 @@ import net.segoia.util.data.ListMap;
 import net.segoia.util.data.ListTreeMapFactory;
 
 public class SimpleEventDispatcher implements EventDispatcher {
-    private boolean stopOnError = true;
+    private boolean stopOnError;
     private Throwable lastError;
     private List<Throwable> errors = new ArrayList<>();
     private ListMap<Integer, EventContextListener> listeners = new ListMap<Integer, EventContextListener>(
@@ -53,13 +53,12 @@ public class SimpleEventDispatcher implements EventDispatcher {
 	for (List<EventContextListener> list : listeners.values()) {
 	    for (EventContextListener el : list) {
 		try {
-		    // System.out.println("visiting listener "+el+" for event "+ec.getEvent().getEt());
 		    ec.visitListener(el);
 		} catch (Throwable e) {
 		    lastError = e;
 		    if (stopOnError) {
-			System.err.println("Dispatcher stopping due to errror "+e.getMessage());
-			return false;
+			throw new RuntimeException("Dispatcher stopping due to errror ",e);
+//			return false;
 		    }
 		}
 	    }

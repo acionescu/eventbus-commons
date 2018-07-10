@@ -47,6 +47,7 @@ import net.segoia.event.eventbus.peers.vo.auth.id.NodeIdentity;
 import net.segoia.event.eventbus.peers.vo.auth.id.SharedIdentityType;
 import net.segoia.event.eventbus.peers.vo.auth.id.SharedNodeIdentity;
 import net.segoia.event.eventbus.peers.vo.auth.id.SpkiFullIdentityType;
+import net.segoia.event.eventbus.peers.vo.auth.id.SpkiFullNodeIdentity;
 import net.segoia.event.eventbus.peers.vo.comm.CommunicationProtocol;
 import net.segoia.event.eventbus.peers.vo.comm.CommunicationProtocolConfig;
 import net.segoia.event.eventbus.peers.vo.comm.CommunicationProtocolDefinition;
@@ -82,11 +83,11 @@ public abstract class EventNodeSecurityManager {
     protected Map<String, IdentityRole> identityRoles = new HashMap<>();
 
     protected NestedOperationDataSerializer defaultDataSerializer;
-    
+
     protected Map<Class, OperationDataDeserializer<?>> deserializers;
 
     private CryptoHelper cryptoHelper;
-    
+
     private PeerRuleEngine peerRuleEngine;
 
     public EventNodeSecurityManager() {
@@ -99,7 +100,7 @@ public abstract class EventNodeSecurityManager {
 	this.securityConfig = securityConfig;// JsonUtils.copyObject(securityConfig);
 	init();
     }
-    
+
     protected void init() {
 	loadIdentities();
 	initCommProtocolContextBuilders();
@@ -111,7 +112,7 @@ public abstract class EventNodeSecurityManager {
 
 	initIdentityRoles();
     }
-    
+
     protected abstract void initDeserializers();
 
     protected abstract void initSerializers();
@@ -621,7 +622,11 @@ public abstract class EventNodeSecurityManager {
     }
 
     public NodeIdentityProfile getCurrentPeerIdentityProfile(PeerContext peerContext) {
-	return getIdentityProfile(peerContext.getPeerIdentityManager().getIdentityKey());
+	PublicIdentityManager peerIdentityManager = peerContext.getPeerIdentityManager();
+	if (peerIdentityManager != null) {
+	    return getIdentityProfile(peerIdentityManager.getIdentityKey());
+	}
+	return null;
     }
 
     public boolean isEventAccepted(PeerStateContext context) {
@@ -752,10 +757,13 @@ public abstract class EventNodeSecurityManager {
 	/* build a profile for this identity */
 
 	NodeIdentityProfile issuedIdentityProfile = new NodeIdentityProfile(issuedIdentity);
+	issuedIdentityProfile.setIdentityKey(getIdentityKeyForNodeIdentity(issuedIdentity));
+
 	/* set parent identity key */
 	PeerContext peerContext = c.getPeerManager().getPeerContext();
 	String parentIdentityKey = peerContext.getPeerIdentityManager().getIdentityKey();
 	issuedIdentityProfile.setParentIdentityKey(parentIdentityKey);
+	issuedIdentityProfile.setRootIdentityKey(parentIdentityKey);
 
 	/* add service contracts to the profile */
 	issuedIdentityProfile.setServiceContracts(serviceContracts);
@@ -763,6 +771,14 @@ public abstract class EventNodeSecurityManager {
 	issuedIdentityProfile.addRole(IdentityRole.SERVICE_ACCESS);
 
 	return issuedIdentityProfile;
+    }
+
+    public String getIdentityKeyForNodeIdentity(NodeIdentity<?> nodeIdentity) {
+	if (nodeIdentity instanceof SpkiFullNodeIdentity) {
+	    SpkiFullNodeIdentity sfni = (SpkiFullNodeIdentity) nodeIdentity;
+	    return cryptoHelper.sha256(sfni.getPubKey());
+	}
+	throw new RuntimeException("Can't compute identity key for identity " + nodeIdentity.getClass());
     }
 
     public void onPeerNodeAuth(PeerContext peerContext) {
@@ -793,11 +809,11 @@ public abstract class EventNodeSecurityManager {
     }
 
     public PeerRuleEngine getPeerRuleEngine() {
-        return peerRuleEngine;
+	return peerRuleEngine;
     }
 
     public void setPeerRuleEngine(PeerRuleEngine peerRuleEngine) {
-        this.peerRuleEngine = peerRuleEngine;
+	this.peerRuleEngine = peerRuleEngine;
     }
 
 }

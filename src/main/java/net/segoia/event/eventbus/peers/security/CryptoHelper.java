@@ -25,4 +25,6 @@ public interface CryptoHelper {
     byte[] base64DecodeToBytes(byte[] input);
 
     String base64Encode(byte[] input);
+    
+    String sha256(String input);
 }

@@ -16,20 +16,16 @@
  */
 package net.segoia.event.eventbus.peers.util;
 
-import java.util.UUID;
+public interface EventNodeHelper {
 
-public class EventNodeHelper {
+    public String generatePeerId();
 
-    public String generatePeerId() {
-	return UUID.randomUUID().toString();
-    }
+    public String generateSessionId();
 
-    public String generateSessionId() {
-	return UUID.randomUUID().toString();
-    }
-
-    public String generateSecurityToken() {
-	return UUID.randomUUID().toString();
-    }
+    public String generateSecurityToken();
+    
+    public String generateEventId();
+    
+    public String[] splitString(String target, String sep);
 
 }

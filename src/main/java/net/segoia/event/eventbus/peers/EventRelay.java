@@ -98,16 +98,6 @@ public abstract class EventRelay implements PeerDataListener {
 	}
     }
 
-    // protected void forwardEvent(EventContext ec) {
-    // if (parentNode.isEventForwardingAllowed(ec, transceiver.getParentNodeId()) && isForwardingAllowed(ec)) {
-    // Event event = ec.event();
-    // /* We need to copy this event before sending */
-    // sendEvent(event.clone());
-    // } else {
-    // System.out.println("Discarding event: " + ec.getEvent());
-    // }
-    // }
-
     protected boolean isForwardingAllowed(EventContext ec) {
 	return (forwardingCondition != null && forwardingCondition.test(ec));
     }
@@ -127,7 +117,7 @@ public abstract class EventRelay implements PeerDataListener {
     }
 
     public void sendEvent(Event event) {
-//	event.addRelay(getId());
+	// event.addRelay(getId());
 	sendData(eventToData(event));
     }
 
@@ -190,15 +180,13 @@ public abstract class EventRelay implements PeerDataListener {
     }
 
     public EventTransceiver getTransceiver() {
-        return transceiver;
+	return transceiver;
     }
 
     @Override
     public void onPeerError(PeerErrorData errorData) {
 	getRemoteEventListener().onPeerError(errorData);
-	
+
     }
 
-    
-    
 }

@@ -24,6 +24,7 @@ import net.segoia.event.eventbus.peers.events.auth.PeerProtocolConfirmedEvent;
 import net.segoia.event.eventbus.peers.events.session.PeerSessionStartedEvent;
 import net.segoia.event.eventbus.peers.exceptions.PeerAuthRequestRejectedException;
 import net.segoia.event.eventbus.peers.exceptions.PeerCommunicationNegotiationFailedException;
+import net.segoia.event.eventbus.peers.exceptions.PeerRequestRejectedException;
 import net.segoia.event.eventbus.peers.manager.states.PeerManagerState;
 import net.segoia.event.eventbus.peers.vo.auth.PeerAuthAccepted;
 import net.segoia.event.eventbus.peers.vo.auth.ProtocolConfirmation;
@@ -99,7 +100,7 @@ public class AuthToPeerState extends PeerManagerState{
 	}
 	else {
 	    /* protocols don't match */
-	    System.out.println("PROTOCOLS don't match");
+	    peerManager.handleError(new PeerRequestRejectedException("PROTOCOLS don't match", peerContext));
 	}
     }
 

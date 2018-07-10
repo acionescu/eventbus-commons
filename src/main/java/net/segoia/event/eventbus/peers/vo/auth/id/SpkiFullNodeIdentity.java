@@ -21,18 +21,19 @@ import net.segoia.event.eventbus.peers.vo.session.KeyDef;
 public class SpkiFullNodeIdentity extends NodeIdentity<SpkiFullIdentityType> {
     private String pubKey;
     private String privateKey;
+    /**
+     * Requires the private key to be securely encrypted before storing to unsafe media <br>
+     * True by default
+     */
+    private boolean encryptPkDuringStorageOn = true;
 
     public SpkiFullNodeIdentity(KeyDef keyDef) {
 	super(new SpkiFullIdentityType(keyDef));
     }
-    
-    
 
     public SpkiFullNodeIdentity() {
 	super(null);
     }
-
-
 
     public String getPubKey() {
 	return pubKey;
@@ -49,4 +50,13 @@ public class SpkiFullNodeIdentity extends NodeIdentity<SpkiFullIdentityType> {
     public void setPrivateKey(String privateKey) {
 	this.privateKey = privateKey;
     }
+
+    public boolean isEncryptPkDuringStorageOn() {
+	return encryptPkDuringStorageOn;
+    }
+
+    public void setEncryptPkDuringStorageOn(boolean encryptPkDuringStorageOn) {
+	this.encryptPkDuringStorageOn = encryptPkDuringStorageOn;
+    }
+
 }

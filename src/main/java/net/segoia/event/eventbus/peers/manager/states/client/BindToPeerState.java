@@ -19,6 +19,8 @@ package net.segoia.event.eventbus.peers.manager.states.client;
 import net.segoia.event.eventbus.peers.PeerContext;
 import net.segoia.event.eventbus.peers.PeerEventContext;
 import net.segoia.event.eventbus.peers.PeerManager;
+import net.segoia.event.eventbus.peers.core.PeerCommErrorEvent;
+import net.segoia.event.eventbus.peers.events.PeerConnectionFailedEvent;
 import net.segoia.event.eventbus.peers.events.auth.PeerAuthRequestEvent;
 import net.segoia.event.eventbus.peers.events.bind.PeerBindAcceptedEvent;
 import net.segoia.event.eventbus.peers.manager.states.PeerManagerState;
@@ -43,6 +45,16 @@ public class BindToPeerState extends PeerManagerState {
     protected void registerLocalEventHandlers() {
 	// TODO Auto-generated method stub
 
+    }
+    
+    @Override
+    public void handlePeerError(PeerEventContext<PeerCommErrorEvent> eventContext) {
+	PeerManager pm = eventContext.getPeerManager();
+	if(pm.getPeerInfo() == null) {
+	    /* connection didn't succeed */
+	    pm.postEvent(new PeerConnectionFailedEvent(eventContext.getEvent().getData()));
+	    
+	}
     }
 
     @Override

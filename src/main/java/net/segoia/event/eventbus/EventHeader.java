@@ -74,35 +74,44 @@ public class EventHeader implements Cloneable {
      */
     private boolean handled;
 
+    /**
+     * Unique key to identify the event's source agent
+     */
+    private String sourceAgentId;
+
+    /**
+     * The main identity of the source agent
+     */
+    private String rootAgentId;
+
     public EventHeader() {
 	params = new HashMap<>();
 	tags = new ArrayList<>();
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see java.lang.Object#clone()
-     */
-    @Override
-    protected EventHeader clone() {
-
-	try {
-	    EventHeader c = (EventHeader) super.clone();
-
-	    /* do a shallow copy for these */
-	    c.params = new HashMap<>(params);
-	    c.tags = new ArrayList<String>(tags);
-	    c.relayedBy = new ArrayList<String>(relayedBy);
-	    c.spawnedEventsIds = new LinkedHashSet<>(spawnedEventsIds);
-
-	    return c;
-	} catch (CloneNotSupportedException e) {
-	    e.printStackTrace();
-	    return null;
-	}
-
-    }
+//    /*
+//     * (non-Javadoc)
+//     * 
+//     * @see java.lang.Object#clone()
+//     */
+//    protected EventHeader clone() {
+//
+//	try {
+//	    EventHeader c = (EventHeader) super.clone();
+//
+//	    /* do a shallow copy for these */
+//	    c.params = new HashMap<>(params);
+//	    c.tags = new ArrayList<String>(tags);
+//	    c.relayedBy = new ArrayList<String>(relayedBy);
+//	    c.spawnedEventsIds = new LinkedHashSet<>(spawnedEventsIds);
+//
+//	    return c;
+//	} catch (CloneNotSupportedException e) {
+//	    e.printStackTrace();
+//	    return null;
+//	}
+//
+//    }
 
     public EventHeader addParam(String key, Object value) {
 	params.put(key, value);
@@ -331,6 +340,22 @@ public class EventHeader implements Cloneable {
 
     public void setHandled(boolean handled) {
 	this.handled = handled;
+    }
+
+    public String getSourceAgentId() {
+	return sourceAgentId;
+    }
+
+    public void setSourceAgentId(String sourceAgentId) {
+	this.sourceAgentId = sourceAgentId;
+    }
+
+    public String getRootAgentId() {
+	return rootAgentId;
+    }
+
+    public void setRootAgentId(String rootAgentId) {
+	this.rootAgentId = rootAgentId;
     }
 
     /*

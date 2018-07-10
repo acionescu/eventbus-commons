@@ -18,6 +18,7 @@ package net.segoia.event.eventbus.peers;
 
 import net.segoia.event.eventbus.EBusVM;
 import net.segoia.event.eventbus.Event;
+import net.segoia.event.eventbus.EventHeader;
 import net.segoia.event.eventbus.peers.comm.CommProtocolEventTransceiver;
 import net.segoia.event.eventbus.peers.comm.PeerCommManager;
 import net.segoia.event.eventbus.peers.core.EventTransceiver;
@@ -322,7 +323,9 @@ public class PeerManager implements PeerEventListener {
     }
 
     public void postEvent(Event event) {
-
+	EventHeader header = event.getHeader();
+	header.setSourceAgentId(peerContext.getPeerIdentityKey());
+	header.setRootAgentId(peerContext.getPeerRootIdentityKey());
 	peerContext.getNodeContext().postEvent(event);
     }
 
@@ -339,7 +342,7 @@ public class PeerManager implements PeerEventListener {
     }
 
     public void forwardToPeer(Event event) {
-	peerContext.getRelay().sendEvent(event);
+	peerContext.sendEventToPeer(event);
     }
 
     public void setInServerMode(boolean inServerMode) {
@@ -376,7 +379,9 @@ public class PeerManager implements PeerEventListener {
     @Override
     public void onPeerError(PeerErrorData errorData) {
 	errorData.setPeerInfo(new PeerInfo(peerId, peerType, peerContext.getPeerInfo()));
-	postEvent(new PeerCommErrorEvent(errorData));
+	PeerCommErrorEvent event = new PeerCommErrorEvent(errorData);
+	state.handlePeerError(new PeerEventContext<>(event, this));
+	postEvent(event);
     }
 
 }

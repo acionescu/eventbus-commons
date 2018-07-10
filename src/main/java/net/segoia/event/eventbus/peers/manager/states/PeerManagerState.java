@@ -17,13 +17,13 @@
 package net.segoia.event.eventbus.peers.manager.states;
 
 import net.segoia.event.eventbus.Event;
-import net.segoia.event.eventbus.EventContextListener;
 import net.segoia.event.eventbus.EventHandler;
 import net.segoia.event.eventbus.FilteringEventProcessor;
 import net.segoia.event.eventbus.PassthroughCustomEventContextListenerFactory;
 import net.segoia.event.eventbus.peers.PeerContextHandler;
 import net.segoia.event.eventbus.peers.PeerEventContext;
 import net.segoia.event.eventbus.peers.PeerManager;
+import net.segoia.event.eventbus.peers.core.PeerCommErrorEvent;
 
 public abstract class PeerManagerState {
     private FilteringEventProcessor localEventsProcessor = new FilteringEventProcessor(new PassthroughCustomEventContextListenerFactory());
@@ -76,6 +76,10 @@ public abstract class PeerManagerState {
     
     protected void setPeerEventNotProcessedHandler(EventHandler handler) {
 	peerEventsProcessor.setEventNotProcessedHandler(handler);
+    }
+    
+    public void handlePeerError(PeerEventContext<PeerCommErrorEvent> eventContext) {
+	
     }
     
     public String getId() {

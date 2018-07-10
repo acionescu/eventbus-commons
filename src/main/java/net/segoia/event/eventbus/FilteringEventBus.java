@@ -114,14 +114,14 @@ public class FilteringEventBus extends SimpleEventBus {
 	getProcessor().addEventHandler(eventType, handler);
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see net.segoia.event.eventbus.SimpleEventBus#clone()
-     */
-    @Override
-    public FilteringEventBus clone() {
-	return (FilteringEventBus) super.clone();
-    }
+//    /*
+//     * (non-Javadoc)
+//     * 
+//     * @see net.segoia.event.eventbus.SimpleEventBus#clone()
+//     */
+//    @Override
+//    public FilteringEventBus clone() {
+//	return (FilteringEventBus) super.clone();
+//    }
 
 }

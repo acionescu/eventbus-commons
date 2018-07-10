@@ -17,11 +17,10 @@
 package net.segoia.event.eventbus.peers;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import net.segoia.event.eventbus.CustomEventContext;
 import net.segoia.event.eventbus.Event;
@@ -32,6 +31,7 @@ import net.segoia.event.eventbus.peers.core.EventTransceiver;
 import net.segoia.event.eventbus.peers.core.PrivateIdentityData;
 import net.segoia.event.eventbus.peers.events.NewPeerEvent;
 import net.segoia.event.eventbus.peers.events.PeerAcceptedEvent;
+import net.segoia.event.eventbus.peers.events.PeerConnectionFailedEvent;
 import net.segoia.event.eventbus.peers.events.PeerLeavingEvent;
 import net.segoia.event.eventbus.peers.events.PeerLeftEvent;
 import net.segoia.event.eventbus.peers.events.auth.PeerAuthAcceptedEvent;
@@ -134,18 +134,33 @@ public class PeersManager extends GlobalEventNodeAgent {
 
 	context.addEventHandler(DisconnectFromPeerRequestEvent.class, (c) -> {
 	    String peerId = c.getEvent().getData().getPeerId();
-	    PeerManager pm = peersRegistry.getDirectPeerManager(peerId);
-	    if (pm != null) {
-		pm.terminate();
-		removePeer(peerId);
-	    } else {
-		throw new RuntimeException("No peer manager found for peer id " + peerId);
-	    }
+	    terminatePeer(peerId);
+	});
+
+	context.addEventHandler(PeerConnectionFailedEvent.class, (c) -> {
+	    String peerId = c.getEvent().getData().getPeerInfo().getPeerId();
+	    /* for now terminate node */
+	    terminatePeer(peerId);
 	});
 
 	context.addEventHandler(PeerAcceptedEvent.class, (c) -> {
 	    handlePeerAccepted(c);
 	});
+
+    }
+
+    protected void terminatePeer(String peerId) {
+	PeerManager pm = peersRegistry.getDirectPeerManager(peerId);
+	if (pm != null) {
+	    pm.terminate();
+
+	}
+	pm = peersRegistry.getPendingPeerManager(peerId);
+	if (pm != null) {
+	    pm.terminate();
+
+	}
+	removePeer(peerId);
 
     }
 
@@ -190,8 +205,7 @@ public class PeersManager extends GlobalEventNodeAgent {
 
 	    peerContext.setOurNodeInfo(customNodeInfo);
 
-	}
-	else {
+	} else {
 	    peerContext.setOurNodeInfo(nodeContext.getNodeInfo());
 	}
 
@@ -380,13 +394,28 @@ public class PeersManager extends GlobalEventNodeAgent {
 
     protected Set<String> getKnownPeers(EventContext ec) {
 
-	Stream<String> dpStream = peersRegistry.getDirectPeers().entrySet().stream()
-		.filter((e) -> e.getValue().getPeerContext().getRelay().isForwardingAllowed(ec)).map((e) -> e.getKey());
-	Stream<String> rpStream = peersRegistry.getRemotePeers().entrySet().stream()
-		.filter((e) -> e.getValue().getPeerContext().getRelay().isForwardingAllowed(ec)).map((e) -> e.getKey());
-	Set<String> targetedPeers = Stream.concat(dpStream, rpStream).collect(Collectors.toSet());
+//	Stream<String> dpStream = peersRegistry.getDirectPeers().entrySet().stream()
+//		.filter((e) -> e.getValue().getPeerContext().getRelay().isForwardingAllowed(ec)).map((e) -> e.getKey());
+//	Stream<String> rpStream = peersRegistry.getRemotePeers().entrySet().stream()
+//		.filter((e) -> e.getValue().getPeerContext().getRelay().isForwardingAllowed(ec)).map((e) -> e.getKey());
+//	Set<String> targetedPeers = Stream.concat(dpStream, rpStream).collect(Collectors.toSet());
+	
+	Set<String> targetedPeers=new HashSet<>();
+	
+	targetedPeers.addAll(getAllowedForwardingPeers(peersRegistry.getDirectPeers(), ec));
+	targetedPeers.addAll(getAllowedForwardingPeers(peersRegistry.getRemotePeers(), ec));
 
 	return targetedPeers;
+    }
+    
+    protected Set<String> getAllowedForwardingPeers(Map<String, PeerManager> candidates, EventContext ec){
+	Set<String> allowed = new HashSet<>();
+	for(Map.Entry<String, PeerManager> e : candidates.entrySet()) {
+	    if(e.getValue().getPeerContext().getRelay().isForwardingAllowed(ec)) {
+		allowed.add(e.getKey());
+	    }
+	}
+	return allowed;
     }
 
     protected PeerManager getDirectPeer(String id) {

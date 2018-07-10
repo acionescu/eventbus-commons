@@ -18,6 +18,7 @@ package net.segoia.event.eventbus.peers;
 
 import java.util.List;
 
+import net.segoia.event.eventbus.Event;
 import net.segoia.event.eventbus.peers.comm.PeerCommManager;
 import net.segoia.event.eventbus.peers.core.EventTransceiver;
 import net.segoia.event.eventbus.peers.core.PrivateIdentityData;
@@ -69,16 +70,27 @@ public class PeerContext {
     private SessionManager sessionManager;
 
     private PeerCommManager peerCommManager;
-    
+
     private PeerCommContext peerCommContext;
-    
+
     /**
      * In case we want to specify custom identities to use with this particular peer
      */
     private List<PrivateIdentityData<?>> ourAvailableIdentities;
-    
+
     private NodeInfo ourNodeInfo;
-    
+
+    /**
+     * Unique id to identify the peer agent
+     */
+    private String peerIdentityKey;
+
+    /**
+     * The root identity key for the peer
+     */
+    private String peerRootIdentityKey;
+
+    private NodeIdentityProfile peerIdentityProfile;
 
     public PeerContext(String peerId, EventTransceiver transceiver) {
 	super();
@@ -156,6 +168,7 @@ public class PeerContext {
 
     public void setPeerIdentityManager(PublicIdentityManager peerIdentityManager) {
 	this.peerIdentityManager = peerIdentityManager;
+	peerIdentityKey = peerIdentityManager.getIdentityKey();
     }
 
     public PeerCommManager getPeerCommManager() {
@@ -183,23 +196,26 @@ public class PeerContext {
     }
 
     public PeerCommContext getPeerCommContext() {
-        return peerCommContext;
+	return peerCommContext;
     }
 
     public void setPeerCommContext(PeerCommContext peerCommContext) {
-        this.peerCommContext = peerCommContext;
+	this.peerCommContext = peerCommContext;
     }
 
     public EventTransceiver getTransceiver() {
-        return transceiver;
+	return transceiver;
     }
 
     public void setTransceiver(EventTransceiver transceiver) {
-        this.transceiver = transceiver;
+	this.transceiver = transceiver;
     }
-    
+
     public NodeIdentityProfile getCurrentPeerIdentityProfile() {
-	return nodeContext.getSecurityManager().getCurrentPeerIdentityProfile(this);
+	if (peerIdentityProfile == null) {
+	    peerIdentityProfile = nodeContext.getSecurityManager().getCurrentPeerIdentityProfile(this);
+	}
+	return peerIdentityProfile;
     }
 
     public boolean isEventAccepted(PeerStateContext context) {
@@ -207,20 +223,41 @@ public class PeerContext {
     }
 
     public List<PrivateIdentityData<?>> getOurAvailableIdentities() {
-        return ourAvailableIdentities;
+	return ourAvailableIdentities;
     }
 
     public void setOurAvailableIdentities(List<PrivateIdentityData<?>> ourAvailableIdentities) {
-        this.ourAvailableIdentities = ourAvailableIdentities;
+	this.ourAvailableIdentities = ourAvailableIdentities;
     }
 
     public NodeInfo getOurNodeInfo() {
-        return ourNodeInfo;
+	return ourNodeInfo;
     }
 
     public void setOurNodeInfo(NodeInfo ourNodeInfo) {
-        this.ourNodeInfo = ourNodeInfo;
+	this.ourNodeInfo = ourNodeInfo;
     }
-    
-    
+
+    public String getPeerIdentityKey() {
+	return peerIdentityKey;
+    }
+
+    public String getPeerRootIdentityKey() {
+	if (peerRootIdentityKey == null) {
+	    NodeIdentityProfile pip = getCurrentPeerIdentityProfile();
+	    if (pip != null) {
+		peerRootIdentityKey = pip.getRootIdentityKey();
+	    }
+	}
+	return peerRootIdentityKey;
+    }
+
+    public void sendEventToPeer(Event event) {
+	if (peerInfo != null) {
+	    event.to(peerInfo.getNodeId());
+	}
+
+	relay.sendEvent(event);
+    }
+
 }

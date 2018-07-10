@@ -34,7 +34,11 @@ public class AndCondition extends AggregatedCondition {
     private static String buildId(Condition... subconditions) {
 	StringBuffer out = new StringBuffer();
 	out.append(subconditions[0].getId());
-	Arrays.stream(subconditions).skip(1).map(c -> "&" + c.getId()).forEach(out::append);
+//	Arrays.stream(subconditions).skip(1).map(c -> "&" + c.getId()).forEach(out::append);
+        for(int i=1;i<subconditions.length;i++){
+            out.append("&").append(subconditions[i].getId());
+        }
+
 	return out.toString();
     }
 

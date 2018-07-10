@@ -44,7 +44,7 @@ public class ConditionWrapper extends Condition{
 	    throw new RuntimeException("Condition with id "+nestedConditionId +" not found.");
 	}
 	
-	throw new UnsupportedOperationException();
+	throw new RuntimeException();
     }
 
 }

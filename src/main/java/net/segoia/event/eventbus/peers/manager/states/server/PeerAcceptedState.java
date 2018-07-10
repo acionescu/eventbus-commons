@@ -59,7 +59,6 @@ public class PeerAcceptedState extends PeerManagerState {
     @Override
     protected void registerPeerEventHandlers() {
 	registerPeerEventProcessor(ServiceAccessIdRequestEvent.class, (c) -> {
-	    System.out.println("handling service access id request");
 	    try {
 		handleServiceAccessIdRequest(c);
 	    } finally {
@@ -69,7 +68,6 @@ public class PeerAcceptedState extends PeerManagerState {
 
 	registerPeerEventProcessor((c) -> {
 	    if (!c.getEvent().isHandled()) {
-		System.out.println("posting to node " + c.getEvent().getEt());
 		c.getPeerManager().postEvent(c.getEvent());
 	    }
 	});
