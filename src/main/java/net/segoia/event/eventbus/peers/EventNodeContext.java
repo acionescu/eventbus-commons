@@ -19,6 +19,7 @@ package net.segoia.event.eventbus.peers;
 import net.segoia.event.eventbus.Event;
 import net.segoia.event.eventbus.peers.security.EventNodeSecurityManager;
 import net.segoia.event.eventbus.peers.util.EventNodeHelper;
+import net.segoia.event.eventbus.peers.util.EventNodeLogger;
 import net.segoia.event.eventbus.peers.vo.NodeInfo;
 import net.segoia.event.eventbus.vo.services.EventNodeServiceDefinition;
 import net.segoia.event.eventbus.vo.services.EventNodeServiceRef;
@@ -81,5 +82,9 @@ public class EventNodeContext {
 
     public EventNodeServiceDefinition getService(EventNodeServiceRef serviceRef) {
 	return node.getService(serviceRef);
+    }
+    
+    public EventNodeLogger getLogger() {
+	return config.getLogger();
     }
 }

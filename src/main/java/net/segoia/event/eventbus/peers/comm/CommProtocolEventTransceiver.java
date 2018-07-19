@@ -54,8 +54,7 @@ public class CommProtocolEventTransceiver extends ChainedEventTransceiver {
 	    dataEvent.getData().setData(processedData.getData());
 	    receiveData(dataEvent);
 	} catch (CommOperationException e) {
-	    // TODO Auto-generated catch block
-	    e.printStackTrace();
+	    peerContext.getNodeContext().getLogger().error("Failed processing peer data "+peerContext.getPeerId(), e);
 	}
 
     }
@@ -69,8 +68,7 @@ public class CommProtocolEventTransceiver extends ChainedEventTransceiver {
 	    byte[] encodedData = cryptoHelper.base64EncodeToBytes(processedDataBytes);
 	    super.sendData(encodedData);
 	} catch (CommOperationException e) {
-	    // TODO Auto-generated catch block
-	    e.printStackTrace();
+	    peerContext.getNodeContext().getLogger().error("Failed sending data to peer "+peerContext.getPeerId(), e);
 	}
 
     }

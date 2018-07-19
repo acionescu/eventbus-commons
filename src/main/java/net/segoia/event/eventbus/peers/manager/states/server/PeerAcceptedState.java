@@ -18,6 +18,7 @@ package net.segoia.event.eventbus.peers.manager.states.server;
 
 import java.util.ArrayList;
 
+import net.segoia.event.eventbus.Event;
 import net.segoia.event.eventbus.peers.PeerContext;
 import net.segoia.event.eventbus.peers.PeerEventContext;
 import net.segoia.event.eventbus.peers.PeerManager;
@@ -61,14 +62,20 @@ public class PeerAcceptedState extends PeerManagerState {
 	registerPeerEventProcessor(ServiceAccessIdRequestEvent.class, (c) -> {
 	    try {
 		handleServiceAccessIdRequest(c);
-	    } finally {
+	    } 
+	    catch(Throwable t) {
+		c.getPeerManager().handleError("Failed handling service id request",t);
+	    }
+	    finally {
 		c.getEvent().setHandled();
 	    }
 	});
 
 	registerPeerEventProcessor((c) -> {
-	    if (!c.getEvent().isHandled()) {
-		c.getPeerManager().postEvent(c.getEvent());
+	    Event event = c.getEvent();
+	    if (!event.isHandled()) {
+		c.getNodeContext().getLogger().info(event.getEt() + " not handled. Delegating further.");
+		c.getPeerManager().postEvent(event);
 	    }
 	});
 
@@ -111,7 +118,7 @@ public class PeerAcceptedState extends PeerManagerState {
 		    new ServiceAccessIdRequestRjectedEvent(new ServiceAccessIdRequestRejectedReason(e.getMessage())));
 
 	} catch (PeerRequestHandlingException e) {
-	    e.printStackTrace();
+	    peerContext.getNodeContext().getLogger().error("Auth error", e);
 	    peerManager.handleError(e);
 	}
 

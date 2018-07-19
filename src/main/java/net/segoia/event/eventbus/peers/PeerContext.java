@@ -256,8 +256,9 @@ public class PeerContext {
 	if (peerInfo != null) {
 	    event.to(peerInfo.getNodeId());
 	}
-
+       
 	relay.sendEvent(event);
+       
     }
 
 }

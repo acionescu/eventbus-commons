@@ -21,6 +21,7 @@ import net.segoia.event.conditions.LooseEventMatchCondition;
 import net.segoia.event.eventbus.constants.Events;
 import net.segoia.event.eventbus.peers.security.EventNodeSecurityConfig;
 import net.segoia.event.eventbus.peers.util.EventNodeHelper;
+import net.segoia.event.eventbus.peers.util.EventNodeLogger;
 
 public class EventBusNodeConfig {
     /**
@@ -50,8 +51,15 @@ public class EventBusNodeConfig {
      * A helper class
      */
     private EventNodeHelper helper;
+    
+    /**
+     * Logger for this node
+     */
+    private EventNodeLogger logger;
 
     private PeersManagerConfig peersManagerConfig;
+    
+    private boolean allowServerMode;
 
     /**
      * @return the autoRelayEanbled
@@ -135,6 +143,22 @@ public class EventBusNodeConfig {
 
     public void setPeersManagerConfig(PeersManagerConfig peersManagerConfig) {
 	this.peersManagerConfig = peersManagerConfig;
+    }
+
+    public boolean isAllowServerMode() {
+        return allowServerMode;
+    }
+
+    public void setAllowServerMode(boolean allowServerMode) {
+        this.allowServerMode = allowServerMode;
+    }
+
+    public EventNodeLogger getLogger() {
+        return logger;
+    }
+
+    public void setLogger(EventNodeLogger logger) {
+        this.logger = logger;
     }
 
 }

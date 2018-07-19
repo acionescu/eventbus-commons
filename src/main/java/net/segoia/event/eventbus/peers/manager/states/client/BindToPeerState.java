@@ -24,6 +24,7 @@ import net.segoia.event.eventbus.peers.events.PeerConnectionFailedEvent;
 import net.segoia.event.eventbus.peers.events.auth.PeerAuthRequestEvent;
 import net.segoia.event.eventbus.peers.events.bind.PeerBindAcceptedEvent;
 import net.segoia.event.eventbus.peers.manager.states.PeerManagerState;
+import net.segoia.event.eventbus.peers.vo.PeerErrorData;
 import net.segoia.event.eventbus.peers.vo.auth.PeerAuthRequest;
 import net.segoia.event.eventbus.peers.vo.bind.PeerBindAccepted;
 
@@ -50,9 +51,11 @@ public class BindToPeerState extends PeerManagerState {
     @Override
     public void handlePeerError(PeerEventContext<PeerCommErrorEvent> eventContext) {
 	PeerManager pm = eventContext.getPeerManager();
+        final PeerErrorData data = eventContext.getEvent().getData();
+        pm.getNodeContext().getLogger().error("Peer error: "+data.getMessage());
 	if(pm.getPeerInfo() == null) {
 	    /* connection didn't succeed */
-	    pm.postEvent(new PeerConnectionFailedEvent(eventContext.getEvent().getData()));
+	    pm.postEvent(new PeerConnectionFailedEvent(data));
 	    
 	}
     }
@@ -62,8 +65,8 @@ public class BindToPeerState extends PeerManagerState {
 	registerPeerEventProcessor(PeerBindAcceptedEvent.class, (c) -> {
 	    handlePeerBindAccepted(c);
 	});
-	setPeerEventNotProcessedHandler((ec)->{
-	    throw new RuntimeException("Expected "+PeerBindAcceptedEvent.class.getName() +" but got "+ec.getEvent().getClass());
+	setPeerEventNotProcessedHandler((c)->{
+	    c.getPeerManager().handleError(new RuntimeException("Expected "+PeerBindAcceptedEvent.class.getName() +" but got "+c.getEvent().getClass()));
 	});
     }
     

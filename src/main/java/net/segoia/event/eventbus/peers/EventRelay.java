@@ -85,6 +85,7 @@ public abstract class EventRelay implements PeerDataListener {
 	this.remoteEventListener = remoteEventListener;
     }
 
+    @Override
     public void onPeerData(PeerDataEvent dataEvent) {
 	byte[] data = dataEvent.getData().getData();
 	try {
@@ -93,9 +94,11 @@ public abstract class EventRelay implements PeerDataListener {
 	    Event event = Event.fromJson(json, dataEvent.getCauseEvent());
 	    receiveEvent(event);
 	} catch (UnsupportedEncodingException e) {
-	    // TODO Auto-generated catch block
-	    e.printStackTrace();
+	    remoteEventListener.onPeerError(new PeerErrorData("Cant' convert peer data to event: "+e.toString()));
 	}
+        catch (Throwable t ){
+            remoteEventListener.onPeerError(new PeerErrorData("Cant' convert peer data to event: "+t.toString()));
+        }
     }
 
     protected boolean isForwardingAllowed(EventContext ec) {
@@ -106,10 +109,10 @@ public abstract class EventRelay implements PeerDataListener {
 	try {
 	    return event.toJson().getBytes("UTF-8");
 	} catch (UnsupportedEncodingException e) {
-	    // TODO Auto-generated catch block
-	    e.printStackTrace();
+//	    remoteEventListener.onPeerError(new PeerErrorData(e.toString()));
+            throw new RuntimeException("Failed to convert event to bytes",e);
 	}
-	return null;
+//	return null;
     }
 
     public void sendData(byte[] data) {

@@ -307,7 +307,7 @@ public class Event implements Cloneable {
 	    
 	    newEvent = copy();
 	} catch (Exception e) {
-	    e.printStackTrace();
+	    EBusVM.getInstance().getLogger().error("Can't clone event",e);
 	    return null;
 	}
 	// newEvent.id = getId();

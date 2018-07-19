@@ -36,10 +36,11 @@ public class EventClassMatchCondition extends Condition{
 	    return false;
 	}
 	try {
-	    target.asSubclass(superclass);
+//	    target.asSubclass(superclass);
+            return target.equals(superclass);
 	} catch (Exception e) {
 	    return false;
 	}
-	return true;
+//	return true;
     }
 }

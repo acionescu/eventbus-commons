@@ -56,7 +56,8 @@ public class OperationContext<D extends OperationDef> {
     }
     
     public <T> T deserializeTo(Class<T> clazz, OperationData opData){
-	if(clazz.isInstance(opData)) {
+//	if(clazz.isInstance(opData)) {
+	if(clazz.equals(opData.getClass())) {
 	    return (T)opData;
 	}
 	OperationDataDeserializer<?> d = inputDeserializers.get(clazz);

@@ -69,8 +69,8 @@ public class EventContext {
 	    listener.onEvent(this);
 	} catch (Throwable e) {
 	    pushError(e);
-	    System.err.println(listener.getClass()+" failed processing "+event.getEt()+" with error "+e.getMessage());
-	    e.printStackTrace();
+//	    EBusVM.getInstance().getLogger().error(listener.getClass()+" failed processing "+event.getEt()+" with error "+e.getMessage(),e);
+	    
 	    throw e;
 	}
     }

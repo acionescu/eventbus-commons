@@ -75,9 +75,9 @@ public class AuthToPeerState extends PeerManagerState{
 	    try {
 		ourProtocol = peerManager.getNodeContext().getSecurityManager().establishPeerCommunicationProtocol(peerContext);
 	    } catch (PeerCommunicationNegotiationFailedException ex) {
-		ex.printStackTrace();
+		peerContext.getNodeContext().getLogger().error("Auth error",ex);
 	    } catch (PeerAuthRequestRejectedException arex) {
-		arex.printStackTrace();
+		peerContext.getNodeContext().getLogger().error("Auth error",arex);
 	    }
 
 	    /* set the protocol on peer context */
