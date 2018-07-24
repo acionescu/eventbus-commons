@@ -60,8 +60,7 @@ import net.segoia.event.eventbus.peers.vo.session.SessionKeyData;
 import net.segoia.event.eventbus.peers.vo.session.SessionStartedData;
 
 /**
- * Implements a certain communication policy with a peer over an
- * {@link EventRelay}
+ * Implements a certain communication policy with a peer over an {@link EventRelay}
  *
  * @author adi
  *
@@ -75,8 +74,7 @@ public class PeerManager implements PeerEventListener {
     private PeerManagerState state;
 
     /**
-     * The state in which the communication with the peer is established and can
-     * implement whatever app logic is needed
+     * The state in which the communication with the peer is established and can implement whatever app logic is needed
      */
     private PeerManagerState acceptedState;
 
@@ -94,80 +92,80 @@ public class PeerManager implements PeerEventListener {
 
     public PeerManager(String peerId, EventTransceiver transceiver) {
 
-        this(new PeerContext(peerId, transceiver));
+	this(new PeerContext(peerId, transceiver));
 
     }
 
     public PeerManager(PeerContext peerContext) {
-        super();
-        this.peerContext = peerContext;
-        EventTransceiver transceiver = peerContext.getTransceiver();
-        DefaultEventRelay relay = new DefaultEventRelay(peerId, transceiver);
-        /* listen on events from peer */
-        relay.setRemoteEventListener(this);
-        peerContext.setRelay(relay);
-        this.peerType = transceiver.getClass().getSimpleName();
-        this.peerId = peerContext.getPeerId();
-        /* bind relay to transceiver */
-        relay.bind();
+	super();
+	this.peerContext = peerContext;
+	EventTransceiver transceiver = peerContext.getTransceiver();
+	DefaultEventRelay relay = new DefaultEventRelay(peerId, transceiver);
+	/* listen on events from peer */
+	relay.setRemoteEventListener(this);
+	peerContext.setRelay(relay);
+	this.peerType = transceiver.getClass().getSimpleName();
+	this.peerId = peerContext.getPeerId();
+	/* bind relay to transceiver */
+	relay.bind();
     }
 
     public void goToState(PeerManagerState newState) {
-        getNodeContext().getLogger().info("State transition:"+peerId+":"+state+"->"+newState);
-        if (state != null) {
-            state.onExitState(this);
-        }
-        state = newState;
-        state.onEnterState(this);
+	getNodeContext().getLogger().info("State transition:" + peerId + ":" + state + "->" + newState);
+	if (state != null) {
+	    state.onExitState(this);
+	}
+	state = newState;
+	state.onEnterState(this);
     }
 
     public String getPeerId() {
-        return peerContext.getPeerId();
+	return peerContext.getPeerId();
     }
 
     public void setPeerInfo(NodeInfo peerInfo) {
-        peerContext.setPeerInfo(peerInfo);
+	peerContext.setPeerInfo(peerInfo);
     }
 
     public NodeInfo getPeerInfo() {
-        return peerContext.getPeerInfo();
+	return peerContext.getPeerInfo();
     }
 
     public void start() {
-        /* the peer is the server, we are the client, so we need to initiate connection */
-        if (peerContext.isInServerMode()) {
-            startInClientMode();
+	/* the peer is the server, we are the client, so we need to initiate connection */
+	if (peerContext.isInServerMode()) {
+	    startInClientMode();
 
-        } else {
-            /* we are the server and a client requested to bind to us */
-            startInServerMode();
-        }
+	} else {
+	    /* we are the server and a client requested to bind to us */
+	    startInServerMode();
+	}
     }
 
     protected void startInClientMode() {
-        if (acceptedState == null) {
-            acceptedState = ACCEPTED_BY_PEER;
-        }
-        goToState(BIND_TO_PEER);
+	if (acceptedState == null) {
+	    acceptedState = ACCEPTED_BY_PEER;
+	}
+	goToState(BIND_TO_PEER);
     }
 
     protected void startInServerMode() {
-        if (!getNodeContext().getConfig().isAllowServerMode()) {
-            throw new RuntimeException("Not allowed to start in server mode");
-        }
-        if (acceptedState == null) {
-            acceptedState = PEER_ACCEPTED;
-        }
+	if (!getNodeContext().getConfig().isAllowServerMode()) {
+	    throw new RuntimeException("Not allowed to start in server mode");
+	}
+	if (acceptedState == null) {
+	    acceptedState = PEER_ACCEPTED;
+	}
 
-        goToState(PEER_BIND_REQUESTED);
+	goToState(PEER_BIND_REQUESTED);
     }
 
     protected void setAcceptedState(PeerManagerState acceptedState) {
-        this.acceptedState = acceptedState;
+	this.acceptedState = acceptedState;
     }
 
     public void terminate() {
-        peerContext.getRelay().terminate();
+	peerContext.getRelay().terminate();
     }
 
     protected void cleanUp() {
@@ -175,248 +173,229 @@ public class PeerManager implements PeerEventListener {
     }
 
     public void setUpPeerCommContext() {
-        PeerCommContext peerCommContext = buildPeerCommContext();
-        peerContext.setPeerCommContext(peerCommContext);
-        getNodeContext().getSecurityManager().onPeerNodeAuth(peerContext);
+	PeerCommContext peerCommContext = buildPeerCommContext();
+	peerContext.setPeerCommContext(peerCommContext);
+	getNodeContext().getSecurityManager().onPeerNodeAuth(peerContext);
     }
 
     public void setUpSessionCommManager() {
-        setUpPeerCommContext();
+	setUpPeerCommContext();
 
-        PeerCommManager peerCommManager = new PeerCommManager();
+	PeerCommManager peerCommManager = new PeerCommManager();
 
-        peerContext.setPeerCommManager(peerCommManager);
+	peerContext.setPeerCommManager(peerCommManager);
 
-        /* get the session communication manager */
-        EventNodeSecurityManager securityManager = getNodeContext().
-                getSecurityManager();
+	/* get the session communication manager */
+	EventNodeSecurityManager securityManager = getNodeContext().getSecurityManager();
 
-        /*
+	/*
 	 * Get the session comm manager
-         */
-        CommManager sessionCommManager = securityManager.getSessionCommManager(
-                peerContext.getPeerCommContext());
+	 */
+	CommManager sessionCommManager = securityManager.getSessionCommManager(peerContext.getPeerCommContext());
 
-        peerCommManager.setSessionCommManager(sessionCommManager);
+	peerCommManager.setSessionCommManager(sessionCommManager);
     }
 
     public void generateNewSession() {
-        EventNodeSecurityManager securityManager = getNodeContext().
-                getSecurityManager();
+	EventNodeSecurityManager securityManager = getNodeContext().getSecurityManager();
 
-        try {
-            securityManager.generateNewSessionKey(peerContext);
+	try {
+	    securityManager.generateNewSessionKey(peerContext);
 
-        } catch (PeerSessionException e) {
-            handleError(e);
+	} catch (PeerSessionException e) {
+	    handleError(e);
 
-        }
+	}
     }
 
     public void setUpDirectCommManager() {
-        EventNodeSecurityManager securityManager = getNodeContext().
-                getSecurityManager();
-        PeerCommContext peerCommContext = peerContext.getPeerCommContext();
-        PeerCommManager peerCommManager = peerContext.getPeerCommManager();
+	EventNodeSecurityManager securityManager = getNodeContext().getSecurityManager();
+	PeerCommContext peerCommContext = peerContext.getPeerCommContext();
+	PeerCommManager peerCommManager = peerContext.getPeerCommManager();
 
-        /* now we can build a direct comm manager */
-        CommManager directCommManager = securityManager.getDirectCommManager(
-                peerCommContext);
+	/* now we can build a direct comm manager */
+	CommManager directCommManager = securityManager.getDirectCommManager(peerCommContext);
 
-        peerCommManager.setDirectCommManager(directCommManager);
+	peerCommManager.setDirectCommManager(directCommManager);
     }
 
     /**
      * This is called only when the node is operating in server mode
      */
     public void onProtocolConfirmed() {
-        setUpSessionCommManager();
-        generateNewSession();
-        setUpDirectCommManager();
+	setUpSessionCommManager();
+	generateNewSession();
+	setUpDirectCommManager();
 
-        /* send the session */
-        startNewPeerSession();
+	/* send the session */
+	startNewPeerSession();
 
-        /* activate the transceiver implementing the protocol */
-        setUpCommProtocolTransceiver();
+	/* activate the transceiver implementing the protocol */
+	setUpCommProtocolTransceiver();
 
     }
 
     public void startNewPeerSession() {
-        SessionKey sessionKey = peerContext.getSessionKey();
+	SessionKey sessionKey = peerContext.getSessionKey();
 
-        PeerCommManager peerCommManager = peerContext.getPeerCommManager();
+	PeerCommManager peerCommManager = peerContext.getPeerCommManager();
 
-        SessionInfo sessionInfo = null;
+	SessionInfo sessionInfo = null;
 
-        try {
-            // SessionKeyOutgoingAccumulator opAcc = new SessionKeyOutgoingAccumulator(
-            // new OperationData(sessionKey.getKeyBytes()));
+	try {
+	    // SessionKeyOutgoingAccumulator opAcc = new SessionKeyOutgoingAccumulator(
+	    // new OperationData(sessionKey.getKeyBytes()));
 
-            /* prepare session token */
-            CommDataContext processedSessionData = peerCommManager.
-                    getSessionCommManager()
-                    .processsOutgoingData(new CommDataContext(sessionKey.
-                            getKeyBytes()));
+	    /* prepare session token */
+	    CommDataContext processedSessionData = peerCommManager.getSessionCommManager()
+		    .processsOutgoingData(new CommDataContext(sessionKey.getKeyBytes()));
 
-            SignCommOperationOutput out = (SignCommOperationOutput) processedSessionData.
-                    getResult();
+	    SignCommOperationOutput out = (SignCommOperationOutput) processedSessionData.getResult();
 
-            CryptoHelper cryptoHelper = getNodeContext().getSecurityManager().
-                    getCryptoHelper();
+	    CryptoHelper cryptoHelper = getNodeContext().getSecurityManager().getCryptoHelper();
 
-            /* encode base64 */
-            String sessionToken = cryptoHelper.base64Encode(out.getData());
-            String sessionTokenSignature = cryptoHelper.base64Encode(out.
-                    getSignature());
+	    /* encode base64 */
+	    String sessionToken = cryptoHelper.base64Encode(out.getData());
+	    String sessionTokenSignature = cryptoHelper.base64Encode(out.getSignature());
 
-            // send the iv as well
-            String keyIv = cryptoHelper.base64Encode(sessionKey.getIv());
+	    // send the iv as well
+	    String keyIv = cryptoHelper.base64Encode(sessionKey.getIv());
 
-            SessionKeyData sessionKeyData = new SessionKeyData(sessionToken,
-                    sessionTokenSignature,
-                    sessionKey.getKeyDef());
-            sessionKeyData.setKeyIv(keyIv);
+	    SessionKeyData sessionKeyData = new SessionKeyData(sessionToken, sessionTokenSignature,
+		    sessionKey.getKeyDef());
+	    sessionKeyData.setKeyIv(keyIv);
 
-            sessionInfo = new SessionInfo(sessionKey.getSessionId(),
-                    sessionKeyData);
+	    sessionInfo = new SessionInfo(sessionKey.getSessionId(), sessionKeyData);
 
-        } catch (CommOperationException e) {
-            handleError(e);
-            return;
-        }
+	} catch (CommOperationException e) {
+	    handleError(e);
+	    return;
+	}
 
-        /* now we can send the session start event */
-        forwardToPeer(new PeerSessionStartedEvent(new SessionStartedData(
-                sessionInfo)));
+	/* now we can send the session start event */
+	forwardToPeer(new PeerSessionStartedEvent(new SessionStartedData(sessionInfo)));
     }
 
     public void setUpCommProtocolTransceiver() {
-        /* chain a protocol enforcing event transceiver */
-        EventRelay relay = peerContext.getRelay();
-        CommProtocolEventTransceiver commProtocolEventTransceiver = new CommProtocolEventTransceiver(
-                relay.getTransceiver(), peerContext);
-        relay.bind(commProtocolEventTransceiver);
+	/* chain a protocol enforcing event transceiver */
+	EventRelay relay = peerContext.getRelay();
+	CommProtocolEventTransceiver commProtocolEventTransceiver = new CommProtocolEventTransceiver(
+		relay.getTransceiver(), peerContext);
+	relay.bind(commProtocolEventTransceiver);
     }
 
     public void handleError(Exception e) {
-        getNodeContext().getLogger().error(getPeerId() + ": Peer manager error",
-                e);
+	getNodeContext().getLogger().error(getPeerId() + ": Peer manager error", e);
     }
 
     public void handleError(String msg, Throwable t) {
-        getNodeContext().getLogger().error(getPeerId() + ": " + msg, t);
+	getNodeContext().getLogger().error(getPeerId() + ": " + msg, t);
     }
 
     protected PeerCommContext buildPeerCommContext() {
-        CommunicationProtocol commProtocol = peerContext.getCommProtocol();
-        CommunicationProtocolDefinition protocolDefinition = commProtocol.
-                getProtocolDefinition();
-        NodeCommunicationStrategy clientCommStrategy = protocolDefinition.
-                getClientCommStrategy();
-        NodeCommunicationStrategy serverCommStrategy = protocolDefinition.
-                getServerCommStrategy();
+	CommunicationProtocol commProtocol = peerContext.getCommProtocol();
+	CommunicationProtocolDefinition protocolDefinition = commProtocol.getProtocolDefinition();
+	NodeCommunicationStrategy clientCommStrategy = protocolDefinition.getClientCommStrategy();
+	NodeCommunicationStrategy serverCommStrategy = protocolDefinition.getServerCommStrategy();
 
-        CommunicationProtocolConfig protocolConfig = commProtocol.getConfig();
+	CommunicationProtocolConfig protocolConfig = commProtocol.getConfig();
 
-        NodeCommunicationStrategy txStrategy = null;
-        NodeCommunicationStrategy rxStrategy = null;
-        int ourIdentityIndex;
-        int peerIdentityIndex;
+	NodeCommunicationStrategy txStrategy = null;
+	NodeCommunicationStrategy rxStrategy = null;
+	int ourIdentityIndex;
+	int peerIdentityIndex;
 
-        if (peerContext.isInServerMode()) {
-            /* we're acting as client */
-            txStrategy = clientCommStrategy;
-            rxStrategy = serverCommStrategy;
+	if (peerContext.isInServerMode()) {
+	    /* we're acting as client */
+	    txStrategy = clientCommStrategy;
+	    rxStrategy = serverCommStrategy;
 
-            ourIdentityIndex = protocolConfig.getClientNodeIdentity();
-            peerIdentityIndex = protocolConfig.getServerNodeIdentity();
-        } else {
-            /* we're acting as server */
-            txStrategy = serverCommStrategy;
-            rxStrategy = clientCommStrategy;
+	    ourIdentityIndex = protocolConfig.getClientNodeIdentity();
+	    peerIdentityIndex = protocolConfig.getServerNodeIdentity();
+	} else {
+	    /* we're acting as server */
+	    txStrategy = serverCommStrategy;
+	    rxStrategy = clientCommStrategy;
 
-            peerIdentityIndex = protocolConfig.getClientNodeIdentity();
-            ourIdentityIndex = protocolConfig.getServerNodeIdentity();
-        }
+	    peerIdentityIndex = protocolConfig.getClientNodeIdentity();
+	    ourIdentityIndex = protocolConfig.getServerNodeIdentity();
+	}
 
-        return new PeerCommContext(ourIdentityIndex, peerIdentityIndex,
-                txStrategy, rxStrategy, peerContext);
+	return new PeerCommContext(ourIdentityIndex, peerIdentityIndex, txStrategy, rxStrategy, peerContext);
     }
 
     public void onReady() {
-        goToState(acceptedState);
-        postEvent(new PeerAcceptedEvent(new PeerInfo(peerId, peerType,
-                peerContext.getPeerInfo())));
+	goToState(acceptedState);
+	postEvent(new PeerAcceptedEvent(new PeerInfo(peerId, peerType, peerContext.getPeerInfo())));
     }
 
     public void postEvent(Event event) {
-        EventHeader header = event.getHeader();
-        header.setSourceAgentId(peerContext.getPeerIdentityKey());
-        header.setRootAgentId(peerContext.getPeerRootIdentityKey());
-        peerContext.getNodeContext().postEvent(event);
+	EventHeader header = event.getHeader();
+	header.setSourceAgentId(peerContext.getPeerIdentityKey());
+	header.setRootAgentId(peerContext.getPeerRootIdentityKey());
+	peerContext.getNodeContext().postEvent(event);
     }
 
     public void handlePeerBindAccepted(PeerBindAccepted data) {
-        peerContext.setPeerInfo(data.getNodeInfo());
+	peerContext.setPeerInfo(data.getNodeInfo());
     }
 
     public void handlePeerAuthRequest(PeerAuthRequest data) {
-        peerContext.setPeerInfo(data.getNodeInfo());
+	peerContext.setPeerInfo(data.getNodeInfo());
     }
 
     public void handleEventFromPeer(Event event) {
-        boolean processed = state.handleEventFromPeer(
-                new PeerEventContext(event, this));
+	boolean processed = state.handleEventFromPeer(new PeerEventContext(event, this));
     }
 
     public void forwardToPeer(Event event) {
-        try {
-            peerContext.sendEventToPeer(event);
-        } catch (Throwable t) {
-            handleError("Failed to send event", t);
-        }
+	try {
+	    peerContext.sendEventToPeer(event);
+	} catch (Throwable t) {
+	    handleError("Failed to send event", t);
+	}
     }
 
     public void setInServerMode(boolean inServerMode) {
-        peerContext.setInServerMode(inServerMode);
+	peerContext.setInServerMode(inServerMode);
     }
 
     public PeerContext getPeerContext() {
-        return peerContext;
+	return peerContext;
     }
 
     public boolean isRemoteAgent() {
-        return peerContext.isRemoteAgent();
+	return peerContext.isRemoteAgent();
     }
 
     @Override
     public void onPeerEvent(Event event) {
-        /* make sure we don't allow peers to inject relays */
-        event.clearRelays();
-        event.addRelay(getPeerId());
-        EBusVM.getInstance().postSystemEvent(event);
-        handleEventFromPeer(event);
+	/* make sure we don't allow peers to inject relays */
+	event.clearRelays();
+	event.addRelay(getPeerId());
+	try {
+	    handleEventFromPeer(event);
+	} finally {
+	    EBusVM.getInstance().postSystemEvent(event);
+	}
     }
 
     public EventNodeContext getNodeContext() {
-        return peerContext.getNodeContext();
+	return peerContext.getNodeContext();
     }
 
     @Override
     public void onPeerLeaving(PeerLeavingReason reason) {
-        postEvent(new PeerLeavingEvent(
-                new PeerLeavingData(reason, new PeerInfo(peerId, peerType,
-                        peerContext.getPeerInfo()))));
+	postEvent(new PeerLeavingEvent(
+		new PeerLeavingData(reason, new PeerInfo(peerId, peerType, peerContext.getPeerInfo()))));
     }
 
     @Override
     public void onPeerError(PeerErrorData errorData) {
-        errorData.setPeerInfo(new PeerInfo(peerId, peerType, peerContext.
-                getPeerInfo()));
-        PeerCommErrorEvent event = new PeerCommErrorEvent(errorData);
-        state.handlePeerError(new PeerEventContext<>(event, this));
-        postEvent(event);
+	errorData.setPeerInfo(new PeerInfo(peerId, peerType, peerContext.getPeerInfo()));
+	PeerCommErrorEvent event = new PeerCommErrorEvent(errorData);
+	state.handlePeerError(new PeerEventContext<>(event, this));
+	postEvent(event);
     }
 
 }
