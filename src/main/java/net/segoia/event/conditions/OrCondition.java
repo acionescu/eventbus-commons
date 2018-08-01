@@ -16,8 +16,6 @@
  */
 package net.segoia.event.conditions;
 
-import java.util.Arrays;
-
 import net.segoia.event.eventbus.EventContext;
 
 public class OrCondition extends AggregatedCondition {
@@ -25,9 +23,14 @@ public class OrCondition extends AggregatedCondition {
     public OrCondition(String id, Condition[] subconditions) {
         super(id, subconditions);
     }
+    
 
     public OrCondition(Condition... subconditions) {
         super(buildId(subconditions), subconditions);
+    }
+    
+    public static OrCondition build(String id, Condition... subconditions) {
+	return new OrCondition(id, subconditions);
     }
 
     private static String buildId(Condition... subconditions) {

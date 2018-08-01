@@ -17,6 +17,7 @@
 package net.segoia.event.eventbus.peers;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
@@ -87,6 +88,11 @@ public abstract class EventNode {
     private EventNodeContext context;
 
     private List<EventNodeAgent> agents = new ArrayList<>();
+    
+    /**
+     * A map to keep an index of all buses spawned for extra conditions
+     */
+    private Map<Condition, FilteringEventBus> extraBuses = new HashMap<>();
 
     public EventNode(boolean autoinit, EventBusNodeConfig config) {
 	this.config = config;
@@ -182,6 +188,30 @@ public abstract class EventNode {
      * @return
      */
     protected abstract FilteringEventBus spawnAdditionalBus(EventDispatcher eventDispatcher);
+    
+    /**
+     * Spawns a bus for a particular event channel
+     * @param channel
+     * @param eventDispatcher
+     * @return
+     */
+    protected FilteringEventBus spawnEventBus(Condition cond, EventDispatcher eventDispatcher) {
+	FilteringEventBus ceb = spawnAdditionalBus(eventDispatcher);
+	extraBuses.put(cond, ceb);
+	return ceb;
+    }
+    
+    protected abstract FilteringEventBus spawnEventBus(Condition cond);
+    
+    
+    public FilteringEventBus getEventBus(Condition cond, boolean create) {
+	FilteringEventBus ceb = extraBuses.get(cond);
+	if(ceb == null && create) {
+	    ceb = spawnEventBus(cond);
+	}
+	return ceb;
+    }
+    
 
     /**
      * Override this to register handlers, but don't forget to call super or you'll lose basic functionality
@@ -448,6 +478,22 @@ public abstract class EventNode {
 	}
     }
 
+    /**
+     * Post event to extra busses if conditions are met
+     * @param event
+     */
+    protected void postToExtraBusses(Event event) {
+	EventContext ec = new EventContext(event);
+	/**
+	 * If the bus condition is satisfied, post event to the extra bus
+	 */
+	for(Condition c : extraBuses.keySet()) {
+	    if(c.test(ec)) {
+		extraBuses.get(c).postEvent(event);
+	    }
+	}
+    }
+    
     /**
      * Called for all received remote events
      * 

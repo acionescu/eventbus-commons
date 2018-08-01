@@ -83,6 +83,11 @@ public class EventHeader implements Cloneable {
      * The main identity of the source agent
      */
     private String rootAgentId;
+    
+    /**
+     * The channel through which this event entered our system
+     */
+    private String channel;
 
     public EventHeader() {
 	params = new HashMap<>();
@@ -356,6 +361,14 @@ public class EventHeader implements Cloneable {
 
     public void setRootAgentId(String rootAgentId) {
 	this.rootAgentId = rootAgentId;
+    }
+
+    public String getChannel() {
+        return channel;
+    }
+
+    public void setChannel(String channel) {
+        this.channel = channel;
     }
 
     /*

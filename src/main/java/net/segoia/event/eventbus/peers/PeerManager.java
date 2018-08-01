@@ -333,6 +333,7 @@ public class PeerManager implements PeerEventListener {
 	EventHeader header = event.getHeader();
 	header.setSourceAgentId(peerContext.getPeerIdentityKey());
 	header.setRootAgentId(peerContext.getPeerRootIdentityKey());
+	header.setChannel(peerContext.getCommunicationChannel());
 	peerContext.getNodeContext().postEvent(event);
     }
 

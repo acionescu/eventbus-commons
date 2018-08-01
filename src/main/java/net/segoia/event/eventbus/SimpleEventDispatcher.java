@@ -55,6 +55,7 @@ public class SimpleEventDispatcher implements EventDispatcher {
 		try {
 		    ec.visitListener(el);
 		} catch (Throwable e) {
+		    e.printStackTrace();
 		    lastError = e;
 		    if (stopOnError) {
 			throw new RuntimeException("Dispatcher stopping due to errror ",e);

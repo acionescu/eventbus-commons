@@ -18,6 +18,7 @@ package net.segoia.event.eventbus.peers;
 
 import net.segoia.event.conditions.Condition;
 import net.segoia.event.eventbus.Event;
+import net.segoia.event.eventbus.FilteringEventBus;
 import net.segoia.event.eventbus.peers.vo.bind.ConnectToPeerRequest;
 import net.segoia.event.eventbus.peers.vo.bind.DisconnectFromPeerRequest;
 
@@ -61,5 +62,9 @@ public class LocalAgentEventNodeContext {
     
     public void disconnectFromPeer(DisconnectFromPeerRequest request) {
 	nodeContext.getNode().disconnectFromPeer(request);
+    }
+    
+    public FilteringEventBus getEventBusForCondition(Condition cond) {
+	return nodeContext.getNode().getEventBus(cond, true);
     }
 }

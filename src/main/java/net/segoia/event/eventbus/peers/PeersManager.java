@@ -135,10 +135,11 @@ public class PeersManager extends GlobalEventNodeAgent {
 	});
 
 	context.addEventHandler(PeerLeavingEvent.class, (c) -> {
-	    PeerInfo data = c.getEvent().getData().getPeerInfo();
+	    PeerLeavingEvent event = c.getEvent();
+	    PeerInfo data = event.getData().getPeerInfo();
 	    String peerId = data.getPeerId();
 	    removePeer(peerId);
-	    onPeerRemoved(data);
+	    onPeerRemoved(data,event.getHeader().getChannel());
 	});
 
 	context.addEventHandler(DisconnectFromPeerRequestEvent.class, (c) -> {
@@ -528,8 +529,10 @@ public class PeersManager extends GlobalEventNodeAgent {
      * 
      * @param peerNode
      */
-    protected void onPeerRemoved(PeerInfo peerInfo) {
-	context.postEvent(new PeerLeftEvent(peerInfo));
+    protected void onPeerRemoved(PeerInfo peerInfo, String channel) {
+	PeerLeftEvent event = new PeerLeftEvent(peerInfo);
+	event.getHeader().setChannel(channel);
+	context.postEvent(event);
     }
 
     protected void removePeer(String peerId) {

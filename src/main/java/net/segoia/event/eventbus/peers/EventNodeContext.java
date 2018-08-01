@@ -78,6 +78,7 @@ public class EventNodeContext {
 
     public void postEvent(Event event) {
 	node.postInternally(event);
+	node.postToExtraBusses(event);
     }
 
     public EventNodeServiceDefinition getService(EventNodeServiceRef serviceRef) {
