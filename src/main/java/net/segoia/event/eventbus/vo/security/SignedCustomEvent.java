@@ -14,20 +14,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.segoia.event.eventbus.peers.util;
+package net.segoia.event.eventbus.vo.security;
 
-import java.io.UnsupportedEncodingException;
+import net.segoia.event.eventbus.CustomEvent;
+import net.segoia.event.eventbus.EventType;
 
-import net.segoia.event.eventbus.peers.security.rules.StringMatcher;
+@EventType("PEER:EVENT:SIGNED_EVENT")
+public class SignedCustomEvent extends CustomEvent<SignedEventData> {
+    public static final String ET = "PEER:EVENT:SIGNED_EVENT";
 
-public interface StringHelper {
-    public StringMatcher buildStringMatcher(String pattern);
-    
-    public static String stringFromByteArray(byte[] data, String encoding) {
-	try {
-	    return new String(data,encoding);
-	} catch (UnsupportedEncodingException e) {
-	    throw new RuntimeException("Failed to convert byte data to string encoding "+encoding);
-	}
+    public SignedCustomEvent() {
+	super(ET);
     }
+
+    public SignedCustomEvent(SignedEventData data) {
+	super(ET, data);
+    }
+
+    @Override
+    public SignedEventData getData() {
+	// TODO Auto-generated method stub
+	return super.getData();
+    }
+
+    @Override
+    public void setData(SignedEventData data) {
+	// TODO Auto-generated method stub
+	super.setData(data);
+    }
+    
+    
+
 }

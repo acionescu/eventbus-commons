@@ -18,6 +18,7 @@ package net.segoia.event.eventbus.peers.manager.states.server;
 
 import java.util.ArrayList;
 
+import net.segoia.event.eventbus.EBusVM;
 import net.segoia.event.eventbus.Event;
 import net.segoia.event.eventbus.peers.PeerContext;
 import net.segoia.event.eventbus.peers.PeerEventContext;
@@ -30,10 +31,15 @@ import net.segoia.event.eventbus.peers.exceptions.PeerRequestRejectedException;
 import net.segoia.event.eventbus.peers.manager.states.PeerManagerState;
 import net.segoia.event.eventbus.peers.manager.states.PeerStateContext;
 import net.segoia.event.eventbus.peers.security.EventNodeSecurityManager;
+import net.segoia.event.eventbus.peers.util.StringHelper;
 import net.segoia.event.eventbus.peers.vo.auth.ServiceAccessIdIssuedData;
 import net.segoia.event.eventbus.peers.vo.auth.ServiceAccessIdRequest;
 import net.segoia.event.eventbus.peers.vo.auth.ServiceAccessIdRequestRejectedReason;
 import net.segoia.event.eventbus.peers.vo.auth.id.NodeIdentity;
+import net.segoia.event.eventbus.vo.security.DataAuthLevel;
+import net.segoia.event.eventbus.vo.security.SignatureInfo;
+import net.segoia.event.eventbus.vo.security.SignedCustomEvent;
+import net.segoia.event.eventbus.vo.security.SignedEventData;
 import net.segoia.event.eventbus.vo.services.NodeIdentityProfile;
 
 public class PeerAcceptedState extends PeerManagerState {
@@ -70,15 +76,57 @@ public class PeerAcceptedState extends PeerManagerState {
 		c.getEvent().setHandled();
 	    }
 	});
+	
+	EBusVM.getInstance().getLogger().info("registering signed event handler");
+	registerPeerEventProcessor(SignedCustomEvent.class, (c)->{
+	    c.getNodeContext().getLogger().info("handling signed event.");
+	    try {
+		handleSignedEvent(c);
+	    } 
+	    catch(Throwable t) {
+		c.getPeerManager().handleError("Failed handling signed event",t);
+	    }
+	    finally {
+		c.getEvent().setHandled();
+	    }
+	    
+	});
 
 	registerPeerEventProcessor((c) -> {
 	    Event event = c.getEvent();
 	    if (!event.isHandled()) {
-		c.getNodeContext().getLogger().info(event.getEt() + " not handled. Delegating further.");
+		c.getNodeContext().getLogger().info(event.getEt() + " not handled. Delegating further. "+event.getClass());
 		c.getPeerManager().postEvent(event);
 	    }
 	});
 
+    }
+    
+    protected void handleSignedEvent(PeerEventContext<SignedCustomEvent> c) {
+	SignedCustomEvent event = c.getEvent();
+	
+	SignedEventData signedEventData = event.getData();
+	
+	String encodedEventData = signedEventData.getEventData();
+	SignatureInfo signatureInfo = signedEventData.getSignatureInfo();
+	
+	PeerManager peerManager = c.getPeerManager();
+	PeerContext peerContext = peerManager.getPeerContext();
+	
+	EventNodeSecurityManager securityManager = peerContext.getNodeContext().getSecurityManager();
+	
+	byte[] eventData = securityManager.getCryptoHelper().base64Decode(encodedEventData);
+	
+	DataAuthLevel dataAuthLevel = securityManager.getDataAuthLevel(peerContext, signatureInfo, eventData);
+	
+	/* get the actual signed event */
+	Event nestedEvent = Event.fromJson(StringHelper.stringFromByteArray(eventData,"UTF-8"),event.getCauseEvent());
+	
+	nestedEvent.getHeader().setAuthLevel(dataAuthLevel);
+	
+	nestedEvent.getHeader().setFrom(event.from());
+	
+	c.getPeerManager().postEvent(nestedEvent);
     }
 
     protected void handleServiceAccessIdRequest(PeerEventContext<ServiceAccessIdRequestEvent> c) {

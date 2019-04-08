@@ -62,6 +62,9 @@ import net.segoia.event.eventbus.peers.vo.session.KeyDef;
 import net.segoia.event.eventbus.peers.vo.session.SessionInfo;
 import net.segoia.event.eventbus.peers.vo.session.SessionKey;
 import net.segoia.event.eventbus.peers.vo.session.SessionKeyData;
+import net.segoia.event.eventbus.vo.security.DataAuthLevel;
+import net.segoia.event.eventbus.vo.security.IdsLinkData;
+import net.segoia.event.eventbus.vo.security.SignatureInfo;
 import net.segoia.event.eventbus.vo.services.EventNodeServiceDefinition;
 import net.segoia.event.eventbus.vo.services.EventNodeServiceRef;
 import net.segoia.event.eventbus.vo.services.NodeIdentityProfile;
@@ -816,4 +819,76 @@ public abstract class EventNodeSecurityManager {
 	this.peerRuleEngine = peerRuleEngine;
     }
 
+    
+    /**
+     * This will return the auth level relative to the current peer identity
+     * @param pc
+     * @param sigInfo
+     * @param data
+     * @return
+     */
+    public DataAuthLevel getDataAuthLevel(PeerContext pc, SignatureInfo sigInfo, byte[] data) {
+	if(sigInfo == null || data == null) {
+	    return null;
+	}
+	
+	/* verify the signature */
+	
+	NodeIdentityProfile currentPeerIdentityProfile = pc.getCurrentPeerIdentityProfile();
+	
+	String rootIdentityKey = currentPeerIdentityProfile.getRootIdentityKey();
+	
+	
+	if(rootIdentityKey.equals(sigInfo.getIdKey())) {
+	    /* verify that this data is signed with root key */
+	    NodeIdentityProfile rootIdProfile = getIdentityProfile(rootIdentityKey);
+	    
+	    NodeIdentity<? extends IdentityType> rootIdentity = rootIdProfile.getIdentity();
+	    PublicIdentityManagerFactory publicIdentityManagerFactory = publicIdentityBuilders.get(rootIdentity.getClass());
+	    
+	    
+	    PublicIdentityManager rootPublicIdManager = publicIdentityManagerFactory.build(rootIdentity);
+	    
+	    if(rootPublicIdManager instanceof SpkiPublicIdentityManager) {
+		SpkiPublicIdentityManager spkiRootIdManager = (SpkiPublicIdentityManager)rootPublicIdManager;
+		
+		VerifySignatureOperationWorker sgnVerificationWorker=null;
+		try {
+		    sgnVerificationWorker = spkiRootIdManager.buildVerifySignatureWorker(sigInfo.getSignatureDef());
+		} catch (Exception e) {
+		    throw new RuntimeException("Failed to build signature verification worker for "+sigInfo,e);
+		}
+		
+		try {
+		    String encodedSignature = sigInfo.getSignature();
+		    boolean valid = sgnVerificationWorker.verify(data, cryptoHelper.base64Decode(encodedSignature));
+		    
+		    if(!valid) {
+			throw new RuntimeException("Invalid signature from "+pc.getPeerId() +" with id key "+rootIdentityKey);
+		    }
+		    
+		    return new DataAuthLevel(0,valid,rootIdProfile);
+		    
+		} catch (Exception e) {
+		    throw new RuntimeException("Failed to verify signature "+sigInfo,e);
+		}
+	    }
+	    
+	}
+	
+	return null;
+    }
+    
+    public void storeIdsLinkData(IdsLinkData data) {
+	IdentitiesManager identitiesManager = securityConfig.getIdentitiesManager();
+	
+	identitiesManager.storeIdsLinkData(data);
+    }
+    
+    public IdsLinkData getIdsLinkData(String idsLinkKey) {
+	IdentitiesManager identitiesManager = securityConfig.getIdentitiesManager();
+	
+	return identitiesManager.getIdsLinkData(idsLinkKey);
+    }
+    
 }

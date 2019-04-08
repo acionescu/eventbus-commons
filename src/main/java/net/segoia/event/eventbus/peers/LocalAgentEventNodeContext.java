@@ -21,6 +21,7 @@ import net.segoia.event.eventbus.Event;
 import net.segoia.event.eventbus.FilteringEventBus;
 import net.segoia.event.eventbus.peers.vo.bind.ConnectToPeerRequest;
 import net.segoia.event.eventbus.peers.vo.bind.DisconnectFromPeerRequest;
+import net.segoia.event.eventbus.vo.security.IdsLinkData;
 
 /**
  * A context for the event node agents that are only aware of the local context
@@ -66,5 +67,13 @@ public class LocalAgentEventNodeContext {
     
     public FilteringEventBus getEventBusForCondition(Condition cond) {
 	return nodeContext.getNode().getEventBus(cond, true);
+    }
+    
+    public void storeIdsLinkData(IdsLinkData data) {
+	nodeContext.getSecurityManager().storeIdsLinkData(data);
+    }
+    
+    public IdsLinkData getIdsLinkData(String idsLinkKey) {
+	return nodeContext.getSecurityManager().getIdsLinkData(idsLinkKey);
     }
 }

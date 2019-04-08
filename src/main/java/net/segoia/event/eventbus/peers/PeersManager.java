@@ -17,6 +17,8 @@
 package net.segoia.event.eventbus.peers;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -573,6 +575,23 @@ public class PeersManager extends GlobalEventNodeAgent {
     protected void agentInit() {
 	// TODO Auto-generated method stub
 
+    }
+    
+    public Map<String,String> getDirectPeersByRootKey(Collection<String> rootKeys){
+	Map<String,String> activePeers = new HashMap<>();
+	
+	for(PeerManager pm : peersRegistry.getDirectPeers().values()) {
+	    for(String rk : rootKeys) {
+		if(rk.equals(pm.getPeerContext().getPeerRootIdentityKey())) {
+		    activePeers.put(rk,pm.getPeerId());
+		    if(activePeers.size() == rootKeys.size()) {
+			return activePeers;
+		    }
+		}
+	    }
+	}
+	
+	return activePeers;
     }
 
 }

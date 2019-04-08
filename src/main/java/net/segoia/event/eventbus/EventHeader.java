@@ -23,6 +23,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import net.segoia.event.eventbus.vo.security.DataAuthLevel;
+
 /**
  * This defines the header of an {@link Event} </br>
  * Contains a map of parameters and a set of tags
@@ -88,6 +90,14 @@ public class EventHeader implements Cloneable {
      * The channel through which this event entered our system
      */
     private String channel;
+    
+    /**
+     * The authentication level for this event
+     * <br>
+     * This is transient so that auth levels can't be injected from peers
+     * 
+     */
+    private transient DataAuthLevel authLevel;
 
     public EventHeader() {
 	params = new HashMap<>();
@@ -369,6 +379,14 @@ public class EventHeader implements Cloneable {
 
     public void setChannel(String channel) {
         this.channel = channel;
+    }
+
+    public DataAuthLevel getAuthLevel() {
+        return authLevel;
+    }
+
+    public void setAuthLevel(DataAuthLevel authLevel) {
+        this.authLevel = authLevel;
     }
 
     /*

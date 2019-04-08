@@ -16,7 +16,9 @@
  */
 package net.segoia.event.eventbus.peers;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import net.segoia.event.eventbus.Event;
 
@@ -49,5 +51,7 @@ public class GlobalAgentEventNodeContext extends LocalAgentEventNodeContext{
 	peersManager.forwardToAllKnown(event);
     }
     
-   
+    public Map<String,String> getDirectPeersByRootKey(Collection<String> rootKeys){
+	return peersManager.getDirectPeersByRootKey(rootKeys);
+    }
 }

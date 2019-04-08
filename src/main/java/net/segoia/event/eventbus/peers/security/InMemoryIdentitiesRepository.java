@@ -22,6 +22,7 @@ import java.util.Map;
 import net.segoia.event.eventbus.peers.core.IdentitiesRepository;
 import net.segoia.event.eventbus.peers.vo.auth.id.NodeIdentity;
 import net.segoia.event.eventbus.peers.vo.auth.id.SpkiNodeIdentity;
+import net.segoia.event.eventbus.vo.security.IdsLinkData;
 import net.segoia.event.eventbus.vo.services.NodeIdentityProfile;
 
 public class InMemoryIdentitiesRepository implements IdentitiesRepository {
@@ -60,6 +61,17 @@ public class InMemoryIdentitiesRepository implements IdentitiesRepository {
     @Override
     public NodeIdentityProfile getIdentityProfile(String identityKey) {
 	return identityProfiles.get(identityKey);
+    }
+
+    @Override
+    public void storeIdsLinkData(IdsLinkData data) {
+	throw new RuntimeException("Store ids link not supported");
+	
+    }
+
+    @Override
+    public IdsLinkData getIdsLinkData(String idsLinkKey) {
+	throw new RuntimeException("Get ids link data not supported");
     }
 
 //    @Override

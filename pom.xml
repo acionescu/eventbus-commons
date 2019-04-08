@@ -3,7 +3,7 @@
    <modelVersion>4.0.0</modelVersion>
    <groupId>net.segoia</groupId>
    <artifactId>eventbus-commons</artifactId>
-   <version>0.0.1-SNAPSHOT</version>
+   <version>0.0.2-SNAPSHOT</version>
    <packaging>jar</packaging>
    <name>eventbus-commons</name>
    <description>Core classes for net.segoia.event-bus framework</description>
