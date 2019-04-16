@@ -7,7 +7,7 @@ public class IdsLinkData {
     private String idsLinkKey;
     
     /**
-     * A map of link data for each peer, indexed by peer id key
+     * A map of link data for each node, indexed by node id key
      */
     private Map<String, NodeIdLinkData> nodesData=new HashMap<>();
     

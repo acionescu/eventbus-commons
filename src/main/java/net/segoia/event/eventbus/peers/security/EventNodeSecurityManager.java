@@ -564,7 +564,62 @@ public abstract class EventNodeSecurityManager {
 	return -1;
     }
 
-    public abstract SessionKey generateNewSessionKey(PeerContext peerContext) throws PeerSessionException;
+    public SessionKey generateNewSessionKey(PeerContext peerContext) throws PeerSessionException {
+	// String channel = peerContext.getCommunicationChannel();
+	// PeerChannelSecurityPolicy localChannelPolicy = securityConfig.getSecurityPolicy().getChannelPolicy(channel);
+	// ChannelSessionPolicy sessionPolicy = localChannelPolicy.getCommunicationPolicy().getSessionPolicy();
+
+	SharedIdentityType settledSharedIdentityType = (SharedIdentityType) peerContext.getPeerCommContext()
+		.getTxStrategy().getSharedIdentityType();
+
+	/*
+	 * Get session key definition
+	 */
+	// KeyDef sessionKeyDef = sessionPolicy.getSessionKeyDef();
+	KeyDef sessionKeyDef = settledSharedIdentityType.getKeyDef();
+
+	int maxSupportedKeySize = sessionKeyDef.getKeySize();
+
+	PublicIdentityManager peerIdentityManager = peerContext.getPeerIdentityManager();
+	if (peerIdentityManager != null) {
+	    maxSupportedKeySize = peerIdentityManager.getMaxSupportedEncryptedDataBlockSize();
+	}
+
+	try {
+//	    SecretKey secretKey = CryptoUtil.generateSecretkey(sessionKeyDef.getAlgorithm(), maxSupportedKeySize);
+//	    byte[] secretKeyBytes = secretKey.getEncoded();
+	    
+	    byte[] secretKeyBytes = getCryptoHelper().generateSecretKey(sessionKeyDef.getAlgorithm(), maxSupportedKeySize);
+	    
+	    KeyDef newSessionKeyDef = new KeyDef(sessionKeyDef.getAlgorithm(), maxSupportedKeySize);
+	    
+	    SessionKey sessionKey = new SessionKey(peerContext.getNodeContext().generateSessionId(), secretKeyBytes,
+		    newSessionKeyDef);
+
+	    /* generate an initialization vector */
+//	    SecureRandom sr = new SecureRandom();
+//	    byte[] iv = new byte[maxSupportedKeySize / 8];
+//	    sr.nextBytes(iv);
+	    
+	    byte[] iv = getCryptoHelper().generateIv(maxSupportedKeySize / 8);
+	    sessionKey.setIv(iv);
+
+	    /* build a session manager and set it on context */
+	    SharedIdentityType sharedIdentityType = new SharedIdentityType(newSessionKeyDef);
+	    SessionManager sessionManager = sessionManagerBuilders.get(sharedIdentityType)
+		    .build(new SharedNodeIdentity(sharedIdentityType, secretKeyBytes, iv));
+
+	    peerContext.setSessionManager(sessionManager);
+	    peerContext.setSessionKey(sessionKey);
+	    return sessionKey;
+
+	} catch (Exception e) {
+	    throw new PeerSessionException("Failed to generate session key with algorithm "
+		    + sessionKeyDef.getAlgorithm() + " and size " + maxSupportedKeySize, e);
+	}
+
+    }
+
 
     public void buildSessionFromSessionInfo(PeerContext peerContext, SessionInfo sessionInfo)
 	    throws CommOperationException {

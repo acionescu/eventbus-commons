@@ -3,6 +3,7 @@ package net.segoia.event.eventbus.trust.comm;
 public class TrustedCommSessionAcceptedData {
     private String sessionId;
     private String linkId;
+     
 
     public TrustedCommSessionAcceptedData() {
 	super();
@@ -34,5 +35,7 @@ public class TrustedCommSessionAcceptedData {
     public void setLinkId(String linkId) {
 	this.linkId = linkId;
     }
+    
+    
 
 }

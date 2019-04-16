@@ -49,7 +49,7 @@ public class EventHeader implements Cloneable {
     /**
      * Holds the ids of the events that were triggered by this event
      */
-    private transient Set<String> spawnedEventsIds = new LinkedHashSet<>();
+    private transient Set<String> spawnedEventsIds;
 
     /**
      * The id of the entity that generated this event ( the first relay )
@@ -85,48 +85,57 @@ public class EventHeader implements Cloneable {
      * The main identity of the source agent
      */
     private String rootAgentId;
-    
+
     /**
      * The channel through which this event entered our system
      */
     private String channel;
-    
+
     /**
-     * The authentication level for this event
-     * <br>
+     * The authentication level for this event <br>
      * This is transient so that auth levels can't be injected from peers
      * 
      */
     private transient DataAuthLevel authLevel;
+
+    /**
+     * The id of a specific communication session
+     */
+    private String commSessionId;
+
+    /**
+     * The custom id of the original source of this event
+     */
+    private String originId;
 
     public EventHeader() {
 	params = new HashMap<>();
 	tags = new ArrayList<>();
     }
 
-//    /*
-//     * (non-Javadoc)
-//     * 
-//     * @see java.lang.Object#clone()
-//     */
-//    protected EventHeader clone() {
-//
-//	try {
-//	    EventHeader c = (EventHeader) super.clone();
-//
-//	    /* do a shallow copy for these */
-//	    c.params = new HashMap<>(params);
-//	    c.tags = new ArrayList<String>(tags);
-//	    c.relayedBy = new ArrayList<String>(relayedBy);
-//	    c.spawnedEventsIds = new LinkedHashSet<>(spawnedEventsIds);
-//
-//	    return c;
-//	} catch (CloneNotSupportedException e) {
-//	    e.printStackTrace();
-//	    return null;
-//	}
-//
-//    }
+    // /*
+    // * (non-Javadoc)
+    // *
+    // * @see java.lang.Object#clone()
+    // */
+    // protected EventHeader clone() {
+    //
+    // try {
+    // EventHeader c = (EventHeader) super.clone();
+    //
+    // /* do a shallow copy for these */
+    // c.params = new HashMap<>(params);
+    // c.tags = new ArrayList<String>(tags);
+    // c.relayedBy = new ArrayList<String>(relayedBy);
+    // c.spawnedEventsIds = new LinkedHashSet<>(spawnedEventsIds);
+    //
+    // return c;
+    // } catch (CloneNotSupportedException e) {
+    // e.printStackTrace();
+    // return null;
+    // }
+    //
+    // }
 
     public EventHeader addParam(String key, Object value) {
 	params.put(key, value);
@@ -189,6 +198,9 @@ public class EventHeader implements Cloneable {
     }
 
     public void addSpawnedEventId(String id) {
+	if(spawnedEventsIds == null) {
+	    spawnedEventsIds = new LinkedHashSet<>();
+	}
 	spawnedEventsIds.add(id);
     }
 
@@ -196,6 +208,7 @@ public class EventHeader implements Cloneable {
      * @return the spawnedEventsIds
      */
     public Set<String> getSpawnedEventsIds() {
+	
 	return spawnedEventsIds;
     }
 
@@ -326,7 +339,9 @@ public class EventHeader implements Cloneable {
      */
     public void setCauseEvent(Event causeEvent) {
 	this.causeEvent = causeEvent;
-	setCauseEventId(causeEvent.getId());
+        if(causeEvent != null){
+            setCauseEventId(causeEvent.getId());
+        }
     }
 
     public String getFrom() {
@@ -374,19 +389,35 @@ public class EventHeader implements Cloneable {
     }
 
     public String getChannel() {
-        return channel;
+	return channel;
     }
 
     public void setChannel(String channel) {
-        this.channel = channel;
+	this.channel = channel;
     }
 
     public DataAuthLevel getAuthLevel() {
-        return authLevel;
+	return authLevel;
     }
 
     public void setAuthLevel(DataAuthLevel authLevel) {
-        this.authLevel = authLevel;
+	this.authLevel = authLevel;
+    }
+
+    public String getCommSessionId() {
+	return commSessionId;
+    }
+
+    public void setCommSessionId(String commSessionId) {
+	this.commSessionId = commSessionId;
+    }
+
+    public String getOriginId() {
+	return originId;
+    }
+
+    public void setOriginId(String originId) {
+	this.originId = originId;
     }
 
     /*

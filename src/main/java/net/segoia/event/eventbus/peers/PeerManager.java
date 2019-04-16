@@ -163,6 +163,12 @@ public class PeerManager implements PeerEventListener {
     protected void setAcceptedState(PeerManagerState acceptedState) {
 	this.acceptedState = acceptedState;
     }
+    
+    
+
+    public PeerManagerState getAcceptedState() {
+        return acceptedState;
+    }
 
     public void terminate() {
 	peerContext.getRelay().terminate();
@@ -235,7 +241,7 @@ public class PeerManager implements PeerEventListener {
 
     }
 
-    public void startNewPeerSession() {
+    protected SessionInfo generateSessionInfo() {
 	SessionKey sessionKey = peerContext.getSessionKey();
 
 	PeerCommManager peerCommManager = peerContext.getPeerCommManager();
@@ -269,10 +275,20 @@ public class PeerManager implements PeerEventListener {
 
 	} catch (CommOperationException e) {
 	    handleError(e);
-	    return;
 	}
 
-	/* now we can send the session start event */
+	return sessionInfo;
+    }
+
+    public void startNewPeerSession() {
+	SessionInfo sessionInfo = generateSessionInfo();
+	if (sessionInfo != null) {
+	    /* now we can send the session start event */
+	    sendNewSessionInfoToPeer(sessionInfo);
+	}
+    }
+    
+    protected void sendNewSessionInfoToPeer(SessionInfo sessionInfo) {
 	forwardToPeer(new PeerSessionStartedEvent(new SessionStartedData(sessionInfo)));
     }
 

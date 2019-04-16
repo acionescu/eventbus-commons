@@ -27,4 +27,8 @@ public interface CryptoHelper {
     String base64Encode(byte[] input);
     
     String sha256(String input);
+    
+    byte[] generateSecretKey(String algorithm, int keySize);
+    
+    byte[] generateIv(int size);
 }

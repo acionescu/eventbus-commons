@@ -69,6 +69,10 @@ public class LocalAgentEventNodeContext {
 	return nodeContext.getNode().getEventBus(cond, true);
     }
     
+    public EventNodeContext getNodeContext() {
+        return nodeContext;
+    }
+
     public void storeIdsLinkData(IdsLinkData data) {
 	nodeContext.getSecurityManager().storeIdsLinkData(data);
     }

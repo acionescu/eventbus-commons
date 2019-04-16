@@ -1,6 +1,7 @@
 package net.segoia.event.eventbus.vo.security;
 
 public class EncryptedEventData {
+    
     /**
      * base 64 encoded and encrypted data
      */

@@ -16,7 +16,6 @@
  */
 package net.segoia.event.eventbus.vo.security;
 
-import net.segoia.event.eventbus.peers.vo.auth.id.NodeIdentity;
 import net.segoia.event.eventbus.vo.services.NodeIdentityProfile;
 
 public class DataAuthLevel {
