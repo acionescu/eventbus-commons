@@ -2,7 +2,7 @@ package net.segoia.event.eventbus.trust.comm;
 
 public class InitTrustedCommSessionData {
     private String linkId;
-
+    
     /**
      * To be filled by the proxy node
      */
@@ -12,6 +12,11 @@ public class InitTrustedCommSessionData {
      * The id of the service that will used this trusted session
      */
     private String serviceId;
+    
+    /**
+     * The id of the key to be used for encryption
+     */
+    private String sessionKeyId;
 
     public InitTrustedCommSessionData() {
 	super();
@@ -27,6 +32,14 @@ public class InitTrustedCommSessionData {
 	this.linkId = linkId;
 	this.serviceId = serviceId;
     }
+
+    public InitTrustedCommSessionData(String linkId, String serviceId, String sessionKeyId) {
+        this.linkId = linkId;
+        this.serviceId = serviceId;
+        this.sessionKeyId = sessionKeyId;
+    }
+    
+    
 
     public String getLinkId() {
 	return linkId;
@@ -50,6 +63,14 @@ public class InitTrustedCommSessionData {
 
     public void setServiceId(String serviceId) {
         this.serviceId = serviceId;
+    }
+
+    public String getSessionKeyId() {
+        return sessionKeyId;
+    }
+
+    public void setSessionKeyId(String sessionKeyId) {
+        this.sessionKeyId = sessionKeyId;
     }
     
     

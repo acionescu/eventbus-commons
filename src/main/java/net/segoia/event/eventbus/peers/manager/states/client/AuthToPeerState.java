@@ -96,6 +96,7 @@ public class AuthToPeerState extends PeerManagerState{
 	    
 	    /* after we send protocol confirmation event start using it */
 //	    peerManager.onProtocolConfirmed();
+            peerManager.setUpPeerCommContext();
 	    peerManager.setUpSessionCommManager();
 	}
 	else {

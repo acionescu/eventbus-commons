@@ -29,6 +29,15 @@ public class SessionKey {
 	this.keyDef = keyDef;
     }
 
+    public SessionKey(String sessionId, byte[] keyBytes, KeyDef keyDef, byte[] iv) {
+        this.sessionId = sessionId;
+        this.keyBytes = keyBytes;
+        this.keyDef = keyDef;
+        this.iv = iv;
+    }
+    
+    
+
     public byte[] getKeyBytes() {
 	return keyBytes;
     }

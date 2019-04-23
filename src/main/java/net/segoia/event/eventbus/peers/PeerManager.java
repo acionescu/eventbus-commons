@@ -182,14 +182,13 @@ public class PeerManager implements PeerEventListener {
 	PeerCommContext peerCommContext = buildPeerCommContext();
 	peerContext.setPeerCommContext(peerCommContext);
 	getNodeContext().getSecurityManager().onPeerNodeAuth(peerContext);
+        
+	PeerCommManager peerCommManager = new PeerCommManager();
+	peerContext.setPeerCommManager(peerCommManager);
     }
 
     public void setUpSessionCommManager() {
-	setUpPeerCommContext();
-
-	PeerCommManager peerCommManager = new PeerCommManager();
-
-	peerContext.setPeerCommManager(peerCommManager);
+//	setUpPeerCommContext();
 
 	/* get the session communication manager */
 	EventNodeSecurityManager securityManager = getNodeContext().getSecurityManager();
@@ -199,19 +198,19 @@ public class PeerManager implements PeerEventListener {
 	 */
 	CommManager sessionCommManager = securityManager.getSessionCommManager(peerContext.getPeerCommContext());
 
-	peerCommManager.setSessionCommManager(sessionCommManager);
+	peerContext.getPeerCommManager().setSessionCommManager(sessionCommManager);
     }
 
-    public void generateNewSession() {
+    public void generateNewSession() throws PeerSessionException {
 	EventNodeSecurityManager securityManager = getNodeContext().getSecurityManager();
 
-	try {
+//	try {
 	    securityManager.generateNewSessionKey(peerContext);
 
-	} catch (PeerSessionException e) {
-	    handleError(e);
-
-	}
+//	} catch (PeerSessionException e) {
+//	    handleError(e);
+//
+//	}
     }
 
     public void setUpDirectCommManager() {
@@ -228,7 +227,8 @@ public class PeerManager implements PeerEventListener {
     /**
      * This is called only when the node is operating in server mode
      */
-    public void onProtocolConfirmed() {
+    public void onProtocolConfirmed() throws PeerSessionException, CommOperationException {
+        setUpPeerCommContext();
 	setUpSessionCommManager();
 	generateNewSession();
 	setUpDirectCommManager();
@@ -241,14 +241,14 @@ public class PeerManager implements PeerEventListener {
 
     }
 
-    protected SessionInfo generateSessionInfo() {
+    protected SessionInfo generateSessionInfo() throws CommOperationException {
 	SessionKey sessionKey = peerContext.getSessionKey();
 
 	PeerCommManager peerCommManager = peerContext.getPeerCommManager();
 
 	SessionInfo sessionInfo = null;
 
-	try {
+//	try {
 	    // SessionKeyOutgoingAccumulator opAcc = new SessionKeyOutgoingAccumulator(
 	    // new OperationData(sessionKey.getKeyBytes()));
 
@@ -273,14 +273,14 @@ public class PeerManager implements PeerEventListener {
 
 	    sessionInfo = new SessionInfo(sessionKey.getSessionId(), sessionKeyData);
 
-	} catch (CommOperationException e) {
-	    handleError(e);
-	}
+//	} catch (CommOperationException e) {
+//	    handleError(e);
+//	}
 
 	return sessionInfo;
     }
 
-    public void startNewPeerSession() {
+    public void startNewPeerSession() throws CommOperationException {
 	SessionInfo sessionInfo = generateSessionInfo();
 	if (sessionInfo != null) {
 	    /* now we can send the session start event */

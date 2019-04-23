@@ -18,8 +18,12 @@ package net.segoia.event.eventbus.peers.manager.states.server;
 
 import net.segoia.event.eventbus.peers.PeerEventContext;
 import net.segoia.event.eventbus.peers.PeerManager;
+import net.segoia.event.eventbus.peers.core.PeerCommErrorEvent;
 import net.segoia.event.eventbus.peers.events.auth.PeerProtocolConfirmedEvent;
+import net.segoia.event.eventbus.peers.exceptions.PeerSessionException;
 import net.segoia.event.eventbus.peers.manager.states.PeerManagerState;
+import net.segoia.event.eventbus.peers.security.CommOperationException;
+import net.segoia.event.eventbus.peers.vo.PeerErrorData;
 import net.segoia.event.eventbus.peers.vo.auth.ProtocolConfirmation;
 import net.segoia.event.eventbus.peers.vo.comm.CommunicationProtocol;
 
@@ -63,12 +67,20 @@ public class PeerAuthAcceptedState extends PeerManagerState {
 
 	if (ourProtocol.equals(peerProtocol)) {
 	    /* if they match, initiate the session */
-
-	   
-	  
-	    
-	    /* start using the protocol before sending the session started event */
-	    peerManager.onProtocolConfirmed();
+            try {
+                /* start using the protocol before sending the session started event */
+                peerManager.onProtocolConfirmed();
+            } catch (PeerSessionException ex) {
+                peerManager.postEvent(new PeerCommErrorEvent(new PeerErrorData(-1, ex.getMessage())));
+                return;
+            } catch (CommOperationException ex) {
+               peerManager.postEvent(new PeerCommErrorEvent(new PeerErrorData(0, ex.getMessage())));
+                return;
+            }
+            catch(Throwable t){
+                peerManager.postEvent(new PeerCommErrorEvent(new PeerErrorData(0, t.getMessage())));
+                return;
+            }
 	    
 	    peerManager.onReady();
 	    

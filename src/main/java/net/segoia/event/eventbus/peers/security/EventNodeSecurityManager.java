@@ -62,7 +62,9 @@ import net.segoia.event.eventbus.peers.vo.session.KeyDef;
 import net.segoia.event.eventbus.peers.vo.session.SessionInfo;
 import net.segoia.event.eventbus.peers.vo.session.SessionKey;
 import net.segoia.event.eventbus.peers.vo.session.SessionKeyData;
+import net.segoia.event.eventbus.peers.vo.session.SessionKeyPlainData;
 import net.segoia.event.eventbus.vo.security.DataAuthLevel;
+import net.segoia.event.eventbus.vo.security.IdentityLinkFullData;
 import net.segoia.event.eventbus.vo.security.IdsLinkData;
 import net.segoia.event.eventbus.vo.security.SignatureInfo;
 import net.segoia.event.eventbus.vo.services.EventNodeServiceDefinition;
@@ -352,8 +354,17 @@ public abstract class EventNodeSecurityManager {
 
     public CommManager getDirectCommManager(PeerCommContext context) {
 	PeerContext peerContext = context.getPeerContext();
-	CommManagerKey commManagerKey = new CommManagerKey(peerContext.getOurIdentityManager().getType(),
-		peerContext.getPeerIdentityManager().getType(), peerContext.getSessionManager().getIdentityType(),
+	
+	
+//	PrivateIdentityManager ourIdentityManager = peerContext.getOurIdentityManager();
+//	PublicIdentityManager peerIdentityManager = peerContext.getPeerIdentityManager();
+	
+	PrivateIdentityManager ourIdentityManager = getOurIdentity(context);
+	PublicIdentityManager peerIdentityManager = getPeerIdentity(context);
+	
+	
+	CommManagerKey commManagerKey = new CommManagerKey(ourIdentityManager.getType(),
+		peerIdentityManager.getType(), peerContext.getSessionManager().getIdentityType(),
 		PeerCommManager.DIRECT_COMM);
 
 	CommManagerBuilder commManagerBuilder = commManagerBuilders.get(commManagerKey);
@@ -643,12 +654,30 @@ public abstract class EventNodeSecurityManager {
 
 	/* build a session manager and set it on context */
 	SharedIdentityType sharedIdentityType = new SharedIdentityType(keyDef);
+        final byte[] keyBytes = processedSessionData.getData();
 	SessionManager sessionManager = sessionManagerBuilders.get(sharedIdentityType)
-		.build(new SharedNodeIdentity(sharedIdentityType, processedSessionData.getData(), ivBytes));
+		.build(new SharedNodeIdentity(sharedIdentityType, keyBytes, ivBytes));
 
 	peerContext.setSessionManager(sessionManager);
 
-	SessionKey sessionKey = new SessionKey(sessionInfo.getSessionId(), sessionTokenBytes, keyDef);
+	SessionKey sessionKey = new SessionKey(sessionInfo.getSessionId(), keyBytes, keyDef,ivBytes);
+	peerContext.setSessionKey(sessionKey);
+    }
+    
+    public void buildSessionFromPlainData(PeerContext peerContext, SessionKeyPlainData sessionData) throws CommOperationException{
+        byte[] keyBytes = cryptoHelper.base64Decode(sessionData.getKeyData());
+        byte[] ivBytes = cryptoHelper.base64Decode(sessionData.getIvData());
+        KeyDef keyDef = sessionData.getKeyDef();
+        
+        
+        /* build a session manager and set it on context */
+	SharedIdentityType sharedIdentityType = new SharedIdentityType(keyDef);
+	SessionManager sessionManager = sessionManagerBuilders.get(sharedIdentityType)
+		.build(new SharedNodeIdentity(sharedIdentityType, keyBytes, ivBytes));
+
+	peerContext.setSessionManager(sessionManager);
+
+	SessionKey sessionKey = new SessionKey(sessionData.getSessionId(), keyBytes, keyDef,ivBytes);
 	peerContext.setSessionKey(sessionKey);
     }
 
@@ -946,4 +975,21 @@ public abstract class EventNodeSecurityManager {
 	return identitiesManager.getIdsLinkData(idsLinkKey);
     }
     
+    
+    public void storeIdentityLinkFullData(IdentityLinkFullData data) {
+	IdentitiesManager identitiesManager = securityConfig.getIdentitiesManager();
+	
+	identitiesManager.storeIdentityLinkFullData(data);
+    }
+    
+    public IdentityLinkFullData getIdentityLinkFullData(String idsLinkKey) {
+	IdentitiesManager identitiesManager = securityConfig.getIdentitiesManager();
+	return identitiesManager.getIdentityLinkFullData(idsLinkKey);
+    }
+
+    public boolean removeIdentityLinkFullData(String identityKey) {
+	IdentitiesManager identitiesManager = securityConfig.getIdentitiesManager();
+	
+	return identitiesManager.removeIdentityLinkFullData(identityKey);
+    }
 }

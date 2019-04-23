@@ -18,6 +18,7 @@ package net.segoia.event.eventbus.peers.core;
 
 import net.segoia.event.eventbus.peers.vo.auth.id.NodeIdentity;
 import net.segoia.event.eventbus.peers.vo.security.IssueIdentityRequest;
+import net.segoia.event.eventbus.vo.security.IdentityLinkFullData;
 import net.segoia.event.eventbus.vo.security.IdsLinkData;
 import net.segoia.event.eventbus.vo.services.NodeIdentityProfile;
 
@@ -28,4 +29,10 @@ public interface IdentitiesManager {
     
     void storeIdsLinkData(IdsLinkData data);
     IdsLinkData getIdsLinkData(String idsLinkKey);
+    
+    void storeIdentityLinkFullData(IdentityLinkFullData data);
+    
+    IdentityLinkFullData getIdentityLinkFullData(String idsLinkKey);
+
+    boolean removeIdentityLinkFullData(String identityKey);
 }
