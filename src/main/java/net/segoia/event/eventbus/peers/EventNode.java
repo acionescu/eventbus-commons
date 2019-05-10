@@ -537,5 +537,12 @@ public abstract class EventNode {
     public void stop() {
 	internalBus.stop();
     }
+    
+    /**
+     * Schedules the triggering of the given event after a certain delay 
+     * @param event
+     * @param delay - delay in milliseconds
+     */
+    public abstract void scheduleEvent(Event event,long delay);
 
 }

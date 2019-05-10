@@ -29,6 +29,7 @@ public interface IdentitiesManager {
     
     void storeIdsLinkData(IdsLinkData data);
     IdsLinkData getIdsLinkData(String idsLinkKey);
+    void removeIdsLinkData(String idsLinkKey);
     
     void storeIdentityLinkFullData(IdentityLinkFullData data);
     

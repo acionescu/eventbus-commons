@@ -74,6 +74,11 @@ public class InMemoryIdentitiesRepository implements IdentitiesRepository {
 	throw new RuntimeException("Get ids link data not supported");
     }
 
+    @Override
+    public void removeIdsLinkData(String idsLinkKey) {
+	throw new RuntimeException("Remove ids link data not supported");
+    }
+
 //    @Override
 //    public boolean verify(NodeIdentity<?> identity) {
 //	IssuedIdentityManager im = identityManagers.get(identity.getClass());

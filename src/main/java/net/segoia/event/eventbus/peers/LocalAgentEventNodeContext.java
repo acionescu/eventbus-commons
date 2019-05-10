@@ -19,6 +19,7 @@ package net.segoia.event.eventbus.peers;
 import net.segoia.event.conditions.Condition;
 import net.segoia.event.eventbus.Event;
 import net.segoia.event.eventbus.FilteringEventBus;
+import net.segoia.event.eventbus.peers.util.EventNodeLogger;
 import net.segoia.event.eventbus.peers.vo.bind.ConnectToPeerRequest;
 import net.segoia.event.eventbus.peers.vo.bind.DisconnectFromPeerRequest;
 import net.segoia.event.eventbus.vo.security.IdsLinkData;
@@ -72,6 +73,10 @@ public class LocalAgentEventNodeContext {
     public EventNodeContext getNodeContext() {
         return nodeContext;
     }
+    
+    public EventNodeLogger getLogger() {
+	return nodeContext.getLogger();
+    }
 
     public void storeIdsLinkData(IdsLinkData data) {
 	nodeContext.getSecurityManager().storeIdsLinkData(data);
@@ -79,5 +84,13 @@ public class LocalAgentEventNodeContext {
     
     public IdsLinkData getIdsLinkData(String idsLinkKey) {
 	return nodeContext.getSecurityManager().getIdsLinkData(idsLinkKey);
+    }
+    
+    public void removeIdsLinkData(String idsLinkKey) {
+	nodeContext.getSecurityManager().removeIdsLinkData(idsLinkKey);
+    }
+    
+    public void scheduleEvent(final Event event, long delay) {
+	nodeContext.getNode().scheduleEvent(event, delay);
     }
 }

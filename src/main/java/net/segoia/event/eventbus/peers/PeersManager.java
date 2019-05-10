@@ -27,6 +27,7 @@ import java.util.Set;
 import net.segoia.event.eventbus.CustomEventContext;
 import net.segoia.event.eventbus.Event;
 import net.segoia.event.eventbus.EventContext;
+import net.segoia.event.eventbus.EventHeader;
 import net.segoia.event.eventbus.PeerBindRequest;
 import net.segoia.event.eventbus.constants.Events;
 import net.segoia.event.eventbus.peers.core.EventTransceiver;
@@ -141,7 +142,7 @@ public class PeersManager extends GlobalEventNodeAgent {
 	    PeerInfo data = event.getData().getPeerInfo();
 	    String peerId = data.getPeerId();
 	    removePeer(peerId);
-	    onPeerRemoved(data,event.getHeader().getChannel());
+	    onPeerRemoved(data,event);
 	});
 
 	context.addEventHandler(DisconnectFromPeerRequestEvent.class, (c) -> {
@@ -531,9 +532,14 @@ public class PeersManager extends GlobalEventNodeAgent {
      * 
      * @param peerNode
      */
-    protected void onPeerRemoved(PeerInfo peerInfo, String channel) {
+    protected void onPeerRemoved(PeerInfo peerInfo, Event reasonEvent) {
+	EventHeader reasonHeader = reasonEvent.getHeader();
 	PeerLeftEvent event = new PeerLeftEvent(peerInfo);
-	event.getHeader().setChannel(channel);
+	EventHeader header = event.getHeader();
+	
+	header.setChannel(reasonHeader.getChannel());
+	header.setSourceAgentId(reasonHeader.getSourceAgentId());
+	header.setRootAgentId(reasonHeader.getRootAgentId());
 	context.postEvent(event);
     }
 

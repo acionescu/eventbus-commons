@@ -21,8 +21,12 @@ import net.segoia.event.eventbus.vo.services.NodeIdentityProfile;
 
 public interface IdentitiesRepository {
     void storeIdentityProfile(NodeIdentityProfile identityProfile);
+
     NodeIdentityProfile getIdentityProfile(String identityKey);
-    
+
     void storeIdsLinkData(IdsLinkData data);
+
     IdsLinkData getIdsLinkData(String idsLinkKey);
+
+    void removeIdsLinkData(String idsLinkKey);
 }

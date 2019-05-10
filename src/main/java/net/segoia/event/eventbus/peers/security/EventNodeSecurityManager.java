@@ -975,6 +975,12 @@ public abstract class EventNodeSecurityManager {
 	return identitiesManager.getIdsLinkData(idsLinkKey);
     }
     
+    public void removeIdsLinkData(String idsLinkKey) {
+	IdentitiesManager identitiesManager = securityConfig.getIdentitiesManager();
+	
+	identitiesManager.removeIdsLinkData(idsLinkKey);
+    }
+    
     
     public void storeIdentityLinkFullData(IdentityLinkFullData data) {
 	IdentitiesManager identitiesManager = securityConfig.getIdentitiesManager();
