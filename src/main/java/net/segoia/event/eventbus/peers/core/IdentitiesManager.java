@@ -16,10 +16,13 @@
  */
 package net.segoia.event.eventbus.peers.core;
 
+import java.util.Map;
+
 import net.segoia.event.eventbus.peers.vo.auth.id.NodeIdentity;
 import net.segoia.event.eventbus.peers.vo.security.IssueIdentityRequest;
 import net.segoia.event.eventbus.vo.security.IdentityLinkFullData;
 import net.segoia.event.eventbus.vo.security.IdsLinkData;
+import net.segoia.event.eventbus.vo.security.NodeIdLinkData;
 import net.segoia.event.eventbus.vo.services.NodeIdentityProfile;
 
 public interface IdentitiesManager {
@@ -36,4 +39,6 @@ public interface IdentitiesManager {
     IdentityLinkFullData getIdentityLinkFullData(String idsLinkKey);
 
     boolean removeIdentityLinkFullData(String identityKey);
+    
+    Map<String, NodeIdLinkData> getAllLinksForIdKey(String idKey);
 }

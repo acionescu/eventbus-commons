@@ -74,17 +74,17 @@ public class EventHeader implements Cloneable {
     /**
      * Use this to mark the event as handled
      */
-    private boolean handled;
+    private transient boolean handled;
 
     /**
      * Unique key to identify the event's source agent
      */
-    private String sourceAgentId;
+    private transient String sourceAgentId;
 
     /**
      * The main identity of the source agent
      */
-    private String rootAgentId;
+    private transient String rootAgentId;
 
     /**
      * The channel through which this event entered our system

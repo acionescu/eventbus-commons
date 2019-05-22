@@ -23,6 +23,7 @@ import net.segoia.event.eventbus.peers.core.IdentitiesRepository;
 import net.segoia.event.eventbus.peers.vo.auth.id.NodeIdentity;
 import net.segoia.event.eventbus.peers.vo.auth.id.SpkiNodeIdentity;
 import net.segoia.event.eventbus.vo.security.IdsLinkData;
+import net.segoia.event.eventbus.vo.security.NodeIdLinkData;
 import net.segoia.event.eventbus.vo.services.NodeIdentityProfile;
 
 public class InMemoryIdentitiesRepository implements IdentitiesRepository {
@@ -77,6 +78,11 @@ public class InMemoryIdentitiesRepository implements IdentitiesRepository {
     @Override
     public void removeIdsLinkData(String idsLinkKey) {
 	throw new RuntimeException("Remove ids link data not supported");
+    }
+
+    @Override
+    public Map<String, NodeIdLinkData> getAllLinksForIdKey(String idKey) {
+	throw new RuntimeException("Not supported");
     }
 
 //    @Override

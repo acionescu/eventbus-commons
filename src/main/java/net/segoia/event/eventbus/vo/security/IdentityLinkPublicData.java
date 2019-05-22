@@ -3,25 +3,17 @@ package net.segoia.event.eventbus.vo.security;
 public class IdentityLinkPublicData {
 
     private String identityKey;
-    private LinkTrustLevel trustLevel;
     private String publicAlias;
 
     public IdentityLinkPublicData(String identityKey) {
         this.identityKey = identityKey;
     }
     
-    
 
-    public IdentityLinkPublicData(String identityKey, LinkTrustLevel trustLevel) {
+
+    public IdentityLinkPublicData(String identityKey,String publicAlias) {
 	super();
 	this.identityKey = identityKey;
-	this.trustLevel = trustLevel;
-    }
-
-    public IdentityLinkPublicData(String identityKey, LinkTrustLevel trustLevel, String publicAlias) {
-	super();
-	this.identityKey = identityKey;
-	this.trustLevel = trustLevel;
 	this.publicAlias = publicAlias;
     }
 
@@ -37,13 +29,6 @@ public class IdentityLinkPublicData {
 	this.identityKey = identityKey;
     }
 
-    public LinkTrustLevel getTrustLevel() {
-	return trustLevel;
-    }
-
-    public void setTrustLevel(LinkTrustLevel trustLevel) {
-	this.trustLevel = trustLevel;
-    }
 
     public String getPublicAlias() {
 	return publicAlias;

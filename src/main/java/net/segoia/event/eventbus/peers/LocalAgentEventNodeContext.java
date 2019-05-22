@@ -16,6 +16,8 @@
  */
 package net.segoia.event.eventbus.peers;
 
+import java.util.Map;
+
 import net.segoia.event.conditions.Condition;
 import net.segoia.event.eventbus.Event;
 import net.segoia.event.eventbus.FilteringEventBus;
@@ -23,6 +25,8 @@ import net.segoia.event.eventbus.peers.util.EventNodeLogger;
 import net.segoia.event.eventbus.peers.vo.bind.ConnectToPeerRequest;
 import net.segoia.event.eventbus.peers.vo.bind.DisconnectFromPeerRequest;
 import net.segoia.event.eventbus.vo.security.IdsLinkData;
+import net.segoia.event.eventbus.vo.security.NodeIdLinkData;
+import net.segoia.event.eventbus.vo.services.NodeIdentityProfile;
 
 /**
  * A context for the event node agents that are only aware of the local context
@@ -90,7 +94,15 @@ public class LocalAgentEventNodeContext {
 	nodeContext.getSecurityManager().removeIdsLinkData(idsLinkKey);
     }
     
+    public Map<String, NodeIdLinkData> getAllLinksForIdKey(String idKey){
+	return nodeContext.getSecurityManager().getAllLinksForIdKey(idKey);
+    }
+    
     public void scheduleEvent(final Event event, long delay) {
 	nodeContext.getNode().scheduleEvent(event, delay);
+    }
+    
+    public NodeIdentityProfile getNodeIdProfile(String nodeIdKey) {
+	return nodeContext.getSecurityManager().getIdentityProfile(nodeIdKey);
     }
 }

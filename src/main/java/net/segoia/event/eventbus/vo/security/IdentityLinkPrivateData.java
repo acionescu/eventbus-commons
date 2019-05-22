@@ -24,6 +24,8 @@ public class IdentityLinkPrivateData {
      * The session key used to encrypt events to/from partner
      */
     private SessionKeyPlainData sessionData;
+    
+    private LinkTrustLevel trustLevel;
 
     public IdentityLinkPrivateData() {
         super();
@@ -66,6 +68,12 @@ public class IdentityLinkPrivateData {
         this.sessionData = sessionData;
     }
 
-    
+    public LinkTrustLevel getTrustLevel() {
+        return trustLevel;
+    }
+
+    public void setTrustLevel(LinkTrustLevel trustLevel) {
+        this.trustLevel = trustLevel;
+    }
 
 }

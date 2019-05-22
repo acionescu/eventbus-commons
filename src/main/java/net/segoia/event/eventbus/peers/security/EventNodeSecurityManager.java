@@ -66,6 +66,7 @@ import net.segoia.event.eventbus.peers.vo.session.SessionKeyPlainData;
 import net.segoia.event.eventbus.vo.security.DataAuthLevel;
 import net.segoia.event.eventbus.vo.security.IdentityLinkFullData;
 import net.segoia.event.eventbus.vo.security.IdsLinkData;
+import net.segoia.event.eventbus.vo.security.NodeIdLinkData;
 import net.segoia.event.eventbus.vo.security.SignatureInfo;
 import net.segoia.event.eventbus.vo.services.EventNodeServiceDefinition;
 import net.segoia.event.eventbus.vo.services.EventNodeServiceRef;
@@ -354,18 +355,15 @@ public abstract class EventNodeSecurityManager {
 
     public CommManager getDirectCommManager(PeerCommContext context) {
 	PeerContext peerContext = context.getPeerContext();
-	
-	
-//	PrivateIdentityManager ourIdentityManager = peerContext.getOurIdentityManager();
-//	PublicIdentityManager peerIdentityManager = peerContext.getPeerIdentityManager();
-	
+
+	// PrivateIdentityManager ourIdentityManager = peerContext.getOurIdentityManager();
+	// PublicIdentityManager peerIdentityManager = peerContext.getPeerIdentityManager();
+
 	PrivateIdentityManager ourIdentityManager = getOurIdentity(context);
 	PublicIdentityManager peerIdentityManager = getPeerIdentity(context);
-	
-	
-	CommManagerKey commManagerKey = new CommManagerKey(ourIdentityManager.getType(),
-		peerIdentityManager.getType(), peerContext.getSessionManager().getIdentityType(),
-		PeerCommManager.DIRECT_COMM);
+
+	CommManagerKey commManagerKey = new CommManagerKey(ourIdentityManager.getType(), peerIdentityManager.getType(),
+		peerContext.getSessionManager().getIdentityType(), PeerCommManager.DIRECT_COMM);
 
 	CommManagerBuilder commManagerBuilder = commManagerBuilders.get(commManagerKey);
 	SessionManager sessionManager = peerContext.getSessionManager();
@@ -597,21 +595,22 @@ public abstract class EventNodeSecurityManager {
 	}
 
 	try {
-//	    SecretKey secretKey = CryptoUtil.generateSecretkey(sessionKeyDef.getAlgorithm(), maxSupportedKeySize);
-//	    byte[] secretKeyBytes = secretKey.getEncoded();
-	    
-	    byte[] secretKeyBytes = getCryptoHelper().generateSecretKey(sessionKeyDef.getAlgorithm(), maxSupportedKeySize);
-	    
+	    // SecretKey secretKey = CryptoUtil.generateSecretkey(sessionKeyDef.getAlgorithm(), maxSupportedKeySize);
+	    // byte[] secretKeyBytes = secretKey.getEncoded();
+
+	    byte[] secretKeyBytes = getCryptoHelper().generateSecretKey(sessionKeyDef.getAlgorithm(),
+		    maxSupportedKeySize);
+
 	    KeyDef newSessionKeyDef = new KeyDef(sessionKeyDef.getAlgorithm(), maxSupportedKeySize);
-	    
+
 	    SessionKey sessionKey = new SessionKey(peerContext.getNodeContext().generateSessionId(), secretKeyBytes,
 		    newSessionKeyDef);
 
 	    /* generate an initialization vector */
-//	    SecureRandom sr = new SecureRandom();
-//	    byte[] iv = new byte[maxSupportedKeySize / 8];
-//	    sr.nextBytes(iv);
-	    
+	    // SecureRandom sr = new SecureRandom();
+	    // byte[] iv = new byte[maxSupportedKeySize / 8];
+	    // sr.nextBytes(iv);
+
 	    byte[] iv = getCryptoHelper().generateIv(maxSupportedKeySize / 8);
 	    sessionKey.setIv(iv);
 
@@ -630,7 +629,6 @@ public abstract class EventNodeSecurityManager {
 	}
 
     }
-
 
     public void buildSessionFromSessionInfo(PeerContext peerContext, SessionInfo sessionInfo)
 	    throws CommOperationException {
@@ -654,30 +652,30 @@ public abstract class EventNodeSecurityManager {
 
 	/* build a session manager and set it on context */
 	SharedIdentityType sharedIdentityType = new SharedIdentityType(keyDef);
-        final byte[] keyBytes = processedSessionData.getData();
+	final byte[] keyBytes = processedSessionData.getData();
 	SessionManager sessionManager = sessionManagerBuilders.get(sharedIdentityType)
 		.build(new SharedNodeIdentity(sharedIdentityType, keyBytes, ivBytes));
 
 	peerContext.setSessionManager(sessionManager);
 
-	SessionKey sessionKey = new SessionKey(sessionInfo.getSessionId(), keyBytes, keyDef,ivBytes);
+	SessionKey sessionKey = new SessionKey(sessionInfo.getSessionId(), keyBytes, keyDef, ivBytes);
 	peerContext.setSessionKey(sessionKey);
     }
-    
-    public void buildSessionFromPlainData(PeerContext peerContext, SessionKeyPlainData sessionData) throws CommOperationException{
-        byte[] keyBytes = cryptoHelper.base64Decode(sessionData.getKeyData());
-        byte[] ivBytes = cryptoHelper.base64Decode(sessionData.getIvData());
-        KeyDef keyDef = sessionData.getKeyDef();
-        
-        
-        /* build a session manager and set it on context */
+
+    public void buildSessionFromPlainData(PeerContext peerContext, SessionKeyPlainData sessionData)
+	    throws CommOperationException {
+	byte[] keyBytes = cryptoHelper.base64Decode(sessionData.getKeyData());
+	byte[] ivBytes = cryptoHelper.base64Decode(sessionData.getIvData());
+	KeyDef keyDef = sessionData.getKeyDef();
+
+	/* build a session manager and set it on context */
 	SharedIdentityType sharedIdentityType = new SharedIdentityType(keyDef);
 	SessionManager sessionManager = sessionManagerBuilders.get(sharedIdentityType)
 		.build(new SharedNodeIdentity(sharedIdentityType, keyBytes, ivBytes));
 
 	peerContext.setSessionManager(sessionManager);
 
-	SessionKey sessionKey = new SessionKey(sessionData.getSessionId(), keyBytes, keyDef,ivBytes);
+	SessionKey sessionKey = new SessionKey(sessionData.getSessionId(), keyBytes, keyDef, ivBytes);
 	peerContext.setSessionKey(sessionKey);
     }
 
@@ -903,91 +901,96 @@ public abstract class EventNodeSecurityManager {
 	this.peerRuleEngine = peerRuleEngine;
     }
 
-    
     /**
      * This will return the auth level relative to the current peer identity
+     * 
      * @param pc
      * @param sigInfo
      * @param data
      * @return
      */
     public DataAuthLevel getDataAuthLevel(PeerContext pc, SignatureInfo sigInfo, byte[] data) {
-	if(sigInfo == null || data == null) {
+	if (sigInfo == null || data == null) {
 	    return null;
 	}
-	
+
 	/* verify the signature */
-	
+
 	NodeIdentityProfile currentPeerIdentityProfile = pc.getCurrentPeerIdentityProfile();
-	
+
 	String rootIdentityKey = currentPeerIdentityProfile.getRootIdentityKey();
-	
-	
-	if(rootIdentityKey.equals(sigInfo.getIdKey())) {
+
+	if (rootIdentityKey.equals(sigInfo.getIdKey())) {
 	    /* verify that this data is signed with root key */
 	    NodeIdentityProfile rootIdProfile = getIdentityProfile(rootIdentityKey);
-	    
+
 	    NodeIdentity<? extends IdentityType> rootIdentity = rootIdProfile.getIdentity();
-	    PublicIdentityManagerFactory publicIdentityManagerFactory = publicIdentityBuilders.get(rootIdentity.getClass());
-	    
-	    
+	    PublicIdentityManagerFactory publicIdentityManagerFactory = publicIdentityBuilders
+		    .get(rootIdentity.getClass());
+
 	    PublicIdentityManager rootPublicIdManager = publicIdentityManagerFactory.build(rootIdentity);
-	    
-	    if(rootPublicIdManager instanceof SpkiPublicIdentityManager) {
-		SpkiPublicIdentityManager spkiRootIdManager = (SpkiPublicIdentityManager)rootPublicIdManager;
-		
-		VerifySignatureOperationWorker sgnVerificationWorker=null;
+
+	    if (rootPublicIdManager instanceof SpkiPublicIdentityManager) {
+		SpkiPublicIdentityManager spkiRootIdManager = (SpkiPublicIdentityManager) rootPublicIdManager;
+
+		VerifySignatureOperationWorker sgnVerificationWorker = null;
 		try {
 		    sgnVerificationWorker = spkiRootIdManager.buildVerifySignatureWorker(sigInfo.getSignatureDef());
 		} catch (Exception e) {
-		    throw new RuntimeException("Failed to build signature verification worker for "+sigInfo,e);
+		    throw new RuntimeException("Failed to build signature verification worker for " + sigInfo, e);
 		}
-		
+
 		try {
 		    String encodedSignature = sigInfo.getSignature();
 		    boolean valid = sgnVerificationWorker.verify(data, cryptoHelper.base64Decode(encodedSignature));
-		    
-		    if(!valid) {
-			throw new RuntimeException("Invalid signature from "+pc.getPeerId() +" with id key "+rootIdentityKey);
+
+		    if (!valid) {
+			throw new RuntimeException(
+				"Invalid signature from " + pc.getPeerId() + " with id key " + rootIdentityKey);
 		    }
-		    
-		    return new DataAuthLevel(0,valid,rootIdProfile);
-		    
+
+		    return new DataAuthLevel(0, valid, rootIdProfile);
+
 		} catch (Exception e) {
-		    throw new RuntimeException("Failed to verify signature "+sigInfo,e);
+		    throw new RuntimeException("Failed to verify signature " + sigInfo, e);
 		}
 	    }
-	    
+
 	}
-	
+
 	return null;
     }
-    
+
     public void storeIdsLinkData(IdsLinkData data) {
 	IdentitiesManager identitiesManager = securityConfig.getIdentitiesManager();
-	
+
 	identitiesManager.storeIdsLinkData(data);
     }
-    
+
     public IdsLinkData getIdsLinkData(String idsLinkKey) {
 	IdentitiesManager identitiesManager = securityConfig.getIdentitiesManager();
-	
+
 	return identitiesManager.getIdsLinkData(idsLinkKey);
     }
-    
+
     public void removeIdsLinkData(String idsLinkKey) {
 	IdentitiesManager identitiesManager = securityConfig.getIdentitiesManager();
-	
+
 	identitiesManager.removeIdsLinkData(idsLinkKey);
     }
-    
-    
+
+    public Map<String, NodeIdLinkData> getAllLinksForIdKey(String idKey) {
+	IdentitiesManager identitiesManager = securityConfig.getIdentitiesManager();
+
+	return identitiesManager.getAllLinksForIdKey(idKey);
+    }
+
     public void storeIdentityLinkFullData(IdentityLinkFullData data) {
 	IdentitiesManager identitiesManager = securityConfig.getIdentitiesManager();
-	
+
 	identitiesManager.storeIdentityLinkFullData(data);
     }
-    
+
     public IdentityLinkFullData getIdentityLinkFullData(String idsLinkKey) {
 	IdentitiesManager identitiesManager = securityConfig.getIdentitiesManager();
 	return identitiesManager.getIdentityLinkFullData(idsLinkKey);
@@ -995,7 +998,7 @@ public abstract class EventNodeSecurityManager {
 
     public boolean removeIdentityLinkFullData(String identityKey) {
 	IdentitiesManager identitiesManager = securityConfig.getIdentitiesManager();
-	
+
 	return identitiesManager.removeIdentityLinkFullData(identityKey);
     }
 }
