@@ -477,6 +477,14 @@ public class Event implements Cloneable {
     public void clearRelays() {
 	header.clearRelays();
     }
+    
+    public void clearSensitiveData() {
+	header.clearRelays();
+	header.setCauseEventId(null);
+	header.setRootAgentId(null);
+	header.setSourceAgentId(null);
+	header.setAuthLevel(null);
+    }
 
     public void setHandled() {
 	header.setHandled();

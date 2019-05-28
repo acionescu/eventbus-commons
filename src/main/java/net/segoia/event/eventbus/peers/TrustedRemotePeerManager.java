@@ -23,6 +23,8 @@ import net.segoia.event.eventbus.trust.comm.TrustedCommSessionClosedData;
 import net.segoia.event.eventbus.trust.comm.TrustedCommSessionClosedEvent;
 import net.segoia.event.eventbus.trust.comm.TrustedCommSessionEstablishedData;
 import net.segoia.event.eventbus.trust.comm.TrustedCommSessionEstablishedEvent;
+import net.segoia.event.eventbus.trust.comm.TrustedCommSessionReadyData;
+import net.segoia.event.eventbus.trust.comm.TrustedCommSessionReadyEvent;
 import net.segoia.event.eventbus.vo.security.IdentityLinkFullData;
 import net.segoia.event.eventbus.vo.security.IdentityLinkPrivateData;
 
@@ -182,7 +184,16 @@ public class TrustedRemotePeerManager extends PeerManager {
 		/* if we get a session closed, delegate this further for cleanup */
 		c.getPeerManager().postEvent(c.getEvent());
 	    });
+            
+            registerPeerEventProcessor(TrustedCommSessionReadyEvent.class, (c)->{
+        	handlCommSessionReady(c);
+            });
 
+	}
+	
+	private void handlCommSessionReady(PeerEventContext<TrustedCommSessionReadyEvent> c) {
+	    TrustedRemotePeerManager peerManager = (TrustedRemotePeerManager) c.getPeerManager();
+	    peerManager.onReady();
 	}
 
 	private void handleCommSessionAccepted(PeerEventContext<TrustedCommSessionAcceptedEvent> c) {
@@ -216,7 +227,7 @@ public class TrustedRemotePeerManager extends PeerManager {
 		return;
 	    }
 
-	    peerManager.onReady();
+	    
 	}
 
     };
@@ -324,7 +335,10 @@ public class TrustedRemotePeerManager extends PeerManager {
 		privateData.setSessionData(peerManager.getPlainSessionKeyData());
 		securityManager.storeIdentityLinkFullData(peerManager.trustData);
 	    }
-
+	    /* notify peer we're ready */
+	    peerManager.forwardToPeer(new TrustedCommSessionReadyEvent(new TrustedCommSessionReadyData()));
+	    
+	    /* start normal operation */
 	    peerManager.onReady();
 	}
     };
