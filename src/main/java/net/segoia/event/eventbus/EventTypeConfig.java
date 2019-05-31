@@ -38,6 +38,16 @@ public class EventTypeConfig {
      * logging level
      */
     private String loggingLevel = "INFO";
+    
+    /**
+     * If this is set to true, only the fields of the Event class will be logged
+     */
+    private boolean logAsBareEventOn;
+    
+    /**
+     * The class to be used to convert this event to json for logging purposes
+     */
+    private Class<? extends Event> jsonLogClass;
 
     private EventRights eventRights = new EventRights();
 
@@ -107,6 +117,22 @@ public class EventTypeConfig {
 
     public void setFullAuthRequired(boolean fullAuthRequired) {
 	this.fullAuthRequired = fullAuthRequired;
+    }
+
+    public boolean isLogAsBareEventOn() {
+        return logAsBareEventOn;
+    }
+
+    public void setLogAsBareEventOn(boolean logAsBareEventOn) {
+        this.logAsBareEventOn = logAsBareEventOn;
+    }
+
+    public Class<? extends Event> getJsonLogClass() {
+        return jsonLogClass;
+    }
+
+    public void setJsonLogClass(Class<? extends Event> jsonLogClass) {
+        this.jsonLogClass = jsonLogClass;
     }
 
 }
