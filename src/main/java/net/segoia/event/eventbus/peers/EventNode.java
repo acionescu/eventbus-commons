@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
 import net.segoia.event.conditions.Condition;
 import net.segoia.event.conditions.EventClassMatchCondition;
@@ -149,6 +150,11 @@ public abstract class EventNode {
 	peersManager.init(context);
 
 	servicesManager = new EventNodeServicesManager();
+	
+	if(config.isTickMinuteEventEnabled()) {
+	    /* trigger a tick event every minute */
+	    scheduleEvent(new Event("SYSTEM:TICK:MINUTE"), 60000, 60000);
+	}
     }
     
     protected abstract EventNodeSecurityManager buildSecurityManager(EventNodeSecurityConfig securityConfig);
@@ -529,6 +535,15 @@ public abstract class EventNode {
     public NodeInfo getNodeInfo() {
 	return nodeInfo;
     }
+    
+    protected EventNodeContext getContext() {
+        return context;
+    }
+    
+
+    public PeersManager getPeersManager() {
+        return peersManager;
+    }
 
     public boolean isInitialized() {
 	return initialized;
@@ -544,5 +559,13 @@ public abstract class EventNode {
      * @param delay - delay in milliseconds
      */
     public abstract void scheduleEvent(Event event,long delay);
+    
+    /**
+     * Schedules the triggering of the given event with a certain delay and period
+     * @param event
+     * @param delay
+     * @param repeatPeriod
+     */
+    public abstract void scheduleEvent(final Event event, long delay, long repeatPeriod);
 
 }

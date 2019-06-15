@@ -57,9 +57,18 @@ public class EventBusNodeConfig {
      */
     private EventNodeLogger logger;
 
-    private PeersManagerConfig peersManagerConfig;
+    private PeersManagerConfig peersManagerConfig=new PeersManagerConfig();
     
     private boolean allowServerMode;
+    
+    /**
+     * If set to true, a "tick minute" event will be triggered every minute
+     * <br>
+     * This can be used for various maintenance task
+     * <br>
+     * By default is set to false
+     */
+    private boolean tickMinuteEventEnabled;
 
     /**
      * @return the autoRelayEanbled
@@ -160,5 +169,15 @@ public class EventBusNodeConfig {
     public void setLogger(EventNodeLogger logger) {
         this.logger = logger;
     }
+
+    public boolean isTickMinuteEventEnabled() {
+        return tickMinuteEventEnabled;
+    }
+
+    public void setTickMinuteEventEnabled(boolean tickMinuteEventEnabled) {
+        this.tickMinuteEventEnabled = tickMinuteEventEnabled;
+    }
+    
+    
 
 }

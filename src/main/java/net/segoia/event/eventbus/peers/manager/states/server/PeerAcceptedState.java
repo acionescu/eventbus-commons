@@ -68,64 +68,73 @@ public class PeerAcceptedState extends PeerManagerState {
 	registerPeerEventProcessor(ServiceAccessIdRequestEvent.class, (c) -> {
 	    try {
 		handleServiceAccessIdRequest(c);
-	    } 
-	    catch(Throwable t) {
-		c.getPeerManager().handleError("Failed handling service id request",t);
-	    }
-	    finally {
+	    } catch (Throwable t) {
+		c.getPeerManager().handleError("Failed handling service id request", t);
+	    } finally {
 		c.getEvent().setHandled();
 	    }
 	});
-	
+
 	EBusVM.getInstance().getLogger().info("registering signed event handler");
-	registerPeerEventProcessor(SignedCustomEvent.class, (c)->{
+	registerPeerEventProcessor(SignedCustomEvent.class, (c) -> {
 	    c.getNodeContext().getLogger().info("handling signed event.");
 	    try {
 		handleSignedEvent(c);
-	    } 
-	    catch(Throwable t) {
-		c.getPeerManager().handleError("Failed handling signed event",t);
-	    }
-	    finally {
+	    } catch (Throwable t) {
+		c.getPeerManager().handleError("Failed handling signed event", t);
+	    } finally {
 		c.getEvent().setHandled();
 	    }
-	    
+
 	});
 
 	registerPeerEventProcessor((c) -> {
 	    Event event = c.getEvent();
 	    if (!event.isHandled()) {
-		c.getNodeContext().getLogger().info(event.getEt() + " not handled. Delegating further. "+event.getClass());
-		c.getPeerManager().postEvent(event);
+		PeerManager peerManager = c.getPeerManager();
+		String remoteAgentId = event.getHeader().getRemoteAgentId();
+		/* if this event is send on behalf of a remote peer, then delegate it to the remote peer manager */
+		if (remoteAgentId != null) {
+		    //TODO: check that this peer is authorized to mediate events on behalf of the remote peer
+		    
+		    PeerManager remotePeerManager = c.getNodeContext().getPeersManager().getRemotePeerManagerByIdKey(remoteAgentId, peerManager, true);
+		    remotePeerManager.onPeerEvent(event);
+		    /* don't process this further */
+		    return;
+		}
+//
+//		c.getNodeContext().getLogger()
+//			.info(event.getEt() + " not handled. Delegating further. " + event.getClass());
+		peerManager.postEvent(event);
 	    }
 	});
 
     }
-    
+
     protected void handleSignedEvent(PeerEventContext<SignedCustomEvent> c) {
 	SignedCustomEvent event = c.getEvent();
-	
+
 	SignedEventData signedEventData = event.getData();
-	
+
 	String encodedEventData = signedEventData.getEventData();
 	SignatureInfo signatureInfo = signedEventData.getSignatureInfo();
-	
+
 	PeerManager peerManager = c.getPeerManager();
 	PeerContext peerContext = peerManager.getPeerContext();
-	
+
 	EventNodeSecurityManager securityManager = peerContext.getNodeContext().getSecurityManager();
-	
+
 	byte[] eventData = securityManager.getCryptoHelper().base64Decode(encodedEventData);
-	
+
 	DataAuthLevel dataAuthLevel = securityManager.getDataAuthLevel(peerContext, signatureInfo, eventData);
-	
+
 	/* get the actual signed event */
-	Event nestedEvent = Event.fromJson(StringHelper.stringFromByteArray(eventData,"UTF-8"),event.getCauseEvent());
-	
+	Event nestedEvent = Event.fromJson(StringHelper.stringFromByteArray(eventData, "UTF-8"), event.getCauseEvent());
+
 	nestedEvent.getHeader().setAuthLevel(dataAuthLevel);
-	
+
 	nestedEvent.getHeader().setFrom(event.from());
-	
+
 	c.getPeerManager().postEvent(nestedEvent);
     }
 

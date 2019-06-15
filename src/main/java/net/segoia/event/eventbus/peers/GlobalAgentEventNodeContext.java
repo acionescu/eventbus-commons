@@ -54,4 +54,8 @@ public class GlobalAgentEventNodeContext extends LocalAgentEventNodeContext{
     public Map<String,String> getDirectPeersByRootKey(Collection<String> rootKeys){
 	return peersManager.getDirectPeersByRootKey(rootKeys);
     }
+    
+    public boolean forwartToPeerWithIdKey(Event event, String targetIdKey) {
+	return peersManager.forwartToPeerWithIdKey(event, targetIdKey);
+    }
 }

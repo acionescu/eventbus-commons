@@ -107,6 +107,23 @@ public class EventHeader implements Cloneable {
      * The custom id of the original source of this event
      */
     private String originId;
+    
+    
+    /**
+     * This is the id key of the remote agent on which behalf's a proxy node is acting
+     * <br>
+     * Only proxy nodes that provided a certificate signed by the end user, authorizing them to access this 
+     * service on their behalf, will be allowed to set this field
+     * <br>
+     * The events having this field set and valid will be delegated to a special remote peer manager created for 
+     * a specific end user assigned to the value of this field
+     */
+    private String remoteAgentId;
+    
+    /**
+     * The alias set for the peer that sent this event
+     */
+    private transient String customPeerId;
 
     public EventHeader() {
 	params = new HashMap<>();
@@ -418,6 +435,26 @@ public class EventHeader implements Cloneable {
 
     public void setOriginId(String originId) {
 	this.originId = originId;
+    }
+    
+    
+
+    public String getRemoteAgentId() {
+        return remoteAgentId;
+    }
+
+    public void setRemoteAgentId(String remoteAgentId) {
+        this.remoteAgentId = remoteAgentId;
+    }
+    
+    
+
+    public String getCustomPeerId() {
+        return customPeerId;
+    }
+
+    public void setCustomPeerId(String customPeerId) {
+        this.customPeerId = customPeerId;
     }
 
     /*

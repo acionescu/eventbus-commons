@@ -31,6 +31,11 @@ public class PeerInfo {
      * The info sent by the peer
      */
     private NodeInfo nodeInfo;
+    
+    /**
+     * An id provided during connect request that helps identifying a peer
+     */
+    private String customPeerId;
 
     public PeerInfo(String peerId, String peerType, NodeInfo nodeInfo) {
 	super();
@@ -50,5 +55,15 @@ public class PeerInfo {
     public String getPeerType() {
 	return peerType;
     }
+
+    public String getCustomPeerId() {
+        return customPeerId;
+    }
+
+    public void setCustomPeerId(String customPeerId) {
+        this.customPeerId = customPeerId;
+    }
+    
+    
 
 }

@@ -39,6 +39,16 @@ public class EventNodePeersRegistry {
      */
     private Set<String> agents = new HashSet<>();
     
+    /**
+     * Direct peers indexed by id key
+     */
+    private Map<String, PeerManager> directPeersByIdKey=new HashMap<>();
+    
+    /**
+     * Remote peers indexed by id key 
+     */
+    private Map<String, PeerManager> remotePeersByIdKey= new HashMap<>();
+    
     
     public boolean setPendingPeerAsDirectPeer(String peerId) {
 	PeerManager pm = removePeer(pendingPeers, peerId);
@@ -117,6 +127,50 @@ public class EventNodePeersRegistry {
 
     public void setAgents(Set<String> agents) {
 	this.agents = agents;
+    }
+    
+    public void addRemotePeer(PeerManager pm) {
+	setPeerManager(remotePeers, pm);
+    }
+    
+    public void indexRemotePeerByIdKey(PeerManager pm) {
+	String peerRootIdentityKey = pm.getPeerContext().getPeerRootIdentityKey();
+	if(peerRootIdentityKey != null) {
+	    remotePeersByIdKey.put(peerRootIdentityKey, pm);
+	}
+    }
+    
+    public PeerManager getRemotPeerByIdKey(String idKey) {
+	return remotePeersByIdKey.get(idKey);
+    }
+    
+    public PeerManager removeRemotePeerForIdkey(String idKey) {
+	if(idKey == null) {
+	    return null;
+	}
+	return remotePeersByIdKey.remove(idKey);
+    }
+    
+    
+    public void indexDirectPeerByIdKey(PeerManager pm) {
+	if(pm == null) {
+	    throw new IllegalArgumentException("Can't index null peer manager");
+	}
+	String peerRootIdentityKey = pm.getPeerContext().getPeerRootIdentityKey();
+	if(peerRootIdentityKey != null) {
+	    directPeersByIdKey.put(peerRootIdentityKey, pm);
+	}
+    }
+    
+    public PeerManager getDirectPeerByIdKey(String idKey) {
+	return directPeersByIdKey.get(idKey);
+    }
+    
+    public PeerManager removeDirectPeerByIdKey(String idKey) {
+	if(idKey == null) {
+	    return null;
+	}
+	return directPeersByIdKey.remove(idKey);
     }
 
 }

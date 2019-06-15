@@ -25,6 +25,7 @@ import net.segoia.event.eventbus.peers.core.EventTransceiver;
 import net.segoia.event.eventbus.peers.core.PeerCommErrorEvent;
 import net.segoia.event.eventbus.peers.events.PeerAcceptedEvent;
 import net.segoia.event.eventbus.peers.events.PeerLeavingEvent;
+import net.segoia.event.eventbus.peers.events.PeerTerminatedEvent;
 import net.segoia.event.eventbus.peers.events.session.PeerSessionStartedEvent;
 import net.segoia.event.eventbus.peers.exceptions.PeerSessionException;
 import net.segoia.event.eventbus.peers.manager.states.PeerManagerState;
@@ -48,6 +49,8 @@ import net.segoia.event.eventbus.peers.vo.PeerErrorData;
 import net.segoia.event.eventbus.peers.vo.PeerInfo;
 import net.segoia.event.eventbus.peers.vo.PeerLeavingData;
 import net.segoia.event.eventbus.peers.vo.PeerLeavingReason;
+import net.segoia.event.eventbus.peers.vo.PeerTerminatedData;
+import net.segoia.event.eventbus.peers.vo.ReasonData;
 import net.segoia.event.eventbus.peers.vo.auth.PeerAuthRequest;
 import net.segoia.event.eventbus.peers.vo.bind.PeerBindAccepted;
 import net.segoia.event.eventbus.peers.vo.comm.CommunicationProtocol;
@@ -99,15 +102,27 @@ public class PeerManager implements PeerEventListener {
     public PeerManager(PeerContext peerContext) {
 	super();
 	this.peerContext = peerContext;
-	EventTransceiver transceiver = peerContext.getTransceiver();
-	DefaultEventRelay relay = new DefaultEventRelay(peerId, transceiver);
+	
+	EventRelay relay = createEventRelay(peerContext);
 	/* listen on events from peer */
 	relay.setRemoteEventListener(this);
 	peerContext.setRelay(relay);
-	this.peerType = transceiver.getClass().getSimpleName();
+	this.peerType = getPeerTypeFromContext(peerContext);
 	this.peerId = peerContext.getPeerId();
 	/* bind relay to transceiver */
 	relay.bind();
+    }
+    
+    protected String getPeerTypeFromContext(PeerContext peerContext) {
+	EventTransceiver transceiver = peerContext.getTransceiver();
+	if(transceiver != null) {
+	    return transceiver.getClass().getSimpleName();
+	}
+	return "N/A";
+    }
+    
+    protected EventRelay createEventRelay(PeerContext peerContext) {
+	return new DefaultEventRelay(peerContext.getPeerId(), peerContext.getTransceiver());
     }
 
     public void goToState(PeerManagerState newState) {
@@ -172,6 +187,17 @@ public class PeerManager implements PeerEventListener {
 
     public void terminate() {
 	peerContext.getRelay().terminate();
+	
+    }
+    
+    public void terminate(ReasonData reason) {
+	terminate();
+	onTerminate(reason);
+    }
+    
+    protected void onTerminate(ReasonData reason) {
+	postEvent(new PeerTerminatedEvent(
+		new PeerTerminatedData(reason, new PeerInfo(peerId, peerType, peerContext.getPeerInfo()))));
     }
 
     protected void cleanUp() {
@@ -342,7 +368,9 @@ public class PeerManager implements PeerEventListener {
 
     public void onReady() {
 	goToState(acceptedState);
-	postEvent(new PeerAcceptedEvent(new PeerInfo(peerId, peerType, peerContext.getPeerInfo())));
+	PeerInfo peerInfo = new PeerInfo(peerId, peerType, peerContext.getPeerInfo());
+	peerInfo.setCustomPeerId(peerContext.getCustomPeerId());
+	postEvent(new PeerAcceptedEvent(peerInfo));
     }
 
     public void postEvent(Event event) {
@@ -350,6 +378,7 @@ public class PeerManager implements PeerEventListener {
 	header.setSourceAgentId(peerContext.getPeerIdentityKey());
 	header.setRootAgentId(peerContext.getPeerRootIdentityKey());
 	header.setChannel(peerContext.getCommunicationChannel());
+	header.setCustomPeerId(peerContext.getCustomPeerId());
 	peerContext.getNodeContext().postEvent(event);
     }
 
@@ -390,6 +419,7 @@ public class PeerManager implements PeerEventListener {
 	/* make sure we don't allow peers to inject relays */
 	event.clearRelays();
 	event.addRelay(getPeerId());
+	peerContext.getStats().setLastReceivedEventTs(System.currentTimeMillis());
 	try {
 	    handleEventFromPeer(event);
 	} finally {
@@ -415,4 +445,14 @@ public class PeerManager implements PeerEventListener {
 	postEvent(event);
     }
 
+    public PeerManagerStats getStats() {
+	return peerContext.getStats();
+    }
+
+    public String getPeerType() {
+        return peerType;
+    }
+    
+    
+    
 }

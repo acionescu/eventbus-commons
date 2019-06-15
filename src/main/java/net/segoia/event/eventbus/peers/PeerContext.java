@@ -91,6 +91,10 @@ public class PeerContext {
     private String peerRootIdentityKey;
 
     private NodeIdentityProfile peerIdentityProfile;
+    
+    private String customPeerId;
+    
+    private PeerManagerStats stats=new PeerManagerStats();
 
     public PeerContext(String peerId, EventTransceiver transceiver) {
 	super();
@@ -256,9 +260,35 @@ public class PeerContext {
 	if (peerInfo != null) {
 	    event.to(peerInfo.getNodeId());
 	}
-       
+        stats.setLastSentEventTs(System.currentTimeMillis());
 	relay.sendEvent(event);
-       
+        
     }
+
+    public String getCustomPeerId() {
+        return customPeerId;
+    }
+
+    public void setCustomPeerId(String customPeerId) {
+        this.customPeerId = customPeerId;
+    }
+
+    public NodeIdentityProfile getPeerIdentityProfile() {
+        return peerIdentityProfile;
+    }
+
+    public void setPeerIdentityProfile(NodeIdentityProfile peerIdentityProfile) {
+        this.peerIdentityProfile = peerIdentityProfile;
+    }
+
+    public PeerManagerStats getStats() {
+        return stats;
+    }
+
+    public void setStats(PeerManagerStats stats) {
+        this.stats = stats;
+    }
+    
+    
 
 }

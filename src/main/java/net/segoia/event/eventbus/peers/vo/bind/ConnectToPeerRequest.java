@@ -24,6 +24,8 @@ import net.segoia.event.eventbus.peers.core.PrivateIdentityData;
 public class ConnectToPeerRequest {
     private transient EventTransceiver transceiver;
     private transient List<PrivateIdentityData<?>> ourIdentities;
+    
+    private String customPeerId;
 
     public ConnectToPeerRequest(EventTransceiver transceiver) {
 	super();
@@ -34,6 +36,22 @@ public class ConnectToPeerRequest {
 	super();
 	this.transceiver = transceiver;
 	this.ourIdentities = ourIdentities;
+    }
+    
+    
+
+    public ConnectToPeerRequest(EventTransceiver transceiver, List<PrivateIdentityData<?>> ourIdentities,
+	    String customPeerId) {
+	super();
+	this.transceiver = transceiver;
+	this.ourIdentities = ourIdentities;
+	this.customPeerId = customPeerId;
+    }
+
+    public ConnectToPeerRequest(EventTransceiver transceiver, String customPeerId) {
+	super();
+	this.transceiver = transceiver;
+	this.customPeerId = customPeerId;
     }
 
     public EventTransceiver getTransceiver() {
@@ -52,4 +70,13 @@ public class ConnectToPeerRequest {
 	this.ourIdentities = ourIdentities;
     }
 
+    public String getCustomPeerId() {
+        return customPeerId;
+    }
+
+    public void setCustomPeerId(String customPeerId) {
+        this.customPeerId = customPeerId;
+    }
+
+    
 }

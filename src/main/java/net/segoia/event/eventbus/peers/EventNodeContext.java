@@ -88,4 +88,8 @@ public class EventNodeContext {
     public EventNodeLogger getLogger() {
 	return config.getLogger();
     }
+    
+    public PeersManager getPeersManager() {
+	return node.getPeersManager();
+    }
 }
