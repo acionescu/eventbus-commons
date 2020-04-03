@@ -23,7 +23,7 @@ import net.segoia.event.eventbus.peers.vo.PeerLeavingReason;
 public abstract class AbstractEventTransceiver implements EventTransceiver {
 
     private PeerDataListener remoteDataListener;
-    
+
     protected abstract void init();
 
     public PeerDataListener getRemoteDataListener() {
@@ -33,8 +33,6 @@ public abstract class AbstractEventTransceiver implements EventTransceiver {
     public void setRemoteDataListener(PeerDataListener remoteDataListener) {
 	this.remoteDataListener = remoteDataListener;
     }
-    
-    
 
     @Override
     public void receiveData(byte[] data) {
@@ -56,8 +54,6 @@ public abstract class AbstractEventTransceiver implements EventTransceiver {
     public void onPeerError(PeerErrorData errorData) {
 	remoteDataListener.onPeerError(errorData);
     }
-    
-    
 
     // @Override
     // public void receiveEvent(Event event) {

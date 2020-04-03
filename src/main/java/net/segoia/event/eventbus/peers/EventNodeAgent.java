@@ -17,6 +17,7 @@
 package net.segoia.event.eventbus.peers;
 
 public abstract class EventNodeAgent {
+    
     protected void init() {
 	config();
 	registerHandlers();

@@ -28,6 +28,8 @@ import net.segoia.event.eventbus.CustomEventContext;
 import net.segoia.event.eventbus.Event;
 import net.segoia.event.eventbus.EventContext;
 import net.segoia.event.eventbus.EventHeader;
+import net.segoia.event.eventbus.FilteringEventProcessor;
+import net.segoia.event.eventbus.PassthroughCustomEventContextListenerFactory;
 import net.segoia.event.eventbus.PeerBindRequest;
 import net.segoia.event.eventbus.constants.Events;
 import net.segoia.event.eventbus.peers.core.EventTransceiver;
@@ -63,6 +65,11 @@ public class PeersManager extends GlobalEventNodeAgent {
     private RoutingTable routingTable = new RoutingTable();
 
     private PeerManagerFactory peerManagerFactory;
+    
+    private PeersManagerContext peersManagerContext;
+    private PeersAgentContext agentsContext;
+    
+    private FilteringEventProcessor beforePostFilter = new FilteringEventProcessor(new PassthroughCustomEventContextListenerFactory());
 
     public void init(EventNodeContext hostNodeContext) {
 	this.nodeContext = hostNodeContext;
@@ -74,8 +81,26 @@ public class PeersManager extends GlobalEventNodeAgent {
 	peerManagerFactory = new PeerManagerAbstractFactory(config);
 
 	initGlobalContext(new GlobalAgentEventNodeContext(hostNodeContext, this));
+	
+	/* create a context to give to peer managers */
+	peersManagerContext=new PeersManagerContext(this);
+	
+	/* create a context to give to agents */
+	agentsContext = new PeersAgentContext(this, nodeContext);
+	
+	initAgents(config);
     }
 
+    
+    private void initAgents(PeersManagerConfig config) {
+	List<PeersManagerAgent> agents = config.getAgents();
+	if(agents != null) {
+	    for(PeersManagerAgent a : agents) {
+		a.init(agentsContext);
+	    }
+	}
+    }
+    
     @Override
     public void terminate() {
 	// TODO Auto-generated method stub
@@ -182,11 +207,16 @@ public class PeersManager extends GlobalEventNodeAgent {
 
     protected void handlePeerAccepted(CustomEventContext<PeerAcceptedEvent> c) {
 	/* mark the peer as direct */
-	PeerInfo data = c.getEvent().getData();
+	PeerAcceptedEvent event = c.getEvent();
+	PeerInfo data = event.getData();
 	peersRegistry.setPendingPeerAsDirectPeer(data.getPeerId());
-
+	
 	/* Notify everybody that we have a new peer */
-	context.postEvent(new NewPeerEvent(data));
+	NewPeerEvent newPeerEvent = new NewPeerEvent(data);
+	EventHeader header = event.getHeader();
+	newPeerEvent.getHeader().setSourceAlias(header.getSourceAlias());
+	newPeerEvent.getHeader().setSourceType(header.getSourceType());
+	context.postEvent(newPeerEvent);
     }
 
     public void handleConnectToPeerRequest(CustomEventContext<ConnectToPeerRequestEvent> c) {
@@ -202,6 +232,7 @@ public class PeersManager extends GlobalEventNodeAgent {
 
 	/* create a manager for this peer */
 	PeerContext peerContext = new PeerContext(peerId, transceiver);
+	peerContext.setPeerAlias(data.getPeerAlias());
 
 	List<PrivateIdentityData<?>> ourIdentities = data.getOurIdentities();
 	
@@ -238,6 +269,7 @@ public class PeersManager extends GlobalEventNodeAgent {
 
 	nodeContext.getLogger().info("Creating peer manager "+peerId);
 	PeerManager peerManager = peerManagerFactory.buildPeerManager(peerContext);
+	peerManager.setPeersContext(peersManagerContext);
 	peerContext.setNodeContext(nodeContext);
 
 	peerManager.setInServerMode(true);
@@ -285,7 +317,8 @@ public class PeersManager extends GlobalEventNodeAgent {
 	/* create a manager for this peer */
 	PeerManager peerManager = peerManagerFactory.buildPeerManager(new PeerContext(peerId, transceiver));
 	peerManager.getPeerContext().setNodeContext(nodeContext);
-
+	peerManager.setPeersContext(peersManagerContext);
+	
 	peersRegistry.setPendingPeerManager(peerManager);
 
 	try {
@@ -355,6 +388,9 @@ public class PeersManager extends GlobalEventNodeAgent {
 	PeerManager peerManager = peersRegistry.getDirectPeerManager(to);
 	/* if it is, forward the event */
 	if (peerManager != null) {
+	    /* set to to null */
+	    event.to(null);
+	    
 	    peerManager.forwardToPeer(event);
 	}
 	/* otherwise, set destination and forward it to the peers */
@@ -600,4 +636,23 @@ public class PeersManager extends GlobalEventNodeAgent {
 	return activePeers;
     }
 
+    /**
+     * To be called by peer managers
+     * @param <E>
+     * @param context
+     */
+    public <E extends Event> void handlePeerEvent(PeerEventContext<E> context) {
+	/* call before post filter */
+	beforePostFilter.processEvent(context);
+	E event = context.getEvent();
+	/* call event only if it wasn't handled */
+	if(!event.isHandled()) {	
+	    nodeContext.postEvent(event);
+	}
+    }
+
+    public FilteringEventProcessor getBeforePostFilter() {
+        return beforePostFilter;
+    }
+    
 }

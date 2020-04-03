@@ -77,7 +77,9 @@ public class PeerManager implements PeerEventListener {
      * The state in which the communication with the peer is established and can implement whatever app logic is needed
      */
     private PeerManagerState acceptedState;
-
+    
+    private PeersManagerContext peersContext;
+    
     /* when functioning as client, states */
     public static PeerManagerState BIND_TO_PEER = new BindToPeerState();
     public static PeerManagerState AUTH_TO_PEER = new AuthToPeerState();
@@ -163,11 +165,9 @@ public class PeerManager implements PeerEventListener {
     protected void setAcceptedState(PeerManagerState acceptedState) {
 	this.acceptedState = acceptedState;
     }
-    
-    
 
     public PeerManagerState getAcceptedState() {
-        return acceptedState;
+	return acceptedState;
     }
 
     public void terminate() {
@@ -182,7 +182,7 @@ public class PeerManager implements PeerEventListener {
 	PeerCommContext peerCommContext = buildPeerCommContext();
 	peerContext.setPeerCommContext(peerCommContext);
 	getNodeContext().getSecurityManager().onPeerNodeAuth(peerContext);
-        
+
 	PeerCommManager peerCommManager = new PeerCommManager();
 	peerContext.setPeerCommManager(peerCommManager);
     }
@@ -205,7 +205,7 @@ public class PeerManager implements PeerEventListener {
 	EventNodeSecurityManager securityManager = getNodeContext().getSecurityManager();
 
 //	try {
-	    securityManager.generateNewSessionKey(peerContext);
+	securityManager.generateNewSessionKey(peerContext);
 
 //	} catch (PeerSessionException e) {
 //	    handleError(e);
@@ -228,7 +228,7 @@ public class PeerManager implements PeerEventListener {
      * This is called only when the node is operating in server mode
      */
     public void onProtocolConfirmed() throws PeerSessionException, CommOperationException {
-        setUpPeerCommContext();
+	setUpPeerCommContext();
 	setUpSessionCommManager();
 	generateNewSession();
 	setUpDirectCommManager();
@@ -249,29 +249,28 @@ public class PeerManager implements PeerEventListener {
 	SessionInfo sessionInfo = null;
 
 //	try {
-	    // SessionKeyOutgoingAccumulator opAcc = new SessionKeyOutgoingAccumulator(
-	    // new OperationData(sessionKey.getKeyBytes()));
+	// SessionKeyOutgoingAccumulator opAcc = new SessionKeyOutgoingAccumulator(
+	// new OperationData(sessionKey.getKeyBytes()));
 
-	    /* prepare session token */
-	    CommDataContext processedSessionData = peerCommManager.getSessionCommManager()
-		    .processsOutgoingData(new CommDataContext(sessionKey.getKeyBytes()));
+	/* prepare session token */
+	CommDataContext processedSessionData = peerCommManager.getSessionCommManager()
+		.processsOutgoingData(new CommDataContext(sessionKey.getKeyBytes()));
 
-	    SignCommOperationOutput out = (SignCommOperationOutput) processedSessionData.getResult();
+	SignCommOperationOutput out = (SignCommOperationOutput) processedSessionData.getResult();
 
-	    CryptoHelper cryptoHelper = getNodeContext().getSecurityManager().getCryptoHelper();
+	CryptoHelper cryptoHelper = getNodeContext().getSecurityManager().getCryptoHelper();
 
-	    /* encode base64 */
-	    String sessionToken = cryptoHelper.base64Encode(out.getData());
-	    String sessionTokenSignature = cryptoHelper.base64Encode(out.getSignature());
+	/* encode base64 */
+	String sessionToken = cryptoHelper.base64Encode(out.getData());
+	String sessionTokenSignature = cryptoHelper.base64Encode(out.getSignature());
 
-	    // send the iv as well
-	    String keyIv = cryptoHelper.base64Encode(sessionKey.getIv());
+	// send the iv as well
+	String keyIv = cryptoHelper.base64Encode(sessionKey.getIv());
 
-	    SessionKeyData sessionKeyData = new SessionKeyData(sessionToken, sessionTokenSignature,
-		    sessionKey.getKeyDef());
-	    sessionKeyData.setKeyIv(keyIv);
+	SessionKeyData sessionKeyData = new SessionKeyData(sessionToken, sessionTokenSignature, sessionKey.getKeyDef());
+	sessionKeyData.setKeyIv(keyIv);
 
-	    sessionInfo = new SessionInfo(sessionKey.getSessionId(), sessionKeyData);
+	sessionInfo = new SessionInfo(sessionKey.getSessionId(), sessionKeyData);
 
 //	} catch (CommOperationException e) {
 //	    handleError(e);
@@ -287,7 +286,7 @@ public class PeerManager implements PeerEventListener {
 	    sendNewSessionInfoToPeer(sessionInfo);
 	}
     }
-    
+
     protected void sendNewSessionInfoToPeer(SessionInfo sessionInfo) {
 	forwardToPeer(new PeerSessionStartedEvent(new SessionStartedData(sessionInfo)));
     }
@@ -350,7 +349,12 @@ public class PeerManager implements PeerEventListener {
 	header.setSourceAgentId(peerContext.getPeerIdentityKey());
 	header.setRootAgentId(peerContext.getPeerRootIdentityKey());
 	header.setChannel(peerContext.getCommunicationChannel());
-	peerContext.getNodeContext().postEvent(event);
+	header.setSourceAlias(peerContext.getPeerAlias());
+	header.setSourceType(peerType);
+	
+	peersContext.handlePeerEvent(new PeerEventContext<>(event, this));
+	
+	
     }
 
     public void handlePeerBindAccepted(PeerBindAccepted data) {
@@ -414,5 +418,15 @@ public class PeerManager implements PeerEventListener {
 	state.handlePeerError(new PeerEventContext<>(event, this));
 	postEvent(event);
     }
+
+    public PeersManagerContext getPeersContext() {
+        return peersContext;
+    }
+
+    public void setPeersContext(PeersManagerContext peersContext) {
+        this.peersContext = peersContext;
+    }
+    
+    
 
 }

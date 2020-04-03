@@ -16,13 +16,18 @@
  */
 package net.segoia.event.eventbus.peers;
 
+import java.util.List;
 import java.util.Map;
 
 public class PeersManagerConfig {
     private PeerManagerFactory defaultPeerManagerFactory = new DefaultPeerManagerFactory();
     
     private Map<String,PeerManagerFactory> peerManagerFactories;
-
+    
+    private Map<String, PeerManagerConfig> peersConfigs;
+    
+    private List<PeersManagerAgent> agents;
+    
     public PeerManagerFactory getDefaultPeerManagerFactory() {
 	return defaultPeerManagerFactory;
     }
@@ -37,6 +42,22 @@ public class PeersManagerConfig {
 
     public void setPeerManagerFactories(Map<String, PeerManagerFactory> peerManagerFactories) {
         this.peerManagerFactories = peerManagerFactories;
+    }
+
+    public Map<String, PeerManagerConfig> getPeersConfigs() {
+        return peersConfigs;
+    }
+
+    public void setPeersConfigs(Map<String, PeerManagerConfig> peersConfigs) {
+        this.peersConfigs = peersConfigs;
+    }
+
+    public List<PeersManagerAgent> getAgents() {
+        return agents;
+    }
+
+    public void setAgents(List<PeersManagerAgent> agents) {
+        this.agents = agents;
     }
     
 }

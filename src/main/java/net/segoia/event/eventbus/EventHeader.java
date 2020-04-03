@@ -108,6 +108,16 @@ public class EventHeader implements Cloneable {
      */
     private String originId;
 
+    /**
+     * A custom alias for the source of this event
+     */
+    private transient String sourceAlias;
+    
+    /**
+     * Type of event's source
+     */
+    private transient String sourceType;
+
     public EventHeader() {
 	params = new HashMap<>();
 	tags = new ArrayList<>();
@@ -198,7 +208,7 @@ public class EventHeader implements Cloneable {
     }
 
     public void addSpawnedEventId(String id) {
-	if(spawnedEventsIds == null) {
+	if (spawnedEventsIds == null) {
 	    spawnedEventsIds = new LinkedHashSet<>();
 	}
 	spawnedEventsIds.add(id);
@@ -208,7 +218,7 @@ public class EventHeader implements Cloneable {
      * @return the spawnedEventsIds
      */
     public Set<String> getSpawnedEventsIds() {
-	
+
 	return spawnedEventsIds;
     }
 
@@ -339,9 +349,9 @@ public class EventHeader implements Cloneable {
      */
     public void setCauseEvent(Event causeEvent) {
 	this.causeEvent = causeEvent;
-        if(causeEvent != null){
-            setCauseEventId(causeEvent.getId());
-        }
+	if (causeEvent != null) {
+	    setCauseEventId(causeEvent.getId());
+	}
     }
 
     public String getFrom() {
@@ -418,6 +428,34 @@ public class EventHeader implements Cloneable {
 
     public void setOriginId(String originId) {
 	this.originId = originId;
+    }
+
+    public Event getRootEvent() {
+	if (causeEvent != null) {
+	    Event r = causeEvent.getHeader().getRootEvent();
+	    if (r != null) {
+		return r;
+	    } else {
+		return causeEvent;
+	    }
+	}
+	return null;
+    }
+
+    public String getSourceAlias() {
+	return sourceAlias;
+    }
+
+    public void setSourceAlias(String sourceAlias) {
+	this.sourceAlias = sourceAlias;
+    }
+
+    public String getSourceType() {
+        return sourceType;
+    }
+
+    public void setSourceType(String sourceType) {
+        this.sourceType = sourceType;
     }
 
     /*

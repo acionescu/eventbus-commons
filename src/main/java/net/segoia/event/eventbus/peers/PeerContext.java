@@ -91,6 +91,8 @@ public class PeerContext {
     private String peerRootIdentityKey;
 
     private NodeIdentityProfile peerIdentityProfile;
+    
+    private String peerAlias;
 
     public PeerContext(String peerId, EventTransceiver transceiver) {
 	super();
@@ -256,9 +258,17 @@ public class PeerContext {
 	if (peerInfo != null) {
 	    event.to(peerInfo.getNodeId());
 	}
-       
+        System.out.println(getNodeContext().getLocalNodeId() +" sending to "+peerId +" "+event.toJson());
 	relay.sendEvent(event);
        
+    }
+
+    public String getPeerAlias() {
+        return peerAlias;
+    }
+
+    public void setPeerAlias(String peerAlias) {
+        this.peerAlias = peerAlias;
     }
 
 }

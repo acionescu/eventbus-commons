@@ -25,10 +25,16 @@ import net.segoia.event.eventbus.peers.PeerManager;
 import net.segoia.event.eventbus.peers.core.PeerCommErrorEvent;
 
 public abstract class PeerManagerState {
+    private String id;
     private FilteringEventProcessor localEventsProcessor = new FilteringEventProcessor(new PassthroughCustomEventContextListenerFactory());
     private FilteringEventProcessor peerEventsProcessor = new FilteringEventProcessor(new PassthroughCustomEventContextListenerFactory());
 
     public PeerManagerState() {
+	init();
+    }
+    
+    public PeerManagerState(String id) {
+	this.id = id;
 	init();
     }
 

@@ -19,6 +19,7 @@ package net.segoia.event.eventbus.peers;
 import java.util.Map;
 
 import net.segoia.event.conditions.Condition;
+import net.segoia.event.conditions.StrictChannelMatchCondition;
 import net.segoia.event.eventbus.Event;
 import net.segoia.event.eventbus.FilteringEventBus;
 import net.segoia.event.eventbus.peers.util.EventNodeLogger;
@@ -35,11 +36,14 @@ import net.segoia.event.eventbus.vo.services.NodeIdentityProfile;
  *
  */
 public class LocalAgentEventNodeContext {
+    private String id;
     private EventNodeContext nodeContext;
+    public static final String LOCAL = "LOCAL";
 
     public LocalAgentEventNodeContext(EventNodeContext nodeContext) {
 	super();
 	this.nodeContext = nodeContext;
+	this.id = nodeContext.generatePeerId();
     }
 
     public <E extends Event> void addEventHandler(Class<E> eventClass, CustomEventHandler<E> handler) {
@@ -59,49 +63,60 @@ public class LocalAgentEventNodeContext {
     }
 
     public void postEvent(Event event) {
+	event.getHeader().setChannel(LOCAL);
 	nodeContext.postEvent(event);
     }
 
     public void registerToPeer(ConnectToPeerRequest request) {
 	nodeContext.getNode().registerToPeer(request);
     }
-    
+
     public void disconnectFromPeer(DisconnectFromPeerRequest request) {
 	nodeContext.getNode().disconnectFromPeer(request);
     }
-    
+
     public FilteringEventBus getEventBusForCondition(Condition cond) {
 	return nodeContext.getNode().getEventBus(cond, true);
     }
-    
-    public EventNodeContext getNodeContext() {
-        return nodeContext;
+
+    public FilteringEventBus getLocalBus() {
+	StrictChannelMatchCondition localCond = new StrictChannelMatchCondition(LOCAL);
+	return getEventBusForCondition(localCond);
     }
-    
+
+    public EventNodeContext getNodeContext() {
+	return nodeContext;
+    }
+
     public EventNodeLogger getLogger() {
 	return nodeContext.getLogger();
+    }
+
+    public String getId() {
+	return id;
     }
 
     public void storeIdsLinkData(IdsLinkData data) {
 	nodeContext.getSecurityManager().storeIdsLinkData(data);
     }
-    
+
     public IdsLinkData getIdsLinkData(String idsLinkKey) {
 	return nodeContext.getSecurityManager().getIdsLinkData(idsLinkKey);
     }
-    
+
     public void removeIdsLinkData(String idsLinkKey) {
 	nodeContext.getSecurityManager().removeIdsLinkData(idsLinkKey);
     }
-    
-    public Map<String, NodeIdLinkData> getAllLinksForIdKey(String idKey){
+
+    public Map<String, NodeIdLinkData> getAllLinksForIdKey(String idKey) {
 	return nodeContext.getSecurityManager().getAllLinksForIdKey(idKey);
     }
-    
+
     public void scheduleEvent(final Event event, long delay) {
+	event.getHeader().setChannel(LOCAL);
 	nodeContext.getNode().scheduleEvent(event, delay);
     }
-    
+
     public NodeIdentityProfile getNodeIdProfile(String nodeIdKey) {
 	return nodeContext.getSecurityManager().getIdentityProfile(nodeIdKey);
     }
