@@ -292,6 +292,16 @@ public class EventHeader implements Cloneable {
 	relayedBy.clear();
 	from = null;
     }
+    
+    public void removeRelay(String rid) {
+	int i = relayedBy.indexOf(rid);
+	if(i >=0 ) {
+	    relayedBy.remove(i);
+	    if(i == 0) {
+		from=null;
+	    }
+	}
+    }
 
     /**
      * @return the forwardTo

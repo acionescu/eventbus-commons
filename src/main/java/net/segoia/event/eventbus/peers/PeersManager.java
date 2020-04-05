@@ -32,6 +32,7 @@ import net.segoia.event.eventbus.FilteringEventProcessor;
 import net.segoia.event.eventbus.PassthroughCustomEventContextListenerFactory;
 import net.segoia.event.eventbus.PeerBindRequest;
 import net.segoia.event.eventbus.constants.Events;
+import net.segoia.event.eventbus.peers.agents.RemotePeerDataContext;
 import net.segoia.event.eventbus.peers.core.EventTransceiver;
 import net.segoia.event.eventbus.peers.core.PrivateIdentityData;
 import net.segoia.event.eventbus.peers.events.NewPeerEvent;
@@ -65,11 +66,12 @@ public class PeersManager extends GlobalEventNodeAgent {
     private RoutingTable routingTable = new RoutingTable();
 
     private PeerManagerFactory peerManagerFactory;
-    
+
     private PeersManagerContext peersManagerContext;
     private PeersAgentContext agentsContext;
-    
-    private FilteringEventProcessor beforePostFilter = new FilteringEventProcessor(new PassthroughCustomEventContextListenerFactory());
+
+    private FilteringEventProcessor beforePostFilter = new FilteringEventProcessor(
+	    new PassthroughCustomEventContextListenerFactory());
 
     public void init(EventNodeContext hostNodeContext) {
 	this.nodeContext = hostNodeContext;
@@ -81,26 +83,25 @@ public class PeersManager extends GlobalEventNodeAgent {
 	peerManagerFactory = new PeerManagerAbstractFactory(config);
 
 	initGlobalContext(new GlobalAgentEventNodeContext(hostNodeContext, this));
-	
+
 	/* create a context to give to peer managers */
-	peersManagerContext=new PeersManagerContext(this);
-	
+	peersManagerContext = new PeersManagerContext(this);
+
 	/* create a context to give to agents */
 	agentsContext = new PeersAgentContext(this, nodeContext);
-	
+
 	initAgents(config);
     }
 
-    
     private void initAgents(PeersManagerConfig config) {
 	List<PeersManagerAgent> agents = config.getAgents();
-	if(agents != null) {
-	    for(PeersManagerAgent a : agents) {
+	if (agents != null) {
+	    for (PeersManagerAgent a : agents) {
 		a.init(agentsContext);
 	    }
 	}
     }
-    
+
     @Override
     public void terminate() {
 	// TODO Auto-generated method stub
@@ -167,7 +168,7 @@ public class PeersManager extends GlobalEventNodeAgent {
 	    PeerInfo data = event.getData().getPeerInfo();
 	    String peerId = data.getPeerId();
 	    removePeer(peerId);
-	    onPeerRemoved(data,event);
+	    onPeerRemoved(data, event);
 	});
 
 	context.addEventHandler(DisconnectFromPeerRequestEvent.class, (c) -> {
@@ -201,6 +202,12 @@ public class PeersManager extends GlobalEventNodeAgent {
 	    pm.terminate();
 
 	}
+	
+	pm = peersRegistry.getRemotePeerManager(peerId);
+	if(pm != null) {
+	    pm.terminate();
+	}
+	
 	removePeer(peerId);
 
     }
@@ -210,7 +217,7 @@ public class PeersManager extends GlobalEventNodeAgent {
 	PeerAcceptedEvent event = c.getEvent();
 	PeerInfo data = event.getData();
 	peersRegistry.setPendingPeerAsDirectPeer(data.getPeerId());
-	
+
 	/* Notify everybody that we have a new peer */
 	NewPeerEvent newPeerEvent = new NewPeerEvent(data);
 	EventHeader header = event.getHeader();
@@ -221,7 +228,7 @@ public class PeersManager extends GlobalEventNodeAgent {
 
     public void handleConnectToPeerRequest(CustomEventContext<ConnectToPeerRequestEvent> c) {
 	ConnectToPeerRequest data = c.getEvent().getData();
-	if(data == null) {
+	if (data == null) {
 	    throw new RuntimeException("Can't connect to peer. No connect information provided");
 	}
 
@@ -235,9 +242,9 @@ public class PeersManager extends GlobalEventNodeAgent {
 	peerContext.setPeerAlias(data.getPeerAlias());
 
 	List<PrivateIdentityData<?>> ourIdentities = data.getOurIdentities();
-	
+
 	if (ourIdentities != null && !ourIdentities.isEmpty()) {
-	    nodeContext.getLogger().info("Connecting to peer with custom identities "+ourIdentities.size());
+	    nodeContext.getLogger().info("Connecting to peer with custom identities " + ourIdentities.size());
 	    peerContext.setOurAvailableIdentities(ourIdentities);
 
 	    NodeInfo defaultNodeInfo = nodeContext.getNodeInfo();
@@ -248,11 +255,11 @@ public class PeersManager extends GlobalEventNodeAgent {
 	    NodeAuth customNodeAuth = new NodeAuth();
 	    List<NodeIdentity<?>> customIdentities = new ArrayList<>();
 	    for (PrivateIdentityData<?> pid : ourIdentities) {
-		if(pid == null) {
+		if (pid == null) {
 		    throw new RuntimeException("Can't add null identity");
 		}
 		NodeIdentity<? extends IdentityType> pni = pid.getPublicNodeIdentity();
-		if(pni == null) {
+		if (pni == null) {
 		    throw new RuntimeException("Can't add null public node identity");
 		}
 		customIdentities.add(pni);
@@ -267,7 +274,7 @@ public class PeersManager extends GlobalEventNodeAgent {
 	    peerContext.setOurNodeInfo(nodeContext.getNodeInfo());
 	}
 
-	nodeContext.getLogger().info("Creating peer manager "+peerId);
+	nodeContext.getLogger().info("Creating peer manager " + peerId);
 	PeerManager peerManager = peerManagerFactory.buildPeerManager(peerContext);
 	peerManager.setPeersContext(peersManagerContext);
 	peerContext.setNodeContext(nodeContext);
@@ -275,8 +282,7 @@ public class PeersManager extends GlobalEventNodeAgent {
 	peerManager.setInServerMode(true);
 
 	peersRegistry.setPendingPeerManager(peerManager);
-	
-	
+
 	try {
 	    peerManager.start();
 	} catch (Throwable t) {
@@ -304,7 +310,7 @@ public class PeersManager extends GlobalEventNodeAgent {
 		}
 	    } catch (Throwable e) {
 		nodeContext.getLogger().error("Can't send bind rejection message", e);
-		
+
 	    } finally {
 		transceiver.terminate();
 	    }
@@ -318,7 +324,7 @@ public class PeersManager extends GlobalEventNodeAgent {
 	PeerManager peerManager = peerManagerFactory.buildPeerManager(new PeerContext(peerId, transceiver));
 	peerManager.getPeerContext().setNodeContext(nodeContext);
 	peerManager.setPeersContext(peersManagerContext);
-	
+
 	peersRegistry.setPendingPeerManager(peerManager);
 
 	try {
@@ -390,11 +396,16 @@ public class PeersManager extends GlobalEventNodeAgent {
 	if (peerManager != null) {
 	    /* set to to null */
 	    event.to(null);
-	    
+
 	    peerManager.forwardToPeer(event);
 	}
+	else if((peerManager = peersRegistry.getRemotePeerManager(to)) != null) {
+	    /* we have a remote peer. forward it there */
+	    peerManager.forwardToPeer(event);
+	}
+	
 	/* otherwise, set destination and forward it to the peers */
-	else if (!event.wasRelayedBy(getLocalNodeId())) {
+	else if (nodeContext.getConfig().isAutoRelayEnabled() && !event.wasRelayedBy(getLocalNodeId())) {
 	    forwardToDirectPeers(event);
 	}
     }
@@ -572,7 +583,7 @@ public class PeersManager extends GlobalEventNodeAgent {
 	EventHeader reasonHeader = reasonEvent.getHeader();
 	PeerLeftEvent event = new PeerLeftEvent(peerInfo);
 	EventHeader header = event.getHeader();
-	
+
 	header.setChannel(reasonHeader.getChannel());
 	header.setSourceAgentId(reasonHeader.getSourceAgentId());
 	header.setRootAgentId(reasonHeader.getRootAgentId());
@@ -587,6 +598,13 @@ public class PeersManager extends GlobalEventNodeAgent {
 	}
 	/* remove also pending peers */
 	peerManager = peersRegistry.removePendingPeer(peerId);
+	if (peerManager != null) {
+	    /* call cleanUp not terminate */
+	    peerManager.cleanUp();
+	}
+	
+	/* remove remote peers */
+	peerManager = peersRegistry.removeRemotePeer(peerId);
 	if (peerManager != null) {
 	    /* call cleanUp not terminate */
 	    peerManager.cleanUp();
@@ -618,26 +636,52 @@ public class PeersManager extends GlobalEventNodeAgent {
 	// TODO Auto-generated method stub
 
     }
-    
-    public Map<String,String> getDirectPeersByRootKey(Collection<String> rootKeys){
-	Map<String,String> activePeers = new HashMap<>();
-	
-	for(PeerManager pm : peersRegistry.getDirectPeers().values()) {
-	    for(String rk : rootKeys) {
-		if(rk.equals(pm.getPeerContext().getPeerRootIdentityKey())) {
-		    activePeers.put(rk,pm.getPeerId());
-		    if(activePeers.size() == rootKeys.size()) {
+
+    public Map<String, String> getDirectPeersByRootKey(Collection<String> rootKeys) {
+	Map<String, String> activePeers = new HashMap<>();
+
+	for (PeerManager pm : peersRegistry.getDirectPeers().values()) {
+	    for (String rk : rootKeys) {
+		if (rk.equals(pm.getPeerContext().getPeerRootIdentityKey())) {
+		    activePeers.put(rk, pm.getPeerId());
+		    if (activePeers.size() == rootKeys.size()) {
 			return activePeers;
 		    }
 		}
 	    }
 	}
-	
+
 	return activePeers;
+    }
+
+    protected void addRemotePeer(RemotePeerDataContext dataContext) {
+	String fullRemotePeerPath = dataContext.getFullRemotePeerPath();
+
+	/* see if we already have a manager for this remote peer */
+	RemotePeerManager remotePeerManager = (RemotePeerManager)peersRegistry.getRemotePeerManager(fullRemotePeerPath);
+
+	if (remotePeerManager == null) {
+	    dataContext.setNodeContext(nodeContext);
+	    
+	    remotePeerManager = new RemotePeerManager(dataContext);
+	    remotePeerManager.setPeersContext(peersManagerContext);
+	    
+	    peersRegistry.setRemotePeerManager(remotePeerManager);
+
+	    try {
+		remotePeerManager.start();
+	    } catch (Throwable t) {
+		nodeContext.getLogger().error("Can't start peer manager", t);
+		terminatePeer(fullRemotePeerPath);
+	    }
+	    
+	    dataContext.setRemotePeerManager(remotePeerManager);
+	}
     }
 
     /**
      * To be called by peer managers
+     * 
      * @param <E>
      * @param context
      */
@@ -645,14 +689,15 @@ public class PeersManager extends GlobalEventNodeAgent {
 	/* call before post filter */
 	beforePostFilter.processEvent(context);
 	E event = context.getEvent();
-	/* call event only if it wasn't handled */
-	if(!event.isHandled()) {	
+	/* post event only if it wasn't handled and is not an unhandled remote event*/
+	if (!event.isHandled() && event.getHeader().getRelayedBy().size() <= 1) {
 	    nodeContext.postEvent(event);
 	}
+
     }
 
     public FilteringEventProcessor getBeforePostFilter() {
-        return beforePostFilter;
+	return beforePostFilter;
     }
-    
+
 }

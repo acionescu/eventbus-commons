@@ -3,6 +3,7 @@ package net.segoia.event.eventbus.peers;
 import net.segoia.event.conditions.Condition;
 import net.segoia.event.eventbus.Event;
 import net.segoia.event.eventbus.FilteringEventProcessor;
+import net.segoia.event.eventbus.peers.agents.RemotePeerDataContext;
 import net.segoia.event.eventbus.peers.util.EventNodeLogger;
 
 public class PeersAgentContext {
@@ -25,6 +26,10 @@ public class PeersAgentContext {
     
     public EventNodeLogger logger() {
 	return nodeContext.getLogger();
+    }
+    
+    public void addRemotePeer(RemotePeerDataContext data) {
+	 peersManager.addRemotePeer(data);
     }
     
     public <E extends Event> void registerPeerEventProcessor(Class<E> clazz, PeerContextHandler<E> handler) {

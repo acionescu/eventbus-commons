@@ -66,7 +66,7 @@ import net.segoia.event.eventbus.peers.vo.session.SessionStartedData;
  *
  */
 public class PeerManager implements PeerEventListener {
-
+    private PeerManagerConfig config = new PeerManagerConfig();
     private PeerContext peerContext;
     private String peerId;
     private String peerType;
@@ -77,9 +77,9 @@ public class PeerManager implements PeerEventListener {
      * The state in which the communication with the peer is established and can implement whatever app logic is needed
      */
     private PeerManagerState acceptedState;
-    
+
     private PeersManagerContext peersContext;
-    
+
     /* when functioning as client, states */
     public static PeerManagerState BIND_TO_PEER = new BindToPeerState();
     public static PeerManagerState AUTH_TO_PEER = new AuthToPeerState();
@@ -93,14 +93,22 @@ public class PeerManager implements PeerEventListener {
     public static PeerManagerState PEER_ACCEPTED = new PeerAcceptedState();
 
     public PeerManager(String peerId, EventTransceiver transceiver) {
-
 	this(new PeerContext(peerId, transceiver));
-
     }
 
     public PeerManager(PeerContext peerContext) {
+	this(peerContext, true);
+    }
+
+    public PeerManager(PeerContext peerContext, boolean autoInit) {
 	super();
 	this.peerContext = peerContext;
+	if (autoInit) {
+	    init(peerContext);
+	}
+    }
+
+    protected void init(PeerContext peerContext) {
 	EventTransceiver transceiver = peerContext.getTransceiver();
 	DefaultEventRelay relay = new DefaultEventRelay(peerId, transceiver);
 	/* listen on events from peer */
@@ -171,7 +179,10 @@ public class PeerManager implements PeerEventListener {
     }
 
     public void terminate() {
-	peerContext.getRelay().terminate();
+	EventRelay relay = peerContext.getRelay();
+	if (relay != null) {
+	    relay.terminate();
+	}
     }
 
     protected void cleanUp() {
@@ -340,8 +351,8 @@ public class PeerManager implements PeerEventListener {
     }
 
     public void onReady() {
-	goToState(acceptedState);
 	postEvent(new PeerAcceptedEvent(new PeerInfo(peerId, peerType, peerContext.getPeerInfo())));
+	goToState(acceptedState);
     }
 
     public void postEvent(Event event) {
@@ -351,10 +362,9 @@ public class PeerManager implements PeerEventListener {
 	header.setChannel(peerContext.getCommunicationChannel());
 	header.setSourceAlias(peerContext.getPeerAlias());
 	header.setSourceType(peerType);
-	
+
 	peersContext.handlePeerEvent(new PeerEventContext<>(event, this));
-	
-	
+
     }
 
     public void handlePeerBindAccepted(PeerBindAccepted data) {
@@ -389,11 +399,17 @@ public class PeerManager implements PeerEventListener {
 	return peerContext.isRemoteAgent();
     }
 
+    protected void peerEventPreprocessing(Event event) {
+	if (!config.isAllowPeerRelays()) {
+	    /* make sure we don't allow peers to inject relays */
+	    event.clearRelays();
+	}
+	event.addRelay(getPeerId());
+    }
+
     @Override
     public void onPeerEvent(Event event) {
-	/* make sure we don't allow peers to inject relays */
-	event.clearRelays();
-	event.addRelay(getPeerId());
+	peerEventPreprocessing(event);
 	try {
 	    handleEventFromPeer(event);
 	} finally {
@@ -420,13 +436,31 @@ public class PeerManager implements PeerEventListener {
     }
 
     public PeersManagerContext getPeersContext() {
-        return peersContext;
+	return peersContext;
     }
 
     public void setPeersContext(PeersManagerContext peersContext) {
-        this.peersContext = peersContext;
+	this.peersContext = peersContext;
     }
-    
-    
+
+    public PeerManagerConfig getConfig() {
+	return config;
+    }
+
+    public void setConfig(PeerManagerConfig config) {
+	this.config = config;
+    }
+
+    public void setPeerId(String peerId) {
+	this.peerId = peerId;
+    }
+
+    public String getPeerType() {
+	return peerType;
+    }
+
+    public void setPeerType(String peerType) {
+	this.peerType = peerType;
+    }
 
 }

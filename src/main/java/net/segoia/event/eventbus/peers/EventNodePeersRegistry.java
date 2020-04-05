@@ -74,6 +74,10 @@ public class EventNodePeersRegistry {
     public void setPendingPeerManager(PeerManager peerManager) {
 	setPeerManager(pendingPeers, peerManager);
     }
+    
+    public void setRemotePeerManager(PeerManager remotePeerManager) {
+	setPeerManager(remotePeers, remotePeerManager);
+    }
 
     private void setPeerManager(Map<String, PeerManager> targetMap, PeerManager peerManager) {
 	targetMap.put(peerManager.getPeerId(), peerManager);

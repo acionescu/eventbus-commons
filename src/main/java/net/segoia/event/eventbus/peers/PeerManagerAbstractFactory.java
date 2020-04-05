@@ -48,6 +48,8 @@ public class PeerManagerAbstractFactory implements PeerManagerFactory{
 	 if(peersConfigs != null) {
 	     PeerManagerConfig pc = peersConfigs.get(channel);
 	     if(pc != null) {
+		 peerManager.setConfig(pc);
+		 
 		 List<PeerManagerAgent> peerManagerAgents = pc.getPeerManagerAgents();
 		if(peerManagerAgents != null) {
 		     /* add agents for this peer */

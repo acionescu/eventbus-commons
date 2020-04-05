@@ -258,6 +258,10 @@ public class PeerContext {
 	if (peerInfo != null) {
 	    event.to(peerInfo.getNodeId());
 	}
+	
+	//TODO: remove our node id from relays
+	event.getHeader().removeRelay(nodeContext.getLocalNodeId());
+	
         System.out.println(getNodeContext().getLocalNodeId() +" sending to "+peerId +" "+event.toJson());
 	relay.sendEvent(event);
        
@@ -269,6 +273,10 @@ public class PeerContext {
 
     public void setPeerAlias(String peerAlias) {
         this.peerAlias = peerAlias;
+    }
+
+    public void setPeerId(String peerId) {
+        this.peerId = peerId;
     }
 
 }
