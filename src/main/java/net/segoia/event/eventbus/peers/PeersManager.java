@@ -61,6 +61,7 @@ import net.segoia.event.eventbus.peers.vo.bind.PeerBindRejected;
 import net.segoia.util.data.SetMap;
 
 public class PeersManager extends GlobalEventNodeAgent {
+    private PeersManagerConfig config;
     private EventNodeContext nodeContext;
     private EventNodePeersRegistry peersRegistry = new EventNodePeersRegistry();
     private RoutingTable routingTable = new RoutingTable();
@@ -75,7 +76,7 @@ public class PeersManager extends GlobalEventNodeAgent {
 
     public void init(EventNodeContext hostNodeContext) {
 	this.nodeContext = hostNodeContext;
-	PeersManagerConfig config = hostNodeContext.getConfig().getPeersManagerConfig();
+	config = hostNodeContext.getConfig().getPeersManagerConfig();
 	if (config == null) {
 	    config = new PeersManagerConfig();
 	}
@@ -202,12 +203,12 @@ public class PeersManager extends GlobalEventNodeAgent {
 	    pm.terminate();
 
 	}
-	
+
 	pm = peersRegistry.getRemotePeerManager(peerId);
-	if(pm != null) {
+	if (pm != null) {
 	    pm.terminate();
 	}
-	
+
 	removePeer(peerId);
 
     }
@@ -291,29 +292,58 @@ public class PeersManager extends GlobalEventNodeAgent {
 	}
     }
 
+    private boolean isPeerBindAllowed(CustomEventContext<PeerBindRequestEvent> c, String channel) {
+	Map<String, PeerManagerConfig> peersConfigs = config.getPeersConfigs();
+
+	if (peersConfigs != null) {
+	    PeerManagerConfig peerManagerConfig = peersConfigs.get(channel);
+	    if (peerManagerConfig != null) {
+		System.out.println("testing bind condition ");
+		return peerManagerConfig.getPeerBindAcceptCondition().test(c);
+	    }
+	}
+	/* fallback to default */
+	return config.getDefaultPeerBindCondition().test(c);
+    }
+
+    private void rejectBind(EventTransceiver transceiver, PeerBindRejected pbr) {
+	try {
+	    PeerBindRejectedEvent event = new PeerBindRejectedEvent(pbr.getReason());
+	    transceiver.terminate(event);
+//	    String json = event.toJson();
+//	    if (json != null) {
+//		transceiver.sendData(json.getBytes("UTF-8"));
+//	    } else {
+//		throw new RuntimeException("Cant jsontify event " + event.getEt());
+//	    }
+	} catch (Throwable e) {
+	    nodeContext.getLogger().error("Can't send bind rejection message", e);
+
+	} finally {
+//	    transceiver.terminate();
+	}
+    }
+
     public void handlePeerBindRequest(CustomEventContext<PeerBindRequestEvent> c) {
 
 	PeerBindRequest req = c.getEvent().getData();
-
 	EventTransceiver transceiver = req.getTransceiver();
+	
+	if(transceiver == null) {
+	    PeerBindRejected pbr = new PeerBindRejected("No transceiver provided");
+	    rejectBind(transceiver, pbr);
+	    return;
+	}
 
+	if(!isPeerBindAllowed(c, transceiver.getChannel())) {
+	    PeerBindRejected pbr = new PeerBindRejected("Bind not allowed");
+	    rejectBind(transceiver, pbr);
+	    return;
+	}
+	
 	if (!nodeContext.getConfig().isAllowServerMode()) {
-	    PeerBindRejected pbr = new PeerBindRejected();
-	    pbr.setReason("Node not working in server mode");
-	    try {
-		PeerBindRejectedEvent event = new PeerBindRejectedEvent(pbr);
-		String json = event.toJson();
-		if (json != null) {
-		    transceiver.sendData(json.getBytes("UTF-8"));
-		} else {
-		    throw new RuntimeException("Cant jsontify event " + event.getEt());
-		}
-	    } catch (Throwable e) {
-		nodeContext.getLogger().error("Can't send bind rejection message", e);
-
-	    } finally {
-		transceiver.terminate();
-	    }
+	    PeerBindRejected pbr = new PeerBindRejected("Node not working in server mode");
+	    rejectBind(transceiver, pbr);
 	    return;
 	}
 
@@ -398,12 +428,11 @@ public class PeersManager extends GlobalEventNodeAgent {
 	    event.to(null);
 
 	    peerManager.forwardToPeer(event);
-	}
-	else if((peerManager = peersRegistry.getRemotePeerManager(to)) != null) {
+	} else if ((peerManager = peersRegistry.getRemotePeerManager(to)) != null) {
 	    /* we have a remote peer. forward it there */
 	    peerManager.forwardToPeer(event);
 	}
-	
+
 	/* otherwise, set destination and forward it to the peers */
 	else if (nodeContext.getConfig().isAutoRelayEnabled() && !event.wasRelayedBy(getLocalNodeId())) {
 	    forwardToDirectPeers(event);
@@ -602,7 +631,7 @@ public class PeersManager extends GlobalEventNodeAgent {
 	    /* call cleanUp not terminate */
 	    peerManager.cleanUp();
 	}
-	
+
 	/* remove remote peers */
 	peerManager = peersRegistry.removeRemotePeer(peerId);
 	if (peerManager != null) {
@@ -658,14 +687,15 @@ public class PeersManager extends GlobalEventNodeAgent {
 	String fullRemotePeerPath = dataContext.getFullRemotePeerPath();
 
 	/* see if we already have a manager for this remote peer */
-	RemotePeerManager remotePeerManager = (RemotePeerManager)peersRegistry.getRemotePeerManager(fullRemotePeerPath);
+	RemotePeerManager remotePeerManager = (RemotePeerManager) peersRegistry
+		.getRemotePeerManager(fullRemotePeerPath);
 
 	if (remotePeerManager == null) {
 	    dataContext.setNodeContext(nodeContext);
-	    
+
 	    remotePeerManager = new RemotePeerManager(dataContext);
 	    remotePeerManager.setPeersContext(peersManagerContext);
-	    
+
 	    peersRegistry.setRemotePeerManager(remotePeerManager);
 
 	    try {
@@ -674,7 +704,7 @@ public class PeersManager extends GlobalEventNodeAgent {
 		nodeContext.getLogger().error("Can't start peer manager", t);
 		terminatePeer(fullRemotePeerPath);
 	    }
-	    
+
 	    dataContext.setRemotePeerManager(remotePeerManager);
 	}
     }
@@ -689,7 +719,7 @@ public class PeersManager extends GlobalEventNodeAgent {
 	/* call before post filter */
 	beforePostFilter.processEvent(context);
 	E event = context.getEvent();
-	/* post event only if it wasn't handled and is not an unhandled remote event*/
+	/* post event only if it wasn't handled and is not an unhandled remote event */
 	if (!event.isHandled() && event.getHeader().getRelayedBy().size() <= 1) {
 	    nodeContext.postEvent(event);
 	}

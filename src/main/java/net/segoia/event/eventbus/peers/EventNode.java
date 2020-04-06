@@ -313,6 +313,9 @@ public abstract class EventNode {
     public void registerPeer(PeerBindRequest request) {
 	postInternally(new PeerBindRequestEvent(request));
     }
+    public void registerPeer(PeerBindRequestEvent requestEvent) {
+	postInternally(requestEvent);
+    }
 
     // public void registerPeer(EventNode peerNode) {
     // registerPeer(new PeerBindRequest(peerNode));

@@ -398,6 +398,10 @@ public class PeerManager implements PeerEventListener {
     public boolean isRemoteAgent() {
 	return peerContext.isRemoteAgent();
     }
+    
+    private boolean isAccepted(Event event) {
+	return config.getPeerEventAcceptCondition().test(new PeerEventContext<>(event, this));
+    }
 
     protected void peerEventPreprocessing(Event event) {
 	if (!config.isAllowPeerRelays()) {
@@ -409,6 +413,11 @@ public class PeerManager implements PeerEventListener {
 
     @Override
     public void onPeerEvent(Event event) {
+	if(!isAccepted(event)) {
+	    /* block this */
+	    peerContext.getNodeContext().getLogger().error("Event not accepted: "+event.toJson());
+	    return;
+	}
 	peerEventPreprocessing(event);
 	try {
 	    handleEventFromPeer(event);

@@ -14,26 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.segoia.event.eventbus.peers.vo.bind;
+package net.segoia.event.conditions.generic;
 
-public class PeerBindRejected {
-    private String reason;
+import java.util.List;
 
-    public PeerBindRejected() {
-	super();
+public class SimpleParamInCondition implements SimpleParamCondition{
+    private List<String> values;
+
+    @Override
+    public boolean test(Comparable<?> input) {
+	return values.indexOf(input) >= 0;
     }
 
-    public PeerBindRejected(String reason) {
-	super();
-	this.reason = reason;
+    public List<String> getValues() {
+        return values;
     }
 
-    public String getReason() {
-	return reason;
+    public void setValues(List<String> values) {
+        this.values = values;
     }
-
-    public void setReason(String reason) {
-	this.reason = reason;
-    }
+    
+    
 
 }

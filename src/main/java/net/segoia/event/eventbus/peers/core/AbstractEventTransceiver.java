@@ -16,6 +16,7 @@
  */
 package net.segoia.event.eventbus.peers.core;
 
+import net.segoia.event.eventbus.peers.events.ClosePeerEvent;
 import net.segoia.event.eventbus.peers.vo.PeerData;
 import net.segoia.event.eventbus.peers.vo.PeerErrorData;
 import net.segoia.event.eventbus.peers.vo.PeerLeavingReason;
@@ -46,14 +47,27 @@ public abstract class AbstractEventTransceiver implements EventTransceiver {
 
     @Override
     public void onPeerLeaving(PeerLeavingReason reason) {
-	remoteDataListener.onPeerLeaving(reason);
+	if (remoteDataListener != null) {
+	    remoteDataListener.onPeerLeaving(reason);
+	}
 
     }
 
     @Override
     public void onPeerError(PeerErrorData errorData) {
-	remoteDataListener.onPeerError(errorData);
+	if (remoteDataListener != null) {
+	    remoteDataListener.onPeerError(errorData);
+	}
     }
+
+    @Override
+    public void terminate(ClosePeerEvent closeEvent) {
+	/* fallback to default terminate */
+	terminate();
+	
+    }
+    
+    
 
     // @Override
     // public void receiveEvent(Event event) {

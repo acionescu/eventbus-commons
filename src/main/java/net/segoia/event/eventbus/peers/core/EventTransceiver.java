@@ -16,6 +16,7 @@
  */
 package net.segoia.event.eventbus.peers.core;
 
+import net.segoia.event.eventbus.peers.events.ClosePeerEvent;
 import net.segoia.event.eventbus.peers.vo.PeerErrorData;
 import net.segoia.event.eventbus.peers.vo.PeerLeavingReason;
 
@@ -28,6 +29,8 @@ public interface EventTransceiver {
     void start();
     
     void terminate();
+    
+    void terminate(ClosePeerEvent closeEvent);
     
 //    void sendEvent(Event event);
 //    void receiveEvent(Event event);

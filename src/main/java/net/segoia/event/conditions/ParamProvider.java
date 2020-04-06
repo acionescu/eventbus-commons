@@ -14,26 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.segoia.event.eventbus.peers.vo.bind;
+package net.segoia.event.conditions;
 
-public class PeerBindRejected {
-    private String reason;
-
-    public PeerBindRejected() {
-	super();
-    }
-
-    public PeerBindRejected(String reason) {
-	super();
-	this.reason = reason;
-    }
-
-    public String getReason() {
-	return reason;
-    }
-
-    public void setReason(String reason) {
-	this.reason = reason;
-    }
-
+public interface ParamProvider<I> {
+    Comparable provide(I input);
 }

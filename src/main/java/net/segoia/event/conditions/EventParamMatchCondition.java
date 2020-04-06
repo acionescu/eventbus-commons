@@ -16,23 +16,37 @@
  */
 package net.segoia.event.conditions;
 
+import net.segoia.event.conditions.generic.SimpleParamCondition;
+import net.segoia.event.conditions.providers.EventParamProvider;
 import net.segoia.event.eventbus.EventContext;
 
-public class StrictSourceAliasMatchCondition extends Condition{
-    private String expected;
-    
-    
-    
-    public StrictSourceAliasMatchCondition(String expected) {
-	super("source_alias_"+expected);
-	this.expected = expected;
+public class EventParamMatchCondition extends Condition {
+    private EventParamProvider paramProvider;
+    private SimpleParamCondition condition;
+
+    public EventParamMatchCondition() {
+	super(EventParamMatchCondition.class.getSimpleName() + "_" + System.currentTimeMillis());
     }
-
-
 
     @Override
     public boolean test(EventContext input) {
-	return expected.equals(input.getEvent().getHeader().getSourceAlias());
+	return condition.test(paramProvider.provide(input));
+    }
+
+    public EventParamProvider getParamProvider() {
+        return paramProvider;
+    }
+
+    public void setParamProvider(EventParamProvider paramProvider) {
+        this.paramProvider = paramProvider;
+    }
+
+    public SimpleParamCondition getCondition() {
+        return condition;
+    }
+
+    public void setCondition(SimpleParamCondition condition) {
+        this.condition = condition;
     }
 
 }

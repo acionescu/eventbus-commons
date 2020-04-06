@@ -19,6 +19,9 @@ package net.segoia.event.eventbus.peers;
 import java.util.List;
 import java.util.Map;
 
+import net.segoia.event.conditions.Condition;
+import net.segoia.event.conditions.TrueCondition;
+
 public class PeersManagerConfig {
     private PeerManagerFactory defaultPeerManagerFactory = new DefaultPeerManagerFactory();
     
@@ -27,6 +30,8 @@ public class PeersManagerConfig {
     private Map<String, PeerManagerConfig> peersConfigs;
     
     private List<PeersManagerAgent> agents;
+    
+    private Condition defaultPeerBindCondition = new TrueCondition();
     
     public PeerManagerFactory getDefaultPeerManagerFactory() {
 	return defaultPeerManagerFactory;
@@ -58,6 +63,14 @@ public class PeersManagerConfig {
 
     public void setAgents(List<PeersManagerAgent> agents) {
         this.agents = agents;
+    }
+
+    public Condition getDefaultPeerBindCondition() {
+        return defaultPeerBindCondition;
+    }
+
+    public void setDefaultPeerBindCondition(Condition defaultPeerBindCondition) {
+        this.defaultPeerBindCondition = defaultPeerBindCondition;
     }
     
 }
