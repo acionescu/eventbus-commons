@@ -298,7 +298,6 @@ public class PeersManager extends GlobalEventNodeAgent {
 	if (peersConfigs != null) {
 	    PeerManagerConfig peerManagerConfig = peersConfigs.get(channel);
 	    if (peerManagerConfig != null) {
-		System.out.println("testing bind condition ");
 		return peerManagerConfig.getPeerBindAcceptCondition().test(c);
 	    }
 	}
@@ -326,7 +325,8 @@ public class PeersManager extends GlobalEventNodeAgent {
 
     public void handlePeerBindRequest(CustomEventContext<PeerBindRequestEvent> c) {
 
-	PeerBindRequest req = c.getEvent().getData();
+	PeerBindRequestEvent event = c.getEvent();
+	PeerBindRequest req = event.getData();
 	EventTransceiver transceiver = req.getTransceiver();
 	
 	if(transceiver == null) {
@@ -352,7 +352,10 @@ public class PeersManager extends GlobalEventNodeAgent {
 
 	/* create a manager for this peer */
 	PeerManager peerManager = peerManagerFactory.buildPeerManager(new PeerContext(peerId, transceiver));
-	peerManager.getPeerContext().setNodeContext(nodeContext);
+	PeerContext peerContext = peerManager.getPeerContext();
+	peerContext.setNodeContext(nodeContext);
+	
+	peerContext.setCauseEvent(event);
 	peerManager.setPeersContext(peersManagerContext);
 
 	peersRegistry.setPendingPeerManager(peerManager);

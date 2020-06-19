@@ -31,10 +31,9 @@ public class RemotePeerManager extends PeerManager {
 
     @Override
     protected void init(PeerContext peerContext) {
-	
+
 	setPeerType(remoteContext.getGatewayPeer().getPeerType());
 	setPeerId(peerContext.getPeerId());
-	System.out.println("Initializing RemotePeerManager with id "+getPeerId());
     }
 
     @Override
@@ -46,6 +45,19 @@ public class RemotePeerManager extends PeerManager {
     @Override
     public void onReady() {
 	goToState(getAcceptedState());
+    }
+
+    @Override
+    protected void peerEventPreProcessing(Event event) {
+	/* overwrite cause */
+	event.getHeader().setCauseEvent(getPeerContext().getCauseEvent());
+
+	super.peerEventPreProcessing(event);
+    }
+
+    @Override
+    protected void peerEventPostProcessing(Event event) {
+	/* we don't want to post this to system bus again */
     }
 
     public static PeerManagerState REMOTE_ACCEPTED = new PeerManagerState() {

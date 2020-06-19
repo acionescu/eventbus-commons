@@ -43,13 +43,14 @@ public class RemotePeerDataContext extends PeerContext {
     public RemotePeerDataContext(PeerEventContext<PeerAcceptedEvent> pc) {
 	super(null, null);
 	gatewayPeer = pc.getPeerManager();
-	remotePeerId = pc.getEvent().getData().getPeerId();
+	PeerAcceptedEvent event = pc.getEvent();
+	remotePeerId = event.getData().getPeerId();
 	fullRemotePeerPath = gatewayPeer.getPeerId() + PEER_PATH_SEPARATOR + remotePeerId;
 
 	/* if not overwritten, use this as local remote peer id */
 	setPeerId(fullRemotePeerPath);
 	setRemoteAgent(true);
-	
+	setCauseEvent(event);
 	commChannel = gatewayPeer.getPeerContext().getCommunicationChannel();
     }
 
@@ -57,9 +58,11 @@ public class RemotePeerDataContext extends PeerContext {
     public void sendEventToPeer(Event event) {
 	/* instruct gateway to forward the event to the remote peer */
 	event.to(remotePeerId);
-	getNodeContext().getLogger().info("forwarding to remote peer "+event.toJson());
+	
 	gatewayPeer.forwardToPeer(event);
     }
+    
+    
 
     public String getRemotePeerId() {
 	return remotePeerId;

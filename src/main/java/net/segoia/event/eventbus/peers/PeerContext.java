@@ -93,6 +93,11 @@ public class PeerContext {
     private NodeIdentityProfile peerIdentityProfile;
     
     private String peerAlias;
+    
+    /**
+     * The event that generated this peer creation
+     */
+    private Event causeEvent;
 
     public PeerContext(String peerId, EventTransceiver transceiver) {
 	super();
@@ -259,10 +264,9 @@ public class PeerContext {
 	    event.to(peerInfo.getNodeId());
 	}
 	
-	//TODO: remove our node id from relays
 	event.getHeader().removeRelay(nodeContext.getLocalNodeId());
 	
-        System.out.println(getNodeContext().getLocalNodeId() +" sending to "+peerId +" "+event.toJson());
+//        System.out.println(getNodeContext().getLocalNodeId() +" sending to "+peerId +" "+event.toJson());
 	relay.sendEvent(event);
        
     }
@@ -277,6 +281,14 @@ public class PeerContext {
 
     public void setPeerId(String peerId) {
         this.peerId = peerId;
+    }
+
+    public Event getCauseEvent() {
+        return causeEvent;
+    }
+
+    public void setCauseEvent(Event causeEvent) {
+        this.causeEvent = causeEvent;
     }
 
 }

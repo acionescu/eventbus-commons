@@ -22,9 +22,13 @@ import net.segoia.event.conditions.Condition;
 import net.segoia.event.conditions.StrictChannelMatchCondition;
 import net.segoia.event.eventbus.Event;
 import net.segoia.event.eventbus.FilteringEventBus;
+import net.segoia.event.eventbus.peers.security.CryptoHelper;
+import net.segoia.event.eventbus.peers.security.SpkiPrivateIdentityManager;
 import net.segoia.event.eventbus.peers.util.EventNodeLogger;
+import net.segoia.event.eventbus.peers.vo.auth.id.SpkiNodeIdentity;
 import net.segoia.event.eventbus.peers.vo.bind.ConnectToPeerRequest;
 import net.segoia.event.eventbus.peers.vo.bind.DisconnectFromPeerRequest;
+import net.segoia.event.eventbus.vo.security.EventNodeSecurityException;
 import net.segoia.event.eventbus.vo.security.IdsLinkData;
 import net.segoia.event.eventbus.vo.security.NodeIdLinkData;
 import net.segoia.event.eventbus.vo.services.NodeIdentityProfile;
@@ -119,5 +123,34 @@ public class LocalAgentEventNodeContext {
 
     public NodeIdentityProfile getNodeIdProfile(String nodeIdKey) {
 	return nodeContext.getSecurityManager().getIdentityProfile(nodeIdKey);
+    }
+
+    public void logInfo(String message) {
+	getLogger().info(message);
+    }
+
+    public void logDebug(String message) {
+	getLogger().debug(message);
+    }
+
+    public void logError(String message, Throwable t) {
+	getLogger().error(message, t);
+    }
+
+    public void logError(String message) {
+	getLogger().error(message);
+    }
+    
+    public CryptoHelper crypto() {
+	return nodeContext.getSecurityManager().getCryptoHelper();
+    }
+    
+    public SpkiNodeIdentity getDefaultNodeIdentity() {
+	try {
+	    return nodeContext.getSecurityManager().getDefaultIdentityManager(SpkiPrivateIdentityManager.class).getPublicNodeIdentity();
+	} catch (EventNodeSecurityException e) {
+	    logError("Faield to get default node identity",e);
+	    return null;
+	}
     }
 }

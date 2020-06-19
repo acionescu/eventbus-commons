@@ -121,7 +121,7 @@ public class PeerManager implements PeerEventListener {
     }
 
     public void goToState(PeerManagerState newState) {
-	getNodeContext().getLogger().info("State transition:" + peerId + ":" + state + "->" + newState);
+	getNodeContext().getLogger().debug("State transition:" + peerId + ":" + state + "->" + newState);
 	if (state != null) {
 	    state.onExitState(this);
 	}
@@ -351,7 +351,12 @@ public class PeerManager implements PeerEventListener {
     }
 
     public void onReady() {
-	postEvent(new PeerAcceptedEvent(new PeerInfo(peerId, peerType, peerContext.getPeerInfo())));
+	PeerAcceptedEvent acceptedEvent = new PeerAcceptedEvent(new PeerInfo(peerId, peerType, peerContext.getPeerInfo()));
+	Event causeEvent = peerContext.getCauseEvent();
+	if(causeEvent != null) {
+	    causeEvent.setAsCauseFor(acceptedEvent);
+	}
+	postEvent(acceptedEvent);
 	goToState(acceptedState);
     }
 
@@ -403,7 +408,7 @@ public class PeerManager implements PeerEventListener {
 	return config.getPeerEventAcceptCondition().test(new PeerEventContext<>(event, this));
     }
 
-    protected void peerEventPreprocessing(Event event) {
+    protected void peerEventPreProcessing(Event event) {
 	if (!config.isAllowPeerRelays()) {
 	    /* make sure we don't allow peers to inject relays */
 	    event.clearRelays();
@@ -418,12 +423,17 @@ public class PeerManager implements PeerEventListener {
 	    peerContext.getNodeContext().getLogger().error("Event not accepted: "+event.toJson());
 	    return;
 	}
-	peerEventPreprocessing(event);
+	peerEventPreProcessing(event);
 	try {
 	    handleEventFromPeer(event);
 	} finally {
-	    EBusVM.getInstance().postSystemEvent(event);
+	    peerEventPostProcessing(event);
 	}
+    }
+    
+    protected void peerEventPostProcessing(Event event) {
+	/* by default we post this to the system bus too */
+	EBusVM.getInstance().postSystemEvent(event);
     }
 
     public EventNodeContext getNodeContext() {

@@ -48,6 +48,7 @@ import net.segoia.event.eventbus.peers.vo.auth.id.SharedIdentityType;
 import net.segoia.event.eventbus.peers.vo.auth.id.SharedNodeIdentity;
 import net.segoia.event.eventbus.peers.vo.auth.id.SpkiFullIdentityType;
 import net.segoia.event.eventbus.peers.vo.auth.id.SpkiFullNodeIdentity;
+import net.segoia.event.eventbus.peers.vo.auth.id.SpkiNodeIdentity;
 import net.segoia.event.eventbus.peers.vo.comm.CommunicationProtocol;
 import net.segoia.event.eventbus.peers.vo.comm.CommunicationProtocolConfig;
 import net.segoia.event.eventbus.peers.vo.comm.CommunicationProtocolDefinition;
@@ -64,6 +65,7 @@ import net.segoia.event.eventbus.peers.vo.session.SessionKey;
 import net.segoia.event.eventbus.peers.vo.session.SessionKeyData;
 import net.segoia.event.eventbus.peers.vo.session.SessionKeyPlainData;
 import net.segoia.event.eventbus.vo.security.DataAuthLevel;
+import net.segoia.event.eventbus.vo.security.EventNodeSecurityException;
 import net.segoia.event.eventbus.vo.security.IdentityLinkFullData;
 import net.segoia.event.eventbus.vo.security.IdsLinkData;
 import net.segoia.event.eventbus.vo.security.NodeIdLinkData;
@@ -95,6 +97,8 @@ public abstract class EventNodeSecurityManager {
     private CryptoHelper cryptoHelper;
 
     private PeerRuleEngine peerRuleEngine;
+    
+    private Map<Class<? extends PrivateIdentityManager>, PrivateIdentityManager> defaultIdentities=new HashMap<>();
 
     public EventNodeSecurityManager() {
 	super();
@@ -1000,5 +1004,60 @@ public abstract class EventNodeSecurityManager {
 	IdentitiesManager identitiesManager = securityConfig.getIdentitiesManager();
 
 	return identitiesManager.removeIdentityLinkFullData(identityKey);
+    }
+    
+    public <T extends PrivateIdentityManager> T getDefaultIdentityManager(Class<T> clazz) throws EventNodeSecurityException {
+	T privateIdentityManager = (T) defaultIdentities.get(clazz);
+	
+	if(privateIdentityManager == null) {
+	    /* try to create one from our identities. Use the first one that matches */
+	    for(PrivateIdentityData pi: privateIdentities.values()) {
+		try{
+		   
+		    /* see if this identity matches the desired type */
+		    privateIdentityManager = clazz.cast(pi);
+		    
+		    /* add this as default */
+		    defaultIdentities.put(clazz, privateIdentityManager);
+		    /* break the loop */
+		    break;
+		    
+		}
+		catch(Exception e){
+		    
+		}
+	    }
+	}
+	
+	return privateIdentityManager;
+    }
+    
+    public SignatureInfo sign(byte[] data, SpkiPrivateIdentityManager identity, SignCommOperationDef opDef) throws Exception {
+	SignOperationWorker signWorker = identity.buildSignWorker(opDef);
+
+        byte[] signature = signWorker.sign(data);
+
+        String publicKey = identity.getPublicNodeIdentity().
+                getPublicKey();
+        		
+        String keyId = cryptoHelper.sha256(publicKey);
+
+        SignatureInfo signatureInfo = new SignatureInfo(keyId,
+                cryptoHelper.base64Encode(signature),
+                opDef);
+        
+        return signatureInfo;
+    }
+    
+    public SignatureInfo sign(byte[] data, SignCommOperationDef opDef) throws Exception {
+	SpkiPrivateIdentityManager defaultIdentityManager = getDefaultIdentityManager(SpkiPrivateIdentityManager.class);
+	return sign(data, defaultIdentityManager, opDef);
+    }
+    
+    public SignatureInfo sign(byte[] data) throws Exception {
+	final SignCommOperationDef signCommOperationDef = new SignCommOperationDef();
+        signCommOperationDef.setHashingAlgorithm("SHA1withRSA");
+        
+        return sign(data, signCommOperationDef);
     }
 }

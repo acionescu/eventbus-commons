@@ -17,10 +17,14 @@
 package net.segoia.event.eventbus.peers;
 
 import net.segoia.event.eventbus.Event;
+import net.segoia.event.eventbus.peers.security.CryptoHelper;
 import net.segoia.event.eventbus.peers.security.EventNodeSecurityManager;
 import net.segoia.event.eventbus.peers.util.EventNodeHelper;
 import net.segoia.event.eventbus.peers.util.EventNodeLogger;
 import net.segoia.event.eventbus.peers.vo.NodeInfo;
+import net.segoia.event.eventbus.vo.security.SignatureInfo;
+import net.segoia.event.eventbus.vo.security.SignedCustomEvent;
+import net.segoia.event.eventbus.vo.security.SignedEventData;
 import net.segoia.event.eventbus.vo.services.EventNodeServiceDefinition;
 import net.segoia.event.eventbus.vo.services.EventNodeServiceRef;
 
@@ -87,5 +91,19 @@ public class EventNodeContext {
     
     public EventNodeLogger getLogger() {
 	return config.getLogger();
+    }
+    
+    public CryptoHelper crypto() {
+	return securityManager.getCryptoHelper();
+    }
+    
+    public SignedCustomEvent signEvent(Event event) throws Exception{
+	String eventJson = event.toJson();
+        byte[] eventBytes = eventJson.getBytes("UTF-8");
+        
+        SignatureInfo signatureInfo = securityManager.sign(eventBytes);
+        
+        return new SignedCustomEvent(new SignedEventData(crypto().base64Encode(eventBytes),
+                signatureInfo));
     }
 }

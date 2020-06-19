@@ -26,13 +26,13 @@ import net.segoia.event.eventbus.FilteringEventProcessor;
 import net.segoia.event.eventbus.PassthroughCustomEventContextListenerFactory;
 import net.segoia.event.eventbus.peers.PeerEventContext;
 import net.segoia.event.eventbus.peers.PeersManagerAgent;
-import net.segoia.event.eventbus.peers.events.NewPeerEvent;
 import net.segoia.event.eventbus.peers.events.PeerAcceptedEvent;
 import net.segoia.event.eventbus.peers.events.PeerLeavingEvent;
 import net.segoia.event.eventbus.peers.vo.PeerInfo;
 import net.segoia.event.eventbus.peers.vo.PeerLeavingData;
 
 public class RemotePeersAgent extends PeersManagerAgent {
+    public static final String TYPE="RemotePeersAgent";
     /**
      * Accepted remote peers gateways
      */
@@ -40,8 +40,7 @@ public class RemotePeersAgent extends PeersManagerAgent {
 
     @Override
     protected void config() {
-	System.out.println("RemotePeersAgent init");
-
+	context.logger().debug("RemotePeersAgent init");
     }
 
     @Override
@@ -124,7 +123,9 @@ public class RemotePeersAgent extends PeersManagerAgent {
 
     private void handleRemotePeerEvent(PeerEventContext<Event> c) {
 	Event event = c.getEvent();
-	context.logger().info("remote agent got event: " + event.toJson());
+	if(context.logger().isDebugEnabled()) {
+	    context.logger().debug(TYPE+": remote agent got event: " + event.toJson());
+	}
 
 	EventHeader header = event.getHeader();
 	if (header.getRelayedBy().size() > 1) {
@@ -132,7 +133,7 @@ public class RemotePeersAgent extends PeersManagerAgent {
 	    String lastRelay = header.getLastRelay();
 	    GatewayPeerController gatewayPeerController = gateways.get(lastRelay);
 	    if (gatewayPeerController != null) {
-		context.logger().info("Send event " + event.getEt() + " to gateway controller " + lastRelay);
+		context.logger().debug(TYPE+": Send event " + event.getEt() + " to gateway controller " + lastRelay);
 		gatewayPeerController.handleRemotePeerEvent(c);
 	    }
 	}
@@ -166,7 +167,7 @@ public class RemotePeersAgent extends PeersManagerAgent {
 	    /* we're looking for events that came from a peer */
 	    return;
 	}
-	context.logger().info("Got new remote peer from root event: "+rootEvent.toJson());
+	context.logger().info(TYPE+": Got new remote peer from root event: "+rootEvent.toJson());
 
 	GatewayPeerController gatewayPeerController = gateways.get(lastRelay);
 

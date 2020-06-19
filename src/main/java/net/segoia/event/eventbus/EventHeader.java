@@ -117,6 +117,11 @@ public class EventHeader implements Cloneable {
      * Type of event's source
      */
     private transient String sourceType;
+    
+    /**
+     * This is a way to exchange root cause events between nodes
+     */
+    private Event originRootCause;
 
     public EventHeader() {
 	params = new HashMap<>();
@@ -466,6 +471,14 @@ public class EventHeader implements Cloneable {
 
     public void setSourceType(String sourceType) {
         this.sourceType = sourceType;
+    }
+
+    public Event getOriginRootCause() {
+        return originRootCause;
+    }
+
+    public void setOriginRootCause(Event originRootCause) {
+        this.originRootCause = originRootCause;
     }
 
     /*

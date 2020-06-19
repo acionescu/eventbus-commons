@@ -27,6 +27,7 @@ public class SignatureInfo {
     /* base64 encoded signature */
     private String signature;
     private SignCommOperationDef signatureDef;
+    private PublicKeyInfo keyInfo; 
 
     public SignatureInfo(String idKey, String signature, SignCommOperationDef signatureDef) {
         super();
@@ -60,6 +61,14 @@ public class SignatureInfo {
 
     public void setSignatureDef(SignCommOperationDef signatureDef) {
         this.signatureDef = signatureDef;
+    }
+
+    public PublicKeyInfo getKeyInfo() {
+        return keyInfo;
+    }
+
+    public void setKeyInfo(PublicKeyInfo keyInfo) {
+        this.keyInfo = keyInfo;
     }
 
 }

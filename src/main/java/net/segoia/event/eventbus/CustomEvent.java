@@ -36,6 +36,19 @@ public abstract class CustomEvent<D> extends Event {
 	super(et);
     }
 
+    public CustomEvent(String scope, String category, String name) {
+	super(scope, category, name);
+    }
+
+
+
+    public CustomEvent(String scope, String category, String name, D data) {
+	super(scope, category, name);
+	this.data = data;
+    }
+
+
+
     protected D data;
 
     /**

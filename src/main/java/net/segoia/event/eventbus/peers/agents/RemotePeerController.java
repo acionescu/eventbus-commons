@@ -23,6 +23,7 @@ import net.segoia.event.eventbus.peers.RemotePeerManager;
 import net.segoia.event.eventbus.peers.events.PeerLeavingEvent;
 
 public class RemotePeerController extends PeersAgentController {
+    public static final String TYPE="RemotePeerController";
     private RemotePeerDataContext data;
 
     public RemotePeerController(PeersAgentContext context, RemotePeerDataContext data) {
@@ -54,7 +55,9 @@ public class RemotePeerController extends PeersAgentController {
 	RemotePeerManager remotePeerManager = data.getRemotePeerManager();
 	Event event = c.getEvent();
 	
-	context.logger().info("remote peer controller -> "+data.getPeerId()+" handle "+event.toJson());
+	if(context.logger().isDebugEnabled()) {
+	    context.logger().info(TYPE+" -> "+data.getPeerId()+" handle "+event.toJson());
+	}
 	
 	if(remotePeerManager != null) {
 	    remotePeerManager.onPeerEvent(event);

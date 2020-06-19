@@ -54,4 +54,8 @@ public class GlobalAgentEventNodeContext extends LocalAgentEventNodeContext{
     public Map<String,String> getDirectPeersByRootKey(Collection<String> rootKeys){
 	return peersManager.getDirectPeersByRootKey(rootKeys);
     }
+    
+    public void terminatePeer(String peerId) {
+	peersManager.terminatePeer(peerId);
+    }
 }

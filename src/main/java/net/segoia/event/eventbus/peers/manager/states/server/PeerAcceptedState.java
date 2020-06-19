@@ -123,7 +123,7 @@ public class PeerAcceptedState extends PeerManagerState {
 	Event nestedEvent = Event.fromJson(StringHelper.stringFromByteArray(eventData,"UTF-8"),event.getCauseEvent());
 	
 	nestedEvent.getHeader().setAuthLevel(dataAuthLevel);
-	/* !! maybe here should be event.getLastRelay(), as we want the peer that sent as this event to appear as from ?*/
+	/* !! maybe here should be event.getLastRelay(), as we want the peer that sent last this event to appear as from ?*/
 	nestedEvent.getHeader().setFrom(event.from());
 	
 	c.getPeerManager().postEvent(nestedEvent);

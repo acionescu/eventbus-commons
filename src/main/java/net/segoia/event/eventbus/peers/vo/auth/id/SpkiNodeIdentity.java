@@ -16,6 +16,9 @@
  */
 package net.segoia.event.eventbus.peers.vo.auth.id;
 
+import net.segoia.event.eventbus.peers.vo.session.KeyDef;
+import net.segoia.event.eventbus.vo.security.PublicKeyInfo;
+
 public class SpkiNodeIdentity extends NodeIdentity<SpkiNodeIdentityType> {
     private String publicKey;
 
@@ -40,4 +43,9 @@ public class SpkiNodeIdentity extends NodeIdentity<SpkiNodeIdentityType> {
 	this.publicKey = publicKey;
     }
 
+    public PublicKeyInfo getPublicKeyInfo() {
+	SpkiNodeIdentityType type = getType();
+	return new PublicKeyInfo(publicKey, new KeyDef(type.getAlgorithm(), type.getKeySize()));
+    }
+    
 }

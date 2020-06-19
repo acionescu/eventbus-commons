@@ -26,6 +26,11 @@ public class SignCommOperationDef extends CommOperationDef {
 	super(TYPE);
     }
 
+    public SignCommOperationDef(String hashingAlgorithm) {
+	super(TYPE);
+	this.hashingAlgorithm = hashingAlgorithm;
+    }
+
     public String getHashingAlgorithm() {
 	return hashingAlgorithm;
     }
@@ -59,5 +64,4 @@ public class SignCommOperationDef extends CommOperationDef {
 	return true;
     }
 
-    
 }

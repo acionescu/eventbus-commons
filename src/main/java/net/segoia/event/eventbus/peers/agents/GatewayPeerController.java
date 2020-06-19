@@ -23,14 +23,13 @@ import net.segoia.event.eventbus.Event;
 import net.segoia.event.eventbus.peers.PeerEventContext;
 import net.segoia.event.eventbus.peers.PeerManager;
 import net.segoia.event.eventbus.peers.PeersAgentContext;
-import net.segoia.event.eventbus.peers.events.NewPeerEvent;
 import net.segoia.event.eventbus.peers.events.PeerAcceptedEvent;
 import net.segoia.event.eventbus.peers.events.PeerLeavingEvent;
 import net.segoia.event.eventbus.peers.vo.PeerInfo;
 import net.segoia.event.eventbus.peers.vo.PeerLeavingData;
-import net.segoia.event.eventbus.peers.vo.PeerLeavingReason;
 
 public class GatewayPeerController extends PeersAgentController{
+    public static final String TYPE="GatewayPeerController";
     private PeerManager gatewayPeerManager;
     /**
      * Remote peers handled by this gateway
@@ -67,7 +66,9 @@ public class GatewayPeerController extends PeersAgentController{
 	String remotePeerId = event.from();
 	RemotePeerController remotePeerController = remotePeers.get(remotePeerId);
 	if(remotePeerController != null) {
-	    context.logger().info("Send event "+event.getEt()+" to remote peer controller "+remotePeerId);
+	    if(context.logger().isDebugEnabled()) {
+		context.logger().debug(TYPE+": Send event "+event.getEt()+" to remote peer controller "+remotePeerId);
+	    }
 	    remotePeerController.handleRemotePeerEvent(c);
 	}
     }
@@ -81,7 +82,7 @@ public class GatewayPeerController extends PeersAgentController{
 	    RemotePeerDataContext remotePeerDataContext = new RemotePeerDataContext(c);
 	    RemotePeerController remotePeerController = new RemotePeerController(context, remotePeerDataContext);
 	    remotePeers.put(remotePeerId, remotePeerController);
-	    context.logger().info("Created remote peer controller for "+ remotePeerDataContext.getFullRemotePeerPath());
+	    context.logger().info(TYPE+": Created remote peer controller for "+ remotePeerDataContext.getFullRemotePeerPath());
 	}
 	
     }
@@ -96,14 +97,14 @@ public class GatewayPeerController extends PeersAgentController{
 	RemotePeerController remotePeerController = remotePeers.remove(remotePeerId);
 	
 	if(remotePeerController != null) {
-	    context.logger().info(gatewayPeerManager.getPeerId()+": Terminating remote peer controller "+ remotePeerId);
+	    context.logger().info(TYPE+ ": "+gatewayPeerManager.getPeerId()+": Terminating remote peer controller "+ remotePeerId);
 	    remotePeerController.terminate(c);
 	}
     }
 
     @Override
     protected void terminate(PeerEventContext<PeerLeavingEvent> c) {
-	context.logger().info("Terminating gateway "+c.getEvent().getData().getPeerInfo().getPeerId()+" with "+remotePeers.size()+" remote peers.");
+	context.logger().info(TYPE+": Terminating gateway "+c.getEvent().getData().getPeerInfo().getPeerId()+" with "+remotePeers.size()+" remote peers.");
 	/* terminate all remote peers that communicate through this gateway */
 	for(RemotePeerController rpc : remotePeers.values()) {
 	    rpc.terminate(c);
