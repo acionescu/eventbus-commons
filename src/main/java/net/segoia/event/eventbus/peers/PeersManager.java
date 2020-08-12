@@ -407,7 +407,7 @@ public class PeersManager extends GlobalEventNodeAgent {
     }
 
     protected void forwardToDirectPeers(Event event) {
-	EventContext ec = new EventContext(event, null);
+	EventContext ec = new EventContext(event);
 	for (PeerManager peerManager : peersRegistry.getDirectPeers().values()) {
 	    // EventRelay r = peerManager.getRelay();
 	    // r.onLocalEvent(ec);
@@ -422,7 +422,7 @@ public class PeersManager extends GlobalEventNodeAgent {
 	// return;
 	// }
 
-	EventContext ec = new EventContext(event, null);
+	EventContext ec = new EventContext(event);
 	/* first check if the destination is one of the peers */
 	PeerManager peerManager = peersRegistry.getDirectPeerManager(to);
 	/* if it is, forward the event */
@@ -467,7 +467,7 @@ public class PeersManager extends GlobalEventNodeAgent {
 	/* Keep the peers indexed by the next hop in the path to them */
 	SetMap<String, String> peersByVia = new SetMap<>();
 
-	EventContext ec = new EventContext(event, null);
+	EventContext ec = new EventContext(event);
 	for (String cto : peerIds) {
 	    String cvia = null;
 	    /* if this is a direct peer or us, use targeted peer id as via */
@@ -522,7 +522,7 @@ public class PeersManager extends GlobalEventNodeAgent {
     }
 
     protected void forwardToAllKnown(Event event) {
-	EventContext ec = new EventContext(event, null);
+	EventContext ec = new EventContext(event);
 	List<String> targetedPeers = new ArrayList(getKnownPeers(ec));
 
 	event.setForwardTo(targetedPeers);

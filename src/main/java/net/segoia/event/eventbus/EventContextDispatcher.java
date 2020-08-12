@@ -59,4 +59,10 @@ public class EventContextDispatcher implements EventDispatcher{
 	
     }
 
+    @Override
+    public int listenersCount() {
+	// TODO Auto-generated method stub
+	return 0;
+    }
+
 }

@@ -26,9 +26,9 @@ public abstract class EventNodeAgent {
 
     protected abstract void agentInit();
 
-    public abstract void terminate();
-
     protected abstract void config();
 
     protected abstract void registerHandlers();
+    
+    public abstract void terminate();
 }

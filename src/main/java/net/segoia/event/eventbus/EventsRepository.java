@@ -79,6 +79,8 @@ public abstract class EventsRepository {
 	}
 	return t;
     }
+    
+    public abstract Class<? extends Event> getEventClassFromJson(String json);
 
     public void mapEvent(String eventType, Class<?> c) {
 	eventTypes.put(eventType, c);

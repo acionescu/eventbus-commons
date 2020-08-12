@@ -28,6 +28,8 @@ public class SimpleEventDispatcher implements EventDispatcher {
     private List<Throwable> errors = new ArrayList<>();
     private ListMap<Integer, EventContextListener> listeners = new ListMap<Integer, EventContextListener>(
 	    new ListTreeMapFactory<Integer, EventContextListener>());
+    
+    private int defaultPriority=10;
 
     @Override
     public void start() {
@@ -69,7 +71,7 @@ public class SimpleEventDispatcher implements EventDispatcher {
 
     @Override
     public void registerListener(EventContextListener listener) {
-	registerListener(listener, listeners.size());
+	registerListener(listener, defaultPriority);
     }
 
     @Override
@@ -80,7 +82,6 @@ public class SimpleEventDispatcher implements EventDispatcher {
     @Override
     public void removeListener(EventContextListener listener) {
 	listeners.removeValue(listener);
-
     }
 
     public boolean isStopOnError() {
@@ -113,6 +114,10 @@ public class SimpleEventDispatcher implements EventDispatcher {
 
     public void setListeners(ListMap<Integer, EventContextListener> listeners) {
 	this.listeners = listeners;
+    }
+    
+    public int listenersCount() {
+	return listeners.getTotalSize();
     }
 
 }

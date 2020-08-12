@@ -83,4 +83,9 @@ public class FilteringEventDispatcher implements EventDispatcher, EventContextLi
 	dispatcher.removeListener(listener);
     }
 
+    @Override
+    public int listenersCount() {
+	return dispatcher.listenersCount();
+    }
+
 }

@@ -152,5 +152,41 @@ public class FilteringEventProcessor extends SimpleEventProcessor {
     public void setEventNotProcessedHandler(EventHandler eventNotProcessedHandler) {
 	this.eventNotProcessedHandler = eventNotProcessedHandler;
     }
+    
+    public void removeListener(Condition cond, EventContextListener listener) {
+	FilteringEventDispatcher l = conditionedListeners.get(cond);
+	if (l != null) {
+	    
+	    l.removeListener(listener);
+	    if(l.listenersCount() == 0) {
+		/* remove the dispatcher for this condition altogether if no listeners are registered */
+		conditionedListeners.remove(cond);
+	    }
+	}
+    }
+
+    @Override
+    public int listenersCount() {
+	
+	int c = super.listenersCount();
+	
+	for(FilteringEventDispatcher fed : conditionedListeners.values()) {
+	    c += fed.listenersCount();
+	}
+	
+	/* we have to subtract from the total the numer of listeners that handle each condition */
+	
+	c -= conditionedListeners.size();
+	
+	return c;
+    }
+    
+    public int listenersForCondCount(Condition cond) {
+	FilteringEventDispatcher d = conditionedListeners.get(cond);
+	if(d == null) {
+	    return 0;
+	}
+	return d.listenersCount();
+    }
 
 }

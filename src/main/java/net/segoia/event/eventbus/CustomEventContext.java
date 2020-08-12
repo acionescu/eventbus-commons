@@ -16,30 +16,70 @@
  */
 package net.segoia.event.eventbus;
 
-public class CustomEventContext<E extends Event> extends EventContext{
-    
+public class CustomEventContext<E extends Event> extends EventContext {
+    /**
+     * Keeps a reference to a parent event context
+     */
+    private EventContext parentContext;
+
     public CustomEventContext(EventContext ec) {
 	super(ec.getEvent());
+	this.parentContext = ec;
     }
 
     public CustomEventContext(Event event) {
 	super(event);
     }
+    
+    public CustomEventContext(Event event, SharedDataContext dataContext) {
+	super(event,dataContext);
+    }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see net.segoia.event.eventbus.EventContext#event()
      */
     @Override
     public E event() {
-	return (E)super.event();
+	return (E) super.event();
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see net.segoia.event.eventbus.EventContext#getEvent()
      */
     @Override
     public E getEvent() {
-	return (E)super.getEvent();
+	return (E) super.getEvent();
+    }
+
+    @Override
+    public void addLocalData(Object obj) {
+	/* use parent to store data, if available. This allows sharing data across busses */
+	if (parentContext != null) {
+	    parentContext.addLocalData(obj);
+	} else {
+	    super.addLocalData(obj);
+	}
+    }
+
+    @Override
+    public <T> T getLocalData(Class<T> clazz) {
+	if (parentContext != null) {
+	    return parentContext.getLocalData(clazz);
+	} else {
+	    return super.getLocalData(clazz);
+	}
+    }
+
+    public SharedDataContext getMainDataContext() {
+	if (parentContext != null) {
+	    return parentContext.getMainDataContext();
+	} else {
+	    return getDataContext(true);
+	}
     }
     
     

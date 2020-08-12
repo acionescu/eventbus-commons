@@ -17,6 +17,8 @@
 package net.segoia.event.eventbus.peers;
 
 import net.segoia.event.eventbus.Event;
+import net.segoia.event.eventbus.EventContext;
+import net.segoia.event.eventbus.EventNodeDataManager;
 import net.segoia.event.eventbus.peers.security.CryptoHelper;
 import net.segoia.event.eventbus.peers.security.EventNodeSecurityManager;
 import net.segoia.event.eventbus.peers.util.EventNodeHelper;
@@ -39,6 +41,7 @@ public class EventNodeContext {
     private EventBusNodeConfig config;
     private EventNodeSecurityManager securityManager;
     private EventNodeHelper helper;
+    private EventNodeDataManager dataManager;
 
     public EventNodeContext(EventNode node, EventNodeSecurityManager securityManager) {
 	super();
@@ -46,6 +49,7 @@ public class EventNodeContext {
 	this.config = node.getConfig();
 	this.securityManager = securityManager;
 	this.helper = config.getHelper();
+	this.dataManager = new EventNodeDataManager();
     }
 
     public String getLocalNodeId() {
@@ -84,26 +88,31 @@ public class EventNodeContext {
 	node.postInternally(event);
 	node.postToExtraBusses(event);
     }
+    
+    public void postEvent(EventContext ec) {
+	node.postInternally(ec);
+	node.postToExtraBusses(ec);
+    }
 
     public EventNodeServiceDefinition getService(EventNodeServiceRef serviceRef) {
 	return node.getService(serviceRef);
     }
-    
+
     public EventNodeLogger getLogger() {
 	return config.getLogger();
     }
-    
+
     public CryptoHelper crypto() {
 	return securityManager.getCryptoHelper();
     }
-    
-    public SignedCustomEvent signEvent(Event event) throws Exception{
+
+    public SignedCustomEvent signEvent(Event event) throws Exception {
 	String eventJson = event.toJson();
-        byte[] eventBytes = eventJson.getBytes("UTF-8");
-        
-        SignatureInfo signatureInfo = securityManager.sign(eventBytes);
-        
-        return new SignedCustomEvent(new SignedEventData(crypto().base64Encode(eventBytes),
-                signatureInfo));
+	byte[] eventBytes = eventJson.getBytes("UTF-8");
+
+	SignatureInfo signatureInfo = securityManager.sign(eventBytes);
+
+	return new SignedCustomEvent(new SignedEventData(crypto().base64Encode(eventBytes), signatureInfo));
     }
+
 }

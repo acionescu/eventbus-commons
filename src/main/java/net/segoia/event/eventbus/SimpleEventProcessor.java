@@ -52,19 +52,23 @@ public class SimpleEventProcessor {
 	eventDispatcher.registerListener(listener, priority);
 
     }
-    
+
     /**
      * @return the eventDispatcher
      */
     public EventDispatcher getEventDispatcher() {
-        return eventDispatcher;
+	return eventDispatcher;
     }
 
     /**
-     * @param eventDispatcher the eventDispatcher to set
+     * @param eventDispatcher
+     *            the eventDispatcher to set
      */
     public void setEventDispatcher(EventDispatcher eventDispatcher) {
-        this.eventDispatcher = eventDispatcher;
+	this.eventDispatcher = eventDispatcher;
     }
 
+    public int listenersCount() {
+	return eventDispatcher.listenersCount();
+    }
 }

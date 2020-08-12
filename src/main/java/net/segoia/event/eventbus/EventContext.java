@@ -21,6 +21,7 @@ import java.util.Deque;
 
 /**
  * This carries an {@link Event} to all the interested {@link EventContextListener} objects
+ * 
  * @author adi
  *
  */
@@ -30,37 +31,55 @@ public class EventContext {
     /**
      * A listener used to track the lifecycle of an event
      */
-    private EventContextListener lifecycleListener; 
-    
+    private EventContextListener lifecycleListener;
+
     /**
      * A way to request the handling of this event by another dispatcher
      */
     private EventDispatcher delegateDispatcher;
-    
+
     private EventHandle eventHandle;
-    
+
     /**
      * A flag that can be set by listeners to reflect the fact that this event has been properly processed
      */
     private boolean processed;
+
+    /**
+     * Provides a way for local agents to share data when processing an event
+     */
+    private SharedDataContext dataContext;
 
     public EventContext(Event event) {
 	super();
 	this.event = event;
     }
     
-    public EventContext(Event event,  EventContextListener lifecycleListener) {
+    /**
+     * Allow passing a data context with the event
+     * @param event
+     * @param dataContext
+     */
+    public EventContext(Event event, SharedDataContext dataContext) {
+	super();
+	this.event = event;
+	this.dataContext = dataContext;
+    }
+
+
+
+    public EventContext(Event event, EventContextListener lifecycleListener) {
 	super();
 	this.event = event;
 	this.lifecycleListener = lifecycleListener;
     }
 
     public void sendLifecycleEvent(EventContext ec) {
-	if(lifecycleListener != null) {
+	if (lifecycleListener != null) {
 	    ec.visitListener(lifecycleListener);
-	}
-	else {
-	    throw new RuntimeException("Event context for event "+event.getId()+" has no lifecycle listener defined");
+	} else {
+	    throw new RuntimeException(
+		    "Event context for event " + event.getId() + " has no lifecycle listener defined");
 	}
     }
 
@@ -70,11 +89,11 @@ public class EventContext {
 	} catch (Throwable e) {
 	    pushError(e);
 //	    EBusVM.getInstance().getLogger().error(listener.getClass()+" failed processing "+event.getEt()+" with error "+e.getMessage(),e);
-	    
+
 	    throw e;
 	}
     }
-    
+
     public boolean hasLifecycleListener() {
 	return (lifecycleListener != null);
     }
@@ -89,12 +108,12 @@ public class EventContext {
     private void initErrorStack() {
 	errorStack = new ArrayDeque<>();
     }
-    
+
     public boolean hasErrors() {
 	return (errorStack != null);
     }
-    
-    public Deque<Throwable> getErrorStack(){
+
+    public Deque<Throwable> getErrorStack() {
 	return errorStack;
     }
 
@@ -102,16 +121,12 @@ public class EventContext {
 	return event;
     }
 
-   
-
     /**
      * @return the event
      */
     public Event getEvent() {
 	return event;
     }
-
-   
 
     public EventTypeConfig getConfigForEventType() {
 	return eventHandle.getBus().getConfigForEventType(event.getEt());
@@ -139,38 +154,68 @@ public class EventContext {
      * @return the delegateDispatcher
      */
     public EventDispatcher getDelegateDispatcher() {
-        return delegateDispatcher;
+	return delegateDispatcher;
     }
 
     /**
-     * @param delegateDispatcher the delegateDispatcher to set
+     * @param delegateDispatcher
+     *            the delegateDispatcher to set
      */
     public void setDelegateDispatcher(EventDispatcher delegateDispatcher) {
-        this.delegateDispatcher = delegateDispatcher;
+	this.delegateDispatcher = delegateDispatcher;
     }
-    
-    
+
     public boolean dispatch() {
-	if(delegateDispatcher != null) {
+	if (delegateDispatcher != null) {
 	    return delegateDispatcher.dispatchEvent(this);
 	}
 	return false;
     }
 
     public EventHandle getEventHandle() {
-        return eventHandle;
+	return eventHandle;
     }
 
     public void setEventHandle(EventHandle eventHandle) {
-        this.eventHandle = eventHandle;
+	this.eventHandle = eventHandle;
     }
 
     public boolean isProcessed() {
-        return processed;
+	return processed;
     }
 
     public void setProcessed(boolean processed) {
-        this.processed = processed;
+	this.processed = processed;
+    }
+
+    public void addLocalData(Object obj) {
+	if (obj != null) {
+	    if (dataContext == null) {
+		dataContext = new SharedDataContext();
+	    }
+	    dataContext.addDataForType(obj);
+	}
+    }
+
+    public <T> T getLocalData(Class<T> clazz) {
+	if (dataContext != null) {
+	    return dataContext.getDataForType(clazz);
+	}
+	return null;
+    }
+
+    public SharedDataContext getDataContext() {
+        return dataContext;
     }
     
+    public SharedDataContext getDataContext(boolean create) {
+	if(dataContext == null && create) {
+	    dataContext=new SharedDataContext();
+	}
+	return dataContext;
+    }
+    
+    public SharedDataContext getMainDataContext() {
+	return getDataContext(true);
+    }
 }

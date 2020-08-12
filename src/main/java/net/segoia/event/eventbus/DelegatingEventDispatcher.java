@@ -31,4 +31,8 @@ public class DelegatingEventDispatcher extends EventDispatcherWrapper {
 	return delegateDispatcher.dispatchEvent(ec);
     }
 
+    @Override
+    public int listenersCount() {
+	return nestedDispatcher.listenersCount();
+    }
 }

@@ -1015,7 +1015,7 @@ public abstract class EventNodeSecurityManager {
 		try{
 		   
 		    /* see if this identity matches the desired type */
-		    privateIdentityManager = clazz.cast(pi);
+		    privateIdentityManager = (T)(pi);
 		    
 		    /* add this as default */
 		    defaultIdentities.put(clazz, privateIdentityManager);

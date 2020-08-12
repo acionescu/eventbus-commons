@@ -52,4 +52,9 @@ public abstract class EventDispatcherWrapper implements EventDispatcher{
 	
     }
 
+    @Override
+    public int listenersCount() {
+	return nestedDispatcher.listenersCount();
+    }
+
 }

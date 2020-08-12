@@ -21,6 +21,7 @@ import java.util.Map;
 import net.segoia.event.conditions.Condition;
 import net.segoia.event.conditions.StrictChannelMatchCondition;
 import net.segoia.event.eventbus.Event;
+import net.segoia.event.eventbus.EventContext;
 import net.segoia.event.eventbus.FilteringEventBus;
 import net.segoia.event.eventbus.peers.security.CryptoHelper;
 import net.segoia.event.eventbus.peers.security.SpkiPrivateIdentityManager;
@@ -69,6 +70,11 @@ public class LocalAgentEventNodeContext {
     public void postEvent(Event event) {
 	event.getHeader().setChannel(LOCAL);
 	nodeContext.postEvent(event);
+    }
+    
+    public void postEvent(EventContext ec) {
+	ec.getEvent().getHeader().setChannel(LOCAL);
+	nodeContext.postEvent(ec);
     }
 
     public void registerToPeer(ConnectToPeerRequest request) {
@@ -139,6 +145,10 @@ public class LocalAgentEventNodeContext {
 
     public void logError(String message) {
 	getLogger().error(message);
+    }
+    
+    public boolean isDebugEnabled() {
+	return getLogger().isDebugEnabled();
     }
     
     public CryptoHelper crypto() {

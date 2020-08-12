@@ -25,6 +25,7 @@ import java.util.Map;
 import net.segoia.event.conditions.Condition;
 import net.segoia.event.conditions.EventClassMatchCondition;
 import net.segoia.event.conditions.StrictEventMatchCondition;
+import net.segoia.event.eventbus.CustomEventContext;
 import net.segoia.event.eventbus.Event;
 import net.segoia.event.eventbus.EventContext;
 import net.segoia.event.eventbus.EventDispatcher;
@@ -88,7 +89,7 @@ public abstract class EventNode {
     private EventNodeContext context;
 
     private List<EventNodeAgent> agents = new ArrayList<>();
-    
+
     /**
      * A map to keep an index of all buses spawned for extra conditions
      */
@@ -134,7 +135,7 @@ public abstract class EventNode {
     protected void nodeConfig() {
 
 	EventNodeSecurityConfig securityConfig = config.getSecurityConfig();
-	
+
 	securityManager = buildSecurityManager(securityConfig);
 
 	nodeInfo = new NodeInfo(config.getHelper().generatePeerId());
@@ -150,7 +151,7 @@ public abstract class EventNode {
 
 	servicesManager = new EventNodeServicesManager();
     }
-    
+
     protected abstract EventNodeSecurityManager buildSecurityManager(EventNodeSecurityConfig securityConfig);
 
     protected synchronized void addAgent(EventNodeAgent agent) {
@@ -188,9 +189,10 @@ public abstract class EventNode {
      * @return
      */
     protected abstract FilteringEventBus spawnAdditionalBus(EventDispatcher eventDispatcher);
-    
+
     /**
      * Spawns a bus for a particular event channel
+     * 
      * @param channel
      * @param eventDispatcher
      * @return
@@ -200,18 +202,16 @@ public abstract class EventNode {
 	extraBuses.put(cond, ceb);
 	return ceb;
     }
-    
+
     protected abstract FilteringEventBus spawnEventBus(Condition cond);
-    
-    
+
     public FilteringEventBus getEventBus(Condition cond, boolean create) {
 	FilteringEventBus ceb = extraBuses.get(cond);
-	if(ceb == null && create) {
+	if (ceb == null && create) {
 	    ceb = spawnEventBus(cond);
 	}
 	return ceb;
     }
-    
 
     /**
      * Override this to register handlers, but don't forget to call super or you'll lose basic functionality
@@ -305,7 +305,7 @@ public abstract class EventNode {
     public void registerToPeer(ConnectToPeerRequest request) {
 	postInternally(new ConnectToPeerRequestEvent(request));
     }
-    
+
     public void disconnectFromPeer(DisconnectFromPeerRequest request) {
 	postInternally(new DisconnectFromPeerRequestEvent(request));
     }
@@ -313,6 +313,7 @@ public abstract class EventNode {
     public void registerPeer(PeerBindRequest request) {
 	postInternally(new PeerBindRequestEvent(request));
     }
+
     public void registerPeer(PeerBindRequestEvent requestEvent) {
 	postInternally(requestEvent);
     }
@@ -480,23 +481,38 @@ public abstract class EventNode {
 	    throw new RuntimeException("Warning! Internal bus for node " + getId() + " is not initialized");
 	}
     }
+    
+    protected void postInternally(EventContext ec) {
+
+	if (internalBus != null) {
+	    internalBus.postEventContext(ec);
+	} else {
+	    throw new RuntimeException("Warning! Internal bus for node " + getId() + " is not initialized");
+	}
+    }
+
+    protected void postToExtraBusses(EventContext ec) {
+	/**
+	 * If the bus condition is satisfied, post event to the extra bus
+	 */
+	for (Condition c : extraBuses.keySet()) {
+	    if (c.test(ec)) {
+		/* create a new context for each bus, but allow them to share a common parent context to share data */
+		extraBuses.get(c).postEventContext(new CustomEventContext<>(ec));
+	    }
+	}
+    }
 
     /**
      * Post event to extra busses if conditions are met
+     * 
      * @param event
      */
     protected void postToExtraBusses(Event event) {
 	EventContext ec = new EventContext(event);
-	/**
-	 * If the bus condition is satisfied, post event to the extra bus
-	 */
-	for(Condition c : extraBuses.keySet()) {
-	    if(c.test(ec)) {
-		extraBuses.get(c).postEvent(event);
-	    }
-	}
+	postToExtraBusses(ec);
     }
-    
+
     /**
      * Called for all received remote events
      * 
@@ -540,12 +556,14 @@ public abstract class EventNode {
     public void stop() {
 	internalBus.stop();
     }
-    
+
     /**
-     * Schedules the triggering of the given event after a certain delay 
+     * Schedules the triggering of the given event after a certain delay
+     * 
      * @param event
-     * @param delay - delay in milliseconds
+     * @param delay
+     *            - delay in milliseconds
      */
-    public abstract void scheduleEvent(Event event,long delay);
+    public abstract void scheduleEvent(Event event, long delay);
 
 }

@@ -39,4 +39,30 @@ public class StrictChannelMatchCondition extends Condition {
 	this.channel = channel;
     }
 
+    @Override
+    public int hashCode() {
+	final int prime = 31;
+	int result = super.hashCode();
+	result = prime * result + ((channel == null) ? 0 : channel.hashCode());
+	return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+	if (this == obj)
+	    return true;
+	if (!super.equals(obj))
+	    return false;
+	if (getClass() != obj.getClass())
+	    return false;
+	StrictChannelMatchCondition other = (StrictChannelMatchCondition) obj;
+	if (channel == null) {
+	    if (other.channel != null)
+		return false;
+	} else if (!channel.equals(other.channel))
+	    return false;
+	return true;
+    }
+
+    
 }

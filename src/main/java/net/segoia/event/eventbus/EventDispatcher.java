@@ -35,4 +35,6 @@ public interface EventDispatcher {
     void registerListener(EventContextListener listener, int priority);
 
     void removeListener(EventContextListener listener);
+    
+    int listenersCount();
 }

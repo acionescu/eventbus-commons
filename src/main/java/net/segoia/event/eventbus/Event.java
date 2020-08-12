@@ -190,6 +190,17 @@ public class Event implements Cloneable {
 	e.close();
 	return e;
     }
+    
+    public static Event initAfterDeserialization(Event e) {
+	if (e.header == null) {
+	    e.header = new EventHeader();
+	}
+	if (e.params == null) {
+	    e.params = new HashMap<>();
+	}
+	e.close();
+	return e;
+    }
 
     public static Event fromJson(String json, Event cause) {
 	Event e = fromJson(json);
