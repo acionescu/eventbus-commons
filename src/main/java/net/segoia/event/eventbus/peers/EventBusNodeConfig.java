@@ -16,8 +16,11 @@
  */
 package net.segoia.event.eventbus.peers;
 
+import java.util.List;
+
 import net.segoia.event.conditions.Condition;
 import net.segoia.event.conditions.LooseEventMatchCondition;
+import net.segoia.event.eventbus.agents.AgentRegisterRequest;
 import net.segoia.event.eventbus.constants.Events;
 import net.segoia.event.eventbus.peers.security.EventNodeSecurityConfig;
 import net.segoia.event.eventbus.peers.util.EventNodeHelper;
@@ -60,7 +63,12 @@ public class EventBusNodeConfig {
     private PeersManagerConfig peersManagerConfig;
     
     private boolean allowServerMode;
-
+    
+    /**
+     * The agents to be loaded at node init
+     */
+    private List<AgentRegisterRequest<?>> agents;
+    
     /**
      * @return the autoRelayEanbled
      */
@@ -159,6 +167,14 @@ public class EventBusNodeConfig {
 
     public void setLogger(EventNodeLogger logger) {
         this.logger = logger;
+    }
+
+    public List<AgentRegisterRequest<?>> getAgents() {
+        return agents;
+    }
+
+    public void setAgents(List<AgentRegisterRequest<?>> agents) {
+        this.agents = agents;
     }
 
 }

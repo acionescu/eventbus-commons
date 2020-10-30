@@ -150,6 +150,23 @@ public abstract class EventNode {
 	peersManager.init(context);
 
 	servicesManager = new EventNodeServicesManager();
+	
+	setupStartAgents();
+    }
+    
+    protected void setupStartAgents() {
+	List<AgentRegisterRequest<?>> startAgents = config.getAgents();
+	if(startAgents != null) {
+	    for(AgentRegisterRequest<?> regReq : startAgents) {
+		config.getLogger().info("Registering agent from config: "+regReq.getAgent());
+		if(regReq instanceof GlobalAgentRegisterRequest) {
+		    registerGlobalAgent((GlobalAgentRegisterRequest)regReq);
+		}
+		else {
+		    registerLocalAgent((LocalAgentRegisterRequest)regReq);
+		}
+	    }
+	}
     }
 
     protected abstract EventNodeSecurityManager buildSecurityManager(EventNodeSecurityConfig securityConfig);
@@ -280,6 +297,8 @@ public abstract class EventNode {
 	GlobalEventNodeAgent agent = registerRequest.getAgent();
 	addAgent(agent);
 	agent.initGlobalContext(new GlobalAgentEventNodeContext(context, peersManager));
+	/* register services provided by this agent */
+	addServices(registerRequest);
     }
 
     protected void addServices(AgentRegisterRequest<?> request) {

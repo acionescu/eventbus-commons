@@ -17,7 +17,9 @@
 package net.segoia.event.eventbus.peers;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -472,7 +474,8 @@ public class PeersManager extends GlobalEventNodeAgent {
 	    String cvia = null;
 	    /* if this is a direct peer or us, use targeted peer id as via */
 	    if (getDirectPeer(cto) != null || getLocalNodeId().equals(cto)) {
-		cvia = cto;
+		forwardTo(event, cto);
+		continue;
 	    } else {
 		/* if it's a remote peer, we should have a via in the routing table */
 		cvia = routingTable.getBestViaTo(cto);
@@ -484,7 +487,7 @@ public class PeersManager extends GlobalEventNodeAgent {
 		 * normal conditions
 		 */
 		System.err.println(getLocalNodeId() + ": Couldn't find a via for " + cto + " , forwarding to all");
-		event.setForwardTo(peerIds);
+		event.setForwardTo(Arrays.asList(cto));
 		forwardToDirectPeers(event);
 		return;
 	    } else {

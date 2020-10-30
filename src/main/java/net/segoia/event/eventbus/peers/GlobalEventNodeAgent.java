@@ -23,4 +23,5 @@ public abstract class GlobalEventNodeAgent extends EventNodeAgent {
 	this.context = context;
 	init();
     }
+    
 }
