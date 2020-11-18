@@ -14,24 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.segoia.event.eventbus.peers;
+package net.segoia.eventbus.util.data;
 
-import net.segoia.event.eventbus.Event;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
-public class PeersManagerContext {
-    private PeersManager peersManager;
+public class ListTreeMapFactory<K,T> implements ListMapFactory<K, T>{
 
-    public PeersManagerContext(PeersManager peersManager) {
-	super();
-	this.peersManager = peersManager;
-    }
-
-    public <E extends Event> void handlePeerEvent(PeerEventContext<E> context) {
-	peersManager.handlePeerEvent(context);
-    }
-    
-    public String getFullPathForRemotePeer(String gatewayPeerId, String remotePeerId) {
-	return peersManager.getFullPathForRemotePeer(gatewayPeerId, remotePeerId);
+    public Map<K, List<T>> createMap() {
+	return new TreeMap<K,List<T>>();
     }
 
 }

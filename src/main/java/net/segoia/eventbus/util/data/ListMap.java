@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.segoia.util.data;
+package net.segoia.eventbus.util.data;
 
 import java.io.Serializable;
 import java.util.ArrayList;

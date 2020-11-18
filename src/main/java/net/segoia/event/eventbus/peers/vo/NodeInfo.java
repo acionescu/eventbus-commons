@@ -29,6 +29,8 @@ public class NodeInfo {
     private String nodeId;
     private NodeAuth nodeAuth;
     private EventNodeSecurityPolicy securityPolicy;
+    
+    private String nodeType;
 
     public NodeInfo() {
 	super();
@@ -61,6 +63,14 @@ public class NodeInfo {
 
     public void setSecurityPolicy(EventNodeSecurityPolicy securityPolicy) {
 	this.securityPolicy = securityPolicy;
+    }
+
+    public String getNodeType() {
+        return nodeType;
+    }
+
+    public void setNodeType(String nodeType) {
+        this.nodeType = nodeType;
     }
 
 }

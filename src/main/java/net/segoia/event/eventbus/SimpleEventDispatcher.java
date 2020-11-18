@@ -19,8 +19,8 @@ package net.segoia.event.eventbus;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.segoia.util.data.ListMap;
-import net.segoia.util.data.ListTreeMapFactory;
+import net.segoia.eventbus.util.data.ListMap;
+import net.segoia.eventbus.util.data.ListTreeMapFactory;
 
 public class SimpleEventDispatcher implements EventDispatcher {
     private boolean stopOnError;

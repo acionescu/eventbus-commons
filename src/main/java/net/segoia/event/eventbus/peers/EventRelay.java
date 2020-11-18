@@ -94,9 +94,11 @@ public abstract class EventRelay implements PeerDataListener {
 	    Event event = Event.fromJson(json, dataEvent.getCauseEvent());
 	    receiveEvent(event);
 	} catch (UnsupportedEncodingException e) {
+	    e.printStackTrace();
 	    remoteEventListener.onPeerError(new PeerErrorData("Cant' convert peer data to event: "+e.toString()));
 	}
         catch (Throwable t ){
+            t.printStackTrace();
             remoteEventListener.onPeerError(new PeerErrorData("Cant' convert peer data to event: "+t.toString()));
         }
     }

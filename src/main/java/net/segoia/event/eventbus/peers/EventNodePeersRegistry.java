@@ -27,7 +27,9 @@ public class EventNodePeersRegistry {
      */
     private Map<String, PeerManager> directPeers = new HashMap<>();
 
-    private Map<String, PeerManager> remotePeers = new HashMap<>();
+    private Map<String, RemotePeerManager> remotePeers = new HashMap<>();
+    
+    private Map<String, RemotePeerManager> remotePeersByFullPath=new HashMap<>();
 
     /**
      * Nodes with which we are still negotiating peering
@@ -54,15 +56,19 @@ public class EventNodePeersRegistry {
 	return getPeerManger(pendingPeers, peerId);
     }
 
-    public PeerManager getRemotePeerManager(String peerId) {
-	return getPeerManger(remotePeers, peerId);
+    public RemotePeerManager getRemotePeerManager(String peerId) {
+	return remotePeers.get(peerId);
+    }
+    
+    public RemotePeerManager getRemotePeerManagerByPath(String path) {
+	return remotePeersByFullPath.get(path);
     }
 
     public PeerManager getDirectPeerManager(String peerId) {
 	return getPeerManger(directPeers, peerId);
     }
 
-    public PeerManager getPeerManger(Map<String, PeerManager> targetMap, String peerId) {
+    public PeerManager getPeerManger(Map<String, ? extends PeerManager> targetMap, String peerId) {
 	return targetMap.get(peerId);
 
     }
@@ -75,16 +81,22 @@ public class EventNodePeersRegistry {
 	setPeerManager(pendingPeers, peerManager);
     }
     
-    public void setRemotePeerManager(PeerManager remotePeerManager) {
+    public void setRemotePeerManager(RemotePeerManager remotePeerManager) {
 	setPeerManager(remotePeers, remotePeerManager);
+	remotePeersByFullPath.put(remotePeerManager.getFullPath(), remotePeerManager);
     }
 
-    private void setPeerManager(Map<String, PeerManager> targetMap, PeerManager peerManager) {
+    private <P extends PeerManager> void setPeerManager(Map<String, P> targetMap, P peerManager) {
 	targetMap.put(peerManager.getPeerId(), peerManager);
     }
 
     public PeerManager removeRemotePeer(String peerId) {
-	return removePeer(remotePeers, peerId);
+	 RemotePeerManager peerManager = remotePeers.remove(peerId);
+	 if(peerManager != null) {
+	     /* remove by full path as well */
+	     remotePeersByFullPath.remove(peerManager.getFullPath());
+	 }
+	 return peerManager;
     }
 
     public PeerManager removeDirectPeer(String peerId) {
@@ -95,7 +107,7 @@ public class EventNodePeersRegistry {
 	return removePeer(pendingPeers, peerId);
     }
 
-    private PeerManager removePeer(Map<String, PeerManager> targetMap, String peerId) {
+    private PeerManager removePeer(Map<String, ? extends PeerManager> targetMap, String peerId) {
 	return targetMap.remove(peerId);
     }
 
@@ -107,11 +119,11 @@ public class EventNodePeersRegistry {
 	this.directPeers = directPeers;
     }
 
-    public Map<String, PeerManager> getRemotePeers() {
+    public Map<String, RemotePeerManager> getRemotePeers() {
 	return remotePeers;
     }
 
-    public void setRemotePeers(Map<String, PeerManager> remotePeers) {
+    public void setRemotePeers(Map<String, RemotePeerManager> remotePeers) {
 	this.remotePeers = remotePeers;
     }
 

@@ -59,6 +59,10 @@ public class RemotePeerManager extends PeerManager {
     protected void peerEventPostProcessing(Event event) {
 	/* we don't want to post this to system bus again */
     }
+    
+    public String getFullPath() {
+	return remoteContext.getFullRemotePeerPath();
+    }
 
     public static PeerManagerState REMOTE_ACCEPTED = new PeerManagerState() {
 

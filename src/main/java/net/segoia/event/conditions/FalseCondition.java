@@ -14,16 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.segoia.util.data;
+package net.segoia.event.conditions;
 
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import net.segoia.event.eventbus.EventContext;
 
-public class ListTreeMapFactory<K,T> implements ListMapFactory<K, T>{
+public class FalseCondition extends Condition{
 
-    public Map<K, List<T>> createMap() {
-	return new TreeMap<K,List<T>>();
+    public FalseCondition() {
+	super("false");
+    }
+
+    @Override
+    public boolean test(EventContext input) {
+	return false;
     }
 
 }

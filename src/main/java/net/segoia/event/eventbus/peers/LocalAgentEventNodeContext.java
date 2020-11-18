@@ -16,6 +16,7 @@
  */
 package net.segoia.event.eventbus.peers;
 
+import java.util.List;
 import java.util.Map;
 
 import net.segoia.event.conditions.Condition;
@@ -32,6 +33,7 @@ import net.segoia.event.eventbus.peers.vo.bind.DisconnectFromPeerRequest;
 import net.segoia.event.eventbus.vo.security.EventNodeSecurityException;
 import net.segoia.event.eventbus.vo.security.IdsLinkData;
 import net.segoia.event.eventbus.vo.security.NodeIdLinkData;
+import net.segoia.event.eventbus.vo.services.EventNodePublicServiceDesc;
 import net.segoia.event.eventbus.vo.services.NodeIdentityProfile;
 
 /**
@@ -151,6 +153,10 @@ public class LocalAgentEventNodeContext {
 	return getLogger().isDebugEnabled();
     }
     
+    public void debug(String msg) {
+	getLogger().debug(id+": "+msg );
+    }
+    
     public CryptoHelper crypto() {
 	return nodeContext.getSecurityManager().getCryptoHelper();
     }
@@ -162,5 +168,9 @@ public class LocalAgentEventNodeContext {
 	    logError("Faield to get default node identity",e);
 	    return null;
 	}
+    }
+    
+    public List<EventNodePublicServiceDesc> getNodePublicServices(){
+	return nodeContext.getServicesManager().getPublicServicesDesc();
     }
 }

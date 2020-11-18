@@ -17,9 +17,7 @@
 package net.segoia.event.eventbus.peers;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -35,6 +33,7 @@ import net.segoia.event.eventbus.PassthroughCustomEventContextListenerFactory;
 import net.segoia.event.eventbus.PeerBindRequest;
 import net.segoia.event.eventbus.constants.Events;
 import net.segoia.event.eventbus.peers.agents.RemotePeerDataContext;
+import net.segoia.event.eventbus.peers.agents.RemotePeerEventContext;
 import net.segoia.event.eventbus.peers.core.EventTransceiver;
 import net.segoia.event.eventbus.peers.core.PrivateIdentityData;
 import net.segoia.event.eventbus.peers.events.NewPeerEvent;
@@ -60,9 +59,10 @@ import net.segoia.event.eventbus.peers.vo.auth.id.IdentityType;
 import net.segoia.event.eventbus.peers.vo.auth.id.NodeIdentity;
 import net.segoia.event.eventbus.peers.vo.bind.ConnectToPeerRequest;
 import net.segoia.event.eventbus.peers.vo.bind.PeerBindRejected;
-import net.segoia.util.data.SetMap;
+import net.segoia.eventbus.util.data.SetMap;
 
 public class PeersManager extends GlobalEventNodeAgent {
+    public static final String PEER_PATH_SEPARATOR = ":";
     private PeersManagerConfig config;
     private EventNodeContext nodeContext;
     private EventNodePeersRegistry peersRegistry = new EventNodePeersRegistry();
@@ -72,6 +72,11 @@ public class PeersManager extends GlobalEventNodeAgent {
 
     private PeersManagerContext peersManagerContext;
     private PeersAgentContext agentsContext;
+    
+    /**
+     * Keeps track of the followers for a certain peer
+     */
+    private Map<String, FollowersContext> followersMap=new HashMap<>();
 
     private FilteringEventProcessor beforePostFilter = new FilteringEventProcessor(
 	    new PassthroughCustomEventContextListenerFactory());
@@ -175,7 +180,8 @@ public class PeersManager extends GlobalEventNodeAgent {
 	});
 
 	context.addEventHandler(DisconnectFromPeerRequestEvent.class, (c) -> {
-	    String peerId = c.getEvent().getData().getPeerId();
+	    DisconnectFromPeerRequestEvent event = c.getEvent();
+	    String peerId = event.getData().getPeerId();
 	    terminatePeer(peerId);
 	});
 
@@ -230,7 +236,8 @@ public class PeersManager extends GlobalEventNodeAgent {
     }
 
     public void handleConnectToPeerRequest(CustomEventContext<ConnectToPeerRequestEvent> c) {
-	ConnectToPeerRequest data = c.getEvent().getData();
+	ConnectToPeerRequestEvent event = c.getEvent();
+	ConnectToPeerRequest data = event.getData();
 	if (data == null) {
 	    throw new RuntimeException("Can't connect to peer. No connect information provided");
 	}
@@ -330,19 +337,19 @@ public class PeersManager extends GlobalEventNodeAgent {
 	PeerBindRequestEvent event = c.getEvent();
 	PeerBindRequest req = event.getData();
 	EventTransceiver transceiver = req.getTransceiver();
-	
-	if(transceiver == null) {
+
+	if (transceiver == null) {
 	    PeerBindRejected pbr = new PeerBindRejected("No transceiver provided");
 	    rejectBind(transceiver, pbr);
 	    return;
 	}
 
-	if(!isPeerBindAllowed(c, transceiver.getChannel())) {
+	if (!isPeerBindAllowed(c, transceiver.getChannel())) {
 	    PeerBindRejected pbr = new PeerBindRejected("Bind not allowed");
 	    rejectBind(transceiver, pbr);
 	    return;
 	}
-	
+
 	if (!nodeContext.getConfig().isAllowServerMode()) {
 	    PeerBindRejected pbr = new PeerBindRejected("Node not working in server mode");
 	    rejectBind(transceiver, pbr);
@@ -356,7 +363,7 @@ public class PeersManager extends GlobalEventNodeAgent {
 	PeerManager peerManager = peerManagerFactory.buildPeerManager(new PeerContext(peerId, transceiver));
 	PeerContext peerContext = peerManager.getPeerContext();
 	peerContext.setNodeContext(nodeContext);
-	
+
 	peerContext.setCauseEvent(event);
 	peerManager.setPeersContext(peersManagerContext);
 
@@ -455,7 +462,11 @@ public class PeersManager extends GlobalEventNodeAgent {
     // return peerRelay;
     // }
 
-    protected void forwardTo(Event event, List<String> peerIds) {
+//    protected void forwardTo(Event event, List<String> peerIds) {
+//	forwardTo(event, peerIds);
+//    }
+
+    protected void forwardTo(Event event, Collection<String> peerIds) {
 	/* check if if we are targeted by the event as well */
 	// if (peerIds.contains(getLocalNodeId())) {
 	// postInternally(event);
@@ -468,31 +479,44 @@ public class PeersManager extends GlobalEventNodeAgent {
 	}
 	/* Keep the peers indexed by the next hop in the path to them */
 	SetMap<String, String> peersByVia = new SetMap<>();
+	EventHeader header = event.getHeader();
+	List<String> noForward = header.getNoForward();
+	header.clearNoForward();
 
+	RemotePeerManager rpm = null;
 	EventContext ec = new EventContext(event);
 	for (String cto : peerIds) {
+	    if (noForward != null && noForward.contains(cto)) {
+		/* skip if the target is in no forward */
+		continue;
+	    }
+
 	    String cvia = null;
 	    /* if this is a direct peer or us, use targeted peer id as via */
 	    if (getDirectPeer(cto) != null || getLocalNodeId().equals(cto)) {
 		forwardTo(event, cto);
 		continue;
+	    } else if ((rpm = getRemotePeerManager(cto)) != null) {
+		/* if this is a registered remote peer, rewrite the via and the remote peer id */
+		RemotePeerDataContext rpdc = (RemotePeerDataContext) rpm.getPeerContext();
+		peersByVia.add(rpdc.getGatewayPeerId(), rpdc.getRemotePeerId());
 	    } else {
-		/* if it's a remote peer, we should have a via in the routing table */
+		/* if it's a remote peer that we don't know about, we should have a via in the routing table */
 		cvia = routingTable.getBestViaTo(cto);
+		if (cvia == null) {
+		    /*
+		     * if we can't find a via for a remote node, then forward to all, however this should not happen
+		     * under normal conditions
+		     */
+		    System.err.println(getLocalNodeId() + ": Couldn't find a via for " + cto + " , forwarding to all");
+//			event.setForwardTo(Arrays.asList(cto));
+//			forwardToDirectPeers(event);
+		    return;
+		} else {
+		    peersByVia.add(cvia, cto);
+		}
 	    }
 
-	    if (cvia == null) {
-		/*
-		 * if we can't find a via for a remote node, then forward to all, however this should not happen under
-		 * normal conditions
-		 */
-		System.err.println(getLocalNodeId() + ": Couldn't find a via for " + cto + " , forwarding to all");
-		event.setForwardTo(Arrays.asList(cto));
-		forwardToDirectPeers(event);
-		return;
-	    } else {
-		peersByVia.add(cvia, cto);
-	    }
 	}
 
 	/* now we have to send an event to each via */
@@ -507,8 +531,11 @@ public class PeersManager extends GlobalEventNodeAgent {
 
 	    List<String> ftp = new ArrayList(peersByVia.get(via));
 	    if (ftp != null) {
-		/* if our rules forbid us to forward to this node, then don't bother */
+		/* do forwarding filtering */
 		if (!isEventForwardingAllowed(ec, via)) {
+		    if (nodeContext.getLogger().isDebugEnabled()) {
+			nodeContext.getLogger().debug("Forwarding to " + via + " is not allowed");
+		    }
 		    continue;
 		}
 		PeerManager viaPeer = getDirectPeer(via);
@@ -549,9 +576,10 @@ public class PeersManager extends GlobalEventNodeAgent {
 	return targetedPeers;
     }
 
-    protected Set<String> getAllowedForwardingPeers(Map<String, PeerManager> candidates, EventContext ec) {
+    protected <P extends PeerManager> Set<String> getAllowedForwardingPeers(Map<String, P> candidates,
+	    EventContext ec) {
 	Set<String> allowed = new HashSet<>();
-	for (Map.Entry<String, PeerManager> e : candidates.entrySet()) {
+	for (Map.Entry<String, P> e : candidates.entrySet()) {
 	    if (e.getValue().getPeerContext().getRelay().isForwardingAllowed(ec)) {
 		allowed.add(e.getKey());
 	    }
@@ -563,7 +591,7 @@ public class PeersManager extends GlobalEventNodeAgent {
 	return peersRegistry.getDirectPeerManager(id);
     }
 
-    protected PeerManager getRemotePeerManager(String id) {
+    protected RemotePeerManager getRemotePeerManager(String id) {
 	return peersRegistry.getRemotePeerManager(id);
     }
 
@@ -572,7 +600,9 @@ public class PeersManager extends GlobalEventNodeAgent {
 
 	/* if a destination is specified, only forward to that peerId */
 	String destination = event.to();
-	if (destination != null && !event.wasRelayedBy(peerId)) {
+	boolean wasRelayedByPeer=event.wasRelayedBy(peerId);
+	
+	if (destination != null && !wasRelayedByPeer) {
 	    return true;
 	}
 
@@ -582,8 +612,14 @@ public class PeersManager extends GlobalEventNodeAgent {
 	    return true;
 	}
 	/* don't forward an event to a peer that already relayed that event */
-	else if (nodeContext.getConfig().isAutoRelayEnabled() && !event.wasRelayedBy(peerId)) {
+	else if (nodeContext.getConfig().isAutoRelayEnabled() && !wasRelayedByPeer) {
 	    return true;
+	}
+	else {
+	    PeerManager peerManager = getPeerManagerById(peerId);
+	    if(peerManager != null && peerManager.isEventForwardingAllowed(ec)) {
+		return true;
+	    }
 	}
 
 	return false;
@@ -689,14 +725,15 @@ public class PeersManager extends GlobalEventNodeAgent {
 	return activePeers;
     }
 
-    protected void addRemotePeer(RemotePeerDataContext dataContext) {
+    protected RemotePeerManager addRemotePeer(RemotePeerDataContext dataContext) {
 	String fullRemotePeerPath = dataContext.getFullRemotePeerPath();
 
 	/* see if we already have a manager for this remote peer */
 	RemotePeerManager remotePeerManager = (RemotePeerManager) peersRegistry
-		.getRemotePeerManager(fullRemotePeerPath);
+		.getRemotePeerManagerByPath(fullRemotePeerPath);
 
 	if (remotePeerManager == null) {
+	    dataContext.setPeerId(nodeContext.generatePeerId());
 	    dataContext.setNodeContext(nodeContext);
 
 	    remotePeerManager = new RemotePeerManager(dataContext);
@@ -708,11 +745,68 @@ public class PeersManager extends GlobalEventNodeAgent {
 		remotePeerManager.start();
 	    } catch (Throwable t) {
 		nodeContext.getLogger().error("Can't start peer manager", t);
-		terminatePeer(fullRemotePeerPath);
+		terminatePeer(dataContext.getPeerId());
+		return null;
 	    }
 
 	    dataContext.setRemotePeerManager(remotePeerManager);
+
+	    /* update routing table */
+
 	}
+
+	return remotePeerManager;
+    }
+
+    /**
+     * Adds a new remote peer using a direct peer as a via
+     * @param viaPeerId
+     * @param peerInfo
+     * @param triggerEvent
+     * @param followerId - id of the entity creating this peer, which will be added as a follower
+     * @return
+     */
+    protected RemotePeerManager addRemotePeer(String viaPeerId, PeerInfo peerInfo, Event triggerEvent, String followerId) {
+	PeerManager gatewayPeer = getDirectPeer(viaPeerId);
+	if (gatewayPeer == null) {
+	    throw new RuntimeException(
+		    "Failed to add remote peer " + peerInfo.getPeerId() + ". No direct peer found for " + viaPeerId);
+	}
+	RemotePeerEventContext rpec = new RemotePeerEventContext(new PeerEventContext<>(triggerEvent, gatewayPeer),
+		peerInfo);
+
+	RemotePeerDataContext dataContext = new RemotePeerDataContext(rpec);
+
+	RemotePeerManager remotePeer = addRemotePeer(dataContext);
+	if(remotePeer != null) {
+	    addFollower(remotePeer.getPeerId(), followerId);
+	}
+	return remotePeer;
+    }
+    
+    protected boolean addFollower(String targetPeerId, String followerId) {
+	FollowersContext followersContext = followersMap.get(targetPeerId);
+	if(followersContext == null) {
+	    followersContext = new FollowersContext();
+	    followersMap.put(targetPeerId, followersContext);
+	}
+	return followersContext.addFollower(followerId);
+    }
+    
+    protected boolean unregisterFromPeer(String targetPeerId, String followerId) {
+	FollowersContext followersContext = followersMap.get(targetPeerId);
+	boolean unregistered=false;
+	if(followersContext != null) {
+	    unregistered = followersContext.removeFollower(followerId);
+	    if(followersContext.followersCount() == 0) {
+		RemotePeerManager rpm = getRemotePeerManager(targetPeerId);
+		if(rpm != null) {
+		    /* if this is a remote peer that no one is following, remove it */
+		    rpm.terminate();
+		}
+	    }
+	}
+	return unregistered;
     }
 
     /**
@@ -729,11 +823,27 @@ public class PeersManager extends GlobalEventNodeAgent {
 	if (!event.isHandled() && event.getHeader().getRelayedBy().size() <= 1) {
 	    nodeContext.postEvent(event);
 	}
+	else if(nodeContext.getLogger().isDebugEnabled()){
+	    nodeContext.getLogger().debug("discarding peer event handled="+event.isHandled()+" -> "+event.toJson());
+	}
 
     }
 
     public FilteringEventProcessor getBeforePostFilter() {
 	return beforePostFilter;
+    }
+
+    public String getFullPathForRemotePeer(String gatewayPeerId, String remotePeerId) {
+	return gatewayPeerId + ":" + remotePeerId;
+    }
+
+    public String getIdForRemotePeerByPath(String gatewayPeerId, String remotePeerId) {
+	String path = getFullPathForRemotePeer(gatewayPeerId, remotePeerId);
+	RemotePeerManager peerManager = peersRegistry.getRemotePeerManagerByPath(path);
+	if (peerManager != null) {
+	    return peerManager.getPeerId();
+	}
+	return null;
     }
 
 }

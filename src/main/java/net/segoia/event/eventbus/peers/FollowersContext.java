@@ -16,22 +16,35 @@
  */
 package net.segoia.event.eventbus.peers;
 
-import net.segoia.event.eventbus.Event;
+import java.util.HashSet;
+import java.util.Set;
 
-public class PeersManagerContext {
-    private PeersManager peersManager;
-
-    public PeersManagerContext(PeersManager peersManager) {
-	super();
-	this.peersManager = peersManager;
-    }
-
-    public <E extends Event> void handlePeerEvent(PeerEventContext<E> context) {
-	peersManager.handlePeerEvent(context);
+public class FollowersContext {
+    private Set<String> followers=new HashSet<>();
+    
+    
+    public boolean addFollower(String followerId) {
+	return followers.add(followerId);
     }
     
-    public String getFullPathForRemotePeer(String gatewayPeerId, String remotePeerId) {
-	return peersManager.getFullPathForRemotePeer(gatewayPeerId, remotePeerId);
+    public boolean removeFollower(String followerId) {
+	return followers.remove(followerId);
+    }
+    
+    public boolean hasFollower(String followerId) {
+	return followers.contains(followerId);
     }
 
+    public int followersCount() {
+	return followers.size();
+    }
+    
+    public Set<String> getFollowers() {
+        return followers;
+    }
+
+    public void setFollowers(Set<String> followers) {
+        this.followers = followers;
+    }
+    
 }

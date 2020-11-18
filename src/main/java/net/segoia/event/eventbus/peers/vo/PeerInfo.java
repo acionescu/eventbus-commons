@@ -31,12 +31,25 @@ public class PeerInfo {
      * The info sent by the peer
      */
     private NodeInfo nodeInfo;
+    
+    /**
+     * An alias to recognize thie peer by
+     */
+    private String alias;
 
     public PeerInfo(String peerId, String peerType, NodeInfo nodeInfo) {
 	super();
 	this.peerId = peerId;
 	this.peerType = peerType;
 	this.nodeInfo = nodeInfo;
+    }
+    
+    public PeerInfo(String peerId, String peerType, NodeInfo nodeInfo, String alias) {
+	super();
+	this.peerId = peerId;
+	this.peerType = peerType;
+	this.nodeInfo = nodeInfo;
+	this.alias = alias;
     }
 
     public String getPeerId() {
@@ -51,4 +64,12 @@ public class PeerInfo {
 	return peerType;
     }
 
+    public String getAlias() {
+        return alias;
+    }
+
+    public void setAlias(String alias) {
+        this.alias = alias;
+    }
+    
 }

@@ -20,7 +20,7 @@ import java.util.Hashtable;
 import java.util.Map;
 import java.util.Set;
 
-import net.segoia.util.data.SetMap;
+import net.segoia.eventbus.util.data.SetMap;
 
 /**
  * This keeps the possible routes from one node to others

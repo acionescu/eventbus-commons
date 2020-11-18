@@ -69,6 +69,8 @@ public class EventBusNodeConfig {
      */
     private List<AgentRegisterRequest<?>> agents;
     
+    private String nodeType;
+    
     /**
      * @return the autoRelayEanbled
      */
@@ -177,4 +179,11 @@ public class EventBusNodeConfig {
         this.agents = agents;
     }
 
+    public String getNodeType() {
+        return nodeType;
+    }
+
+    public void setNodeType(String nodeType) {
+        this.nodeType = nodeType;
+    }
 }

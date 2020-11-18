@@ -18,6 +18,7 @@ package net.segoia.event.eventbus.peers;
 
 import net.segoia.event.eventbus.EBusVM;
 import net.segoia.event.eventbus.Event;
+import net.segoia.event.eventbus.EventContext;
 import net.segoia.event.eventbus.EventHeader;
 import net.segoia.event.eventbus.peers.comm.CommProtocolEventTransceiver;
 import net.segoia.event.eventbus.peers.comm.PeerCommManager;
@@ -25,6 +26,7 @@ import net.segoia.event.eventbus.peers.core.EventTransceiver;
 import net.segoia.event.eventbus.peers.core.PeerCommErrorEvent;
 import net.segoia.event.eventbus.peers.events.PeerAcceptedEvent;
 import net.segoia.event.eventbus.peers.events.PeerLeavingEvent;
+import net.segoia.event.eventbus.peers.events.auth.PeerAuthAcceptedEvent;
 import net.segoia.event.eventbus.peers.events.session.PeerSessionStartedEvent;
 import net.segoia.event.eventbus.peers.exceptions.PeerSessionException;
 import net.segoia.event.eventbus.peers.manager.states.PeerManagerState;
@@ -91,6 +93,13 @@ public class PeerManager implements PeerEventListener {
     public static PeerManagerState PEER_BIND_ACCEPTED = new PeerBindAcceptedState();
     public static PeerManagerState PEER_AUTH_ACCEPTED = new PeerAuthAcceptedState();
     public static PeerManagerState PEER_ACCEPTED = new PeerAcceptedState();
+    
+    static {
+	/* make sure the events area indexed before starting */
+	new PeerBindAccepted();
+	new PeerAuthAcceptedEvent();
+	new PeerSessionStartedEvent();
+    }
 
     public PeerManager(String peerId, EventTransceiver transceiver) {
 	this(new PeerContext(peerId, transceiver));
@@ -182,6 +191,9 @@ public class PeerManager implements PeerEventListener {
 	EventRelay relay = peerContext.getRelay();
 	if (relay != null) {
 	    relay.terminate();
+	}
+	else if(getNodeContext().getLogger().isDebugEnabled()) {
+	    getNodeContext().getLogger().debug("Can't terminate peer "+peerId+". No relay defined");
 	}
     }
 
@@ -351,7 +363,7 @@ public class PeerManager implements PeerEventListener {
     }
 
     public void onReady() {
-	PeerAcceptedEvent acceptedEvent = new PeerAcceptedEvent(new PeerInfo(peerId, peerType, peerContext.getPeerInfo()));
+	PeerAcceptedEvent acceptedEvent = new PeerAcceptedEvent(getLocalPeerInfo());
 	Event causeEvent = peerContext.getCauseEvent();
 	if(causeEvent != null) {
 	    causeEvent.setAsCauseFor(acceptedEvent);
@@ -440,15 +452,19 @@ public class PeerManager implements PeerEventListener {
 	return peerContext.getNodeContext();
     }
 
+    protected PeerInfo getLocalPeerInfo() {
+	return new PeerInfo(peerId, peerType, peerContext.getPeerInfo(),peerContext.getPeerAlias());
+    }
+    
     @Override
     public void onPeerLeaving(PeerLeavingReason reason) {
 	postEvent(new PeerLeavingEvent(
-		new PeerLeavingData(reason, new PeerInfo(peerId, peerType, peerContext.getPeerInfo()))));
+		new PeerLeavingData(reason, getLocalPeerInfo())));
     }
 
     @Override
     public void onPeerError(PeerErrorData errorData) {
-	errorData.setPeerInfo(new PeerInfo(peerId, peerType, peerContext.getPeerInfo()));
+	errorData.setPeerInfo(getLocalPeerInfo());
 	PeerCommErrorEvent event = new PeerCommErrorEvent(errorData);
 	state.handlePeerError(new PeerEventContext<>(event, this));
 	postEvent(event);
@@ -482,4 +498,8 @@ public class PeerManager implements PeerEventListener {
 	this.peerType = peerType;
     }
 
+    public boolean isEventForwardingAllowed(EventContext ec) {
+	return config.getEventsForwardingCondition().test(ec);
+    }
+    
 }

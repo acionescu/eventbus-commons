@@ -17,6 +17,7 @@
 package net.segoia.event.eventbus.peers.agents;
 
 import net.segoia.event.eventbus.Event;
+import net.segoia.event.eventbus.peers.DefaultEventRelay;
 import net.segoia.event.eventbus.peers.PeerEventContext;
 import net.segoia.event.eventbus.peers.PeersAgentContext;
 import net.segoia.event.eventbus.peers.RemotePeerManager;
@@ -25,10 +26,13 @@ import net.segoia.event.eventbus.peers.events.PeerLeavingEvent;
 public class RemotePeerController extends PeersAgentController {
     public static final String TYPE="RemotePeerController";
     private RemotePeerDataContext data;
+    private RemotePeerManager remotePeerManager;
+    private GatewayPeerController gatewayController;
 
-    public RemotePeerController(PeersAgentContext context, RemotePeerDataContext data) {
+    public RemotePeerController(PeersAgentContext context, RemotePeerDataContext data, GatewayPeerController gatewayController) {
 	super(context,false);
 	this.data = data;
+	this.gatewayController = gatewayController;
 	init();
     }
 
@@ -47,27 +51,70 @@ public class RemotePeerController extends PeersAgentController {
     @Override
     protected void initController() {
 	/* we have to create a remote peer manager here */
-	context.addRemotePeer(data);
+	 remotePeerManager = context.getRemotePeer(data);
+	 if(remotePeerManager != null) {
+	     if(context.isDebugEnabled()) {
+		 context.logger().debug("associating existent remote peer manager to remote controller "+data.getFullRemotePeerPath());
+	     }
+	     data = (RemotePeerDataContext)remotePeerManager.getPeerContext();
+	     
+	 }
+	 
+	 /* set this as transceiver */
+	 data.setTransceiver(this);
+	 DefaultEventRelay newRelay = new DefaultEventRelay(data.getPeerId(), this);
+	 data.setRelay(newRelay);
+	 newRelay.setRemoteEventListener(remotePeerManager);
     }
 
     
-    public void handleRemotePeerEvent(PeerEventContext<Event> c) {
-	RemotePeerManager remotePeerManager = data.getRemotePeerManager();
+    public boolean handleRemotePeerEvent(PeerEventContext<Event> c) {
 	Event event = c.getEvent();
 	
 	if(context.logger().isDebugEnabled()) {
-	    context.logger().info(TYPE+" -> "+data.getPeerId()+" handle "+event.toJson());
+	    context.logger().info(TYPE+" -> "+data.getFullRemotePeerPath()+" handle "+event.toJson());
 	}
 	
 	if(remotePeerManager != null) {
 	    remotePeerManager.onPeerEvent(event);
 	    event.setHandled();
+	    return true;
 	}
+	else {
+	    context.logger().error("No remote peer manager found for "+data.getFullRemotePeerPath());
+	}
+	return false;
+    }
+
+    @Override
+    protected void onPeerLeaving(PeerEventContext<PeerLeavingEvent> c) {
+	remotePeerManager.onPeerLeaving(c.getEvent().getData().getReason());	
+    }
+
+    public RemotePeerDataContext getData() {
+        return data;
+    }
+
+    @Override
+    public void start() {
+	// TODO Auto-generated method stub
 	
     }
 
     @Override
-    protected void terminate(PeerEventContext<PeerLeavingEvent> c) {
-	data.getRemotePeerManager().onPeerLeaving(c.getEvent().getData().getReason());	
+    public void terminate() {
+	gatewayController.terminatePeerController(this);
+    }
+
+    @Override
+    public void sendData(byte[] data) {
+	// TODO Auto-generated method stub
+	
+    }
+
+    @Override
+    public String getChannel() {
+	// TODO Auto-generated method stub
+	return null;
     }
 }

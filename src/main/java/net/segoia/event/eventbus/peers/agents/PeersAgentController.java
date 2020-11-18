@@ -18,9 +18,10 @@ package net.segoia.event.eventbus.peers.agents;
 
 import net.segoia.event.eventbus.peers.PeerEventContext;
 import net.segoia.event.eventbus.peers.PeersAgentContext;
+import net.segoia.event.eventbus.peers.core.AbstractEventTransceiver;
 import net.segoia.event.eventbus.peers.events.PeerLeavingEvent;
 
-public abstract class PeersAgentController {
+public abstract class PeersAgentController extends AbstractEventTransceiver{
     protected PeersAgentContext context;
 
     public PeersAgentController(PeersAgentContext context) {
@@ -47,5 +48,5 @@ public abstract class PeersAgentController {
 
     protected abstract void registerHandlers();
     
-    protected abstract void terminate(PeerEventContext<PeerLeavingEvent> c);
+    protected abstract void onPeerLeaving(PeerEventContext<PeerLeavingEvent> c);
 }

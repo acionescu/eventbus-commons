@@ -484,6 +484,10 @@ public class Event implements Cloneable {
     public void addForwardTo(String nodeId) {
 	header.addForwardTo(nodeId);
     }
+    
+    public void addNoForward(String nodeId) {
+	header.addNoForward(nodeId);
+    }
 
     public void clearRelays() {
 	header.clearRelays();
@@ -555,6 +559,14 @@ public class Event implements Cloneable {
 
     public void setParams(Map<String, Object> params) {
 	this.params = params;
+    }
+    
+    public boolean isNoForward(String peerId) {
+	return header.isNoForward(peerId);
+    }
+    
+    public boolean isLocal() {
+	return header.isLocal();
     }
 
     /*

@@ -42,6 +42,11 @@ public class AgentRegisterRequest<A extends EventNodeAgent> {
 	super();
 	this.agent = agent;
     }
+    
+    public AgentRegisterRequest() {
+	super();
+	// TODO Auto-generated constructor stub
+    }
 
     public A getAgent() {
 	return agent;

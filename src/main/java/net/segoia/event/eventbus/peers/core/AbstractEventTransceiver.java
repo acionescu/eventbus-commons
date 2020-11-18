@@ -50,7 +50,6 @@ public abstract class AbstractEventTransceiver implements EventTransceiver {
 	if (remoteDataListener != null) {
 	    remoteDataListener.onPeerLeaving(reason);
 	}
-
     }
 
     @Override

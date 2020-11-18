@@ -70,6 +70,11 @@ public class EventHeader implements Cloneable {
      * The event should be forwarded to these nodes
      */
     private List<String> forwardTo = new ArrayList<>();
+    
+    /**
+     *  The event should not be forwarded to these peers
+     */
+    private List<String> noForward;
 
     /**
      * Use this to mark the event as handled
@@ -316,7 +321,21 @@ public class EventHeader implements Cloneable {
     }
 
     public void clearForwardTo() {
-	forwardTo.clear();
+	if(forwardTo != null) {
+	    forwardTo.clear();
+	}
+    }
+
+    public List<String> getNoForward() {
+        return noForward;
+    }
+    
+    public void clearNoForward() {
+	noForward=null;
+    }
+    
+    public boolean isNoForward(String peerId) {
+	return (noForward !=null && noForward.contains(peerId));
     }
 
     /**
@@ -333,6 +352,15 @@ public class EventHeader implements Cloneable {
 	}
 	if (!forwardTo.contains(nodeId)) {
 	    forwardTo.add(nodeId);
+	}
+    }
+    
+    public void addNoForward(String nodeId) {
+	if(noForward == null) {
+	    noForward=new ArrayList<>();
+	}
+	if(!noForward.contains(nodeId)) {
+	    noForward.add(nodeId);
 	}
     }
 
@@ -481,6 +509,10 @@ public class EventHeader implements Cloneable {
         this.originRootCause = originRootCause;
     }
 
+    public boolean isLocal() {
+	return from==null && (relayedBy==null || relayedBy.size()==0);
+    }
+    
     /*
      * (non-Javadoc)
      * 

@@ -24,6 +24,7 @@ import net.segoia.event.eventbus.peers.security.EventNodeSecurityManager;
 import net.segoia.event.eventbus.peers.util.EventNodeHelper;
 import net.segoia.event.eventbus.peers.util.EventNodeLogger;
 import net.segoia.event.eventbus.peers.vo.NodeInfo;
+import net.segoia.event.eventbus.services.EventNodeServicesManager;
 import net.segoia.event.eventbus.vo.security.SignatureInfo;
 import net.segoia.event.eventbus.vo.security.SignedCustomEvent;
 import net.segoia.event.eventbus.vo.security.SignedEventData;
@@ -115,4 +116,7 @@ public class EventNodeContext {
 	return new SignedCustomEvent(new SignedEventData(crypto().base64Encode(eventBytes), signatureInfo));
     }
 
+    public EventNodeServicesManager getServicesManager() {
+	return node.getServicesManager();
+    }
 }

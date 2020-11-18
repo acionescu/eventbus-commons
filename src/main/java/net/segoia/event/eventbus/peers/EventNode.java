@@ -29,6 +29,7 @@ import net.segoia.event.eventbus.CustomEventContext;
 import net.segoia.event.eventbus.Event;
 import net.segoia.event.eventbus.EventContext;
 import net.segoia.event.eventbus.EventDispatcher;
+import net.segoia.event.eventbus.EventsRepository;
 import net.segoia.event.eventbus.FilteringEventBus;
 import net.segoia.event.eventbus.PeerBindRequest;
 import net.segoia.event.eventbus.agents.AgentRegisterRequest;
@@ -139,7 +140,7 @@ public abstract class EventNode {
 	securityManager = buildSecurityManager(securityConfig);
 
 	nodeInfo = new NodeInfo(config.getHelper().generatePeerId());
-
+	nodeInfo.setNodeType(config.getNodeType());
 	nodeInfo.setNodeAuth(securityConfig.getNodeAuth());
 	nodeInfo.setSecurityPolicy(securityConfig.getSecurityPolicy());
 
@@ -150,7 +151,7 @@ public abstract class EventNode {
 	peersManager.init(context);
 
 	servicesManager = new EventNodeServicesManager();
-	
+	EventsRepository.getInstance().load();
 	setupStartAgents();
     }
     
@@ -296,7 +297,14 @@ public abstract class EventNode {
     public synchronized void registerGlobalAgent(GlobalAgentRegisterRequest registerRequest) {
 	GlobalEventNodeAgent agent = registerRequest.getAgent();
 	addAgent(agent);
-	agent.initGlobalContext(new GlobalAgentEventNodeContext(context, peersManager));
+	GlobalAgentEventNodeContext globalAgentContext = new GlobalAgentEventNodeContext(context, peersManager);
+	agent.initGlobalContext(globalAgentContext);
+	
+	List<EventNodeServiceDefinition> providedServices = registerRequest.getProvidedServices();
+	if (providedServices == null) {
+	    return;
+	}
+	globalAgentContext.setProvidedServices(providedServices);
 	/* register services provided by this agent */
 	addServices(registerRequest);
     }
@@ -574,6 +582,10 @@ public abstract class EventNode {
 
     public void stop() {
 	internalBus.stop();
+    }
+
+    public EventNodeServicesManager getServicesManager() {
+        return servicesManager;
     }
 
     /**

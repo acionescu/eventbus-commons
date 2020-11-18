@@ -19,6 +19,7 @@ package net.segoia.event.eventbus.peers.agents;
 import java.util.HashMap;
 import java.util.Map;
 
+import net.segoia.event.conditions.Condition;
 import net.segoia.event.conditions.StrictChannelMatchCondition;
 import net.segoia.event.eventbus.Event;
 import net.segoia.event.eventbus.EventHeader;
@@ -32,11 +33,18 @@ import net.segoia.event.eventbus.peers.vo.PeerInfo;
 import net.segoia.event.eventbus.peers.vo.PeerLeavingData;
 
 public class RemotePeersAgent extends PeersManagerAgent {
-    public static final String TYPE="RemotePeersAgent";
+    public static final String TYPE = "RemotePeersAgent";
     /**
      * Accepted remote peers gateways
      */
     private Map<String, GatewayPeerController> gateways = new HashMap<>();
+
+    /**
+     * If incoming events from remote peers satisfy this condition, we'll automatically create a RemotePeerManager to
+     * handle this peer
+     */
+    private Condition autoCreateCondition;
+    private String channel = "WSS_WEB_V0";
 
     @Override
     protected void config() {
@@ -49,7 +57,7 @@ public class RemotePeersAgent extends PeersManagerAgent {
 	FilteringEventProcessor processor = new FilteringEventProcessor(
 		new PassthroughCustomEventContextListenerFactory());
 
-	context.registerPeerEventProcessor(new StrictChannelMatchCondition("WSS_WEB_V0"), (c) -> {
+	context.registerPeerEventProcessor(new StrictChannelMatchCondition(channel), (c) -> {
 	    processor.processEvent(c);
 	});
 
@@ -65,32 +73,33 @@ public class RemotePeersAgent extends PeersManagerAgent {
 	processor.addEventHandler(PeerLeavingEvent.class, (c) -> {
 	    handleRemotePeerLeaving((PeerEventContext<PeerLeavingEvent>) c);
 	});
-	
-	/* listen form gateway peers leaving */
-	
+
+	/* listen for gateway peers leaving */
+
 	context.registerPeerEventProcessor(PeerLeavingEvent.class, (c) -> {
 	    handleGatewayLeaving((PeerEventContext<PeerLeavingEvent>) c);
 	});
+	
     }
-    
+
     private void handleGatewayLeaving(PeerEventContext<PeerLeavingEvent> c) {
 	PeerLeavingEvent event = c.getEvent();
-	if(event.getLastRelay() == null) {
+	if (event.getLastRelay() == null) {
 	    /* make sure that this comes from us */
 	    PeerInfo peerInfo = event.getData().getPeerInfo();
 	    String gatewayPeerId = peerInfo.getPeerId();
-	    
+
 	    GatewayPeerController gatewayController = gateways.remove(gatewayPeerId);
-	    
-	    if(gatewayController != null) {
-		gatewayController.terminate(c);
+
+	    if (gatewayController != null) {
+		gatewayController.onPeerLeaving(c);
 	    }
 	}
     }
 
     private void handleRemotePeerLeaving(PeerEventContext<PeerLeavingEvent> c) {
 	PeerLeavingEvent event = c.getEvent();
-	
+
 	/* use the last relay to make sure we get the direct peer id */
 	String lastRelay = event.getLastRelay();
 
@@ -100,31 +109,32 @@ public class RemotePeersAgent extends PeersManagerAgent {
 	}
 
 	PeerLeavingData data = event.getData();
-	
+
 	if (data == null) {
 	    return;
 	}
-	
+
 	PeerInfo peerInfo = data.getPeerInfo();
-	
-	if(peerInfo == null) {
+
+	if (peerInfo == null) {
 	    return;
 	}
 
 	GatewayPeerController gatewayPeerController = gateways.get(lastRelay);
-	
-	if(gatewayPeerController != null) {
+
+	if (gatewayPeerController != null) {
 	    /* if we have a controller for this gateway, delegate to it */
 	    gatewayPeerController.removeRemotePeer(c);
-	    event.setHandled();
+	    
 	}
-	
+	/* mark this as handled, we don't want peers to inject this type of event*/
+	event.setHandled();
     }
 
     private void handleRemotePeerEvent(PeerEventContext<Event> c) {
 	Event event = c.getEvent();
-	if(context.logger().isDebugEnabled()) {
-	    context.logger().debug(TYPE+": remote agent got event: " + event.toJson());
+	if (context.logger().isDebugEnabled()) {
+	    context.logger().debug(TYPE + ": remote agent got event: " + event.toJson());
 	}
 
 	EventHeader header = event.getHeader();
@@ -132,9 +142,28 @@ public class RemotePeersAgent extends PeersManagerAgent {
 	    /* if this event was relayed from another peer, then pass it to the gateway controller, if exists */
 	    String lastRelay = header.getLastRelay();
 	    GatewayPeerController gatewayPeerController = gateways.get(lastRelay);
+	    boolean handled = false;
 	    if (gatewayPeerController != null) {
-		context.logger().debug(TYPE+": Send event " + event.getEt() + " to gateway controller " + lastRelay);
-		gatewayPeerController.handleRemotePeerEvent(c);
+		context.logger().debug(TYPE + ": Send event " + event.getEt() + " to gateway controller " + lastRelay);
+
+		handled = gatewayPeerController.handleRemotePeerEvent(c);
+
+	    }
+
+	    if (!handled && autoCreateCondition != null && autoCreateCondition.test(c)) {
+		context.logger().debug(TYPE + ": Autocreating remote peer controller from event " + event.getEt()
+			+ " on gateway controller " + lastRelay+" root event "+event.getHeader().getRootEvent());
+
+		/* if we don't have a controller for this peer and we're allowed to automatically create one, do it */
+		RemotePeerEventContext remotePeerEventContext = new RemotePeerEventContext(c,
+			new PeerInfo(event.from(), header.getSourceType(), null));
+
+		gatewayPeerController = checkAndAddNewRemotePeer(remotePeerEventContext);
+		if(gatewayPeerController != null) {
+		    /* process the event */
+		    context.logger().debug("handling remote event after creating peer controller "+event.getEt());
+		    gatewayPeerController.handleRemotePeerEvent(c);
+		}
 	    }
 	}
 
@@ -146,7 +175,7 @@ public class RemotePeersAgent extends PeersManagerAgent {
 	/* use the last relay to make sure we get the direct peer id */
 	String lastRelay = event.getLastRelay();
 
-	if (lastRelay == null) {
+	if (event.getHeader().getRelayedBy().size() <= 1) {
 	    /* ignore events from local */
 	    return;
 	}
@@ -157,31 +186,66 @@ public class RemotePeersAgent extends PeersManagerAgent {
 	    return;
 	}
 
-	if (lastRelay.equals(data.getPeerId())) {
-	    /* ignore events coming from direct peers */
-	    return;
-	}
+	RemotePeerEventContext remotePeerEventContext = new RemotePeerEventContext(c, data);
+
+	checkAndAddNewRemotePeer(remotePeerEventContext);
 	
-	Event rootEvent = event.getHeader().getRootEvent();
-	if(rootEvent == null) {
-	    /* we're looking for events that came from a peer */
-	    return;
+	/* mark the event as handled to block further posting */
+	event.setHandled();
+    }
+
+    private GatewayPeerController checkAndAddNewRemotePeer(RemotePeerEventContext c) {
+	PeerEventContext<? extends Event> triggerEventContext = c.getTriggerEventContext();
+	Event event = triggerEventContext.getEvent();
+
+	/* use the last relay to make sure we get the direct peer id */
+	String lastRelay = event.getLastRelay();
+
+	if (lastRelay == null) {
+	    /* ignore events from local */
+	    return null;
 	}
-	context.logger().info(TYPE+": Got new remote peer from root event: "+rootEvent.toJson());
+
+	if (lastRelay.equals(event.from())) {
+	    /* ignore events coming from direct peers */
+	    return null;
+	}
+
+	Event rootEvent = event.getHeader().getRootEvent();
+	if (rootEvent == null) {
+	    /* we're looking for events that came from a peer */
+	    return null;
+	}
+	context.logger().info(TYPE + ": Got new remote peer from root event: " + rootEvent.toJson());
 
 	GatewayPeerController gatewayPeerController = gateways.get(lastRelay);
 
 	/* add the gateway if is not present */
 	if (gatewayPeerController == null) {
-	    gatewayPeerController = new GatewayPeerController(context, c.getPeerManager());
+	    gatewayPeerController = new GatewayPeerController(context, triggerEventContext.getPeerManager());
 	    gateways.put(lastRelay, gatewayPeerController);
 	    context.logger().info("Created gateway for relay " + lastRelay);
 	}
 	/* call add new remote peer */
 	gatewayPeerController.addNewRemotePeer(c);
 
-	/* mark the event as handled to block further posting */
-	event.setHandled();
+	return gatewayPeerController;
+    }
+
+    public Condition getAutoCreateCondition() {
+	return autoCreateCondition;
+    }
+
+    public void setAutoCreateCondition(Condition autoCreateCondition) {
+	this.autoCreateCondition = autoCreateCondition;
+    }
+
+    public String getChannel() {
+	return channel;
+    }
+
+    public void setChannel(String channel) {
+	this.channel = channel;
     }
 
 }

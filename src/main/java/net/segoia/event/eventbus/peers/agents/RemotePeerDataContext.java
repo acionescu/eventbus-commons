@@ -21,7 +21,6 @@ import net.segoia.event.eventbus.peers.PeerContext;
 import net.segoia.event.eventbus.peers.PeerEventContext;
 import net.segoia.event.eventbus.peers.PeerManager;
 import net.segoia.event.eventbus.peers.RemotePeerManager;
-import net.segoia.event.eventbus.peers.events.PeerAcceptedEvent;
 
 public class RemotePeerDataContext extends PeerContext {
     public static final String PEER_PATH_SEPARATOR = ":";
@@ -37,18 +36,24 @@ public class RemotePeerDataContext extends PeerContext {
      * The peer manager created to handle this remote peer
      */
     private RemotePeerManager remotePeerManager;
-    
+
     private String commChannel;
 
-    public RemotePeerDataContext(PeerEventContext<PeerAcceptedEvent> pc) {
+    public RemotePeerDataContext(RemotePeerEventContext rpec) {
 	super(null, null);
-	gatewayPeer = pc.getPeerManager();
-	PeerAcceptedEvent event = pc.getEvent();
-	remotePeerId = event.getData().getPeerId();
-	fullRemotePeerPath = gatewayPeer.getPeerId() + PEER_PATH_SEPARATOR + remotePeerId;
-
-	/* if not overwritten, use this as local remote peer id */
-	setPeerId(fullRemotePeerPath);
+	PeerEventContext triggerEventContext = rpec.getTriggerEventContext();
+	gatewayPeer = triggerEventContext.getPeerManager();
+	Event event = triggerEventContext.getEvent();
+	remotePeerId = rpec.getRemotePeerInfo().getPeerId();
+	fullRemotePeerPath = gatewayPeer.getPeersContext().getFullPathForRemotePeer(gatewayPeer.getPeerId(),
+		remotePeerId);
+	
+	/* the local peer id will be set by peers manager */
+	
+//	/* if not overwritten, use this as local remote peer id */
+//	setPeerId(fullRemotePeerPath);
+	
+	
 	setRemoteAgent(true);
 	setCauseEvent(event);
 	commChannel = gatewayPeer.getPeerContext().getCommunicationChannel();
@@ -58,11 +63,9 @@ public class RemotePeerDataContext extends PeerContext {
     public void sendEventToPeer(Event event) {
 	/* instruct gateway to forward the event to the remote peer */
 	event.to(remotePeerId);
-	
+
 	gatewayPeer.forwardToPeer(event);
     }
-    
-    
 
     public String getRemotePeerId() {
 	return remotePeerId;

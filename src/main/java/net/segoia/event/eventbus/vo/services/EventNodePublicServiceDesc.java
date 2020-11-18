@@ -18,6 +18,7 @@ package net.segoia.event.eventbus.vo.services;
 
 public class EventNodePublicServiceDesc {
     private String serviceId;
+    private String serviceType;
     private String serviceName;
     private String serviceDesc;
     private int version;
@@ -73,4 +74,48 @@ public class EventNodePublicServiceDesc {
 	this.version = version;
     }
 
+    public String getServiceType() {
+        return serviceType;
+    }
+
+    public void setServiceType(String serviceType) {
+        this.serviceType = serviceType;
+    }
+
+    @Override
+    public int hashCode() {
+	final int prime = 31;
+	int result = 1;
+	result = prime * result + ((serviceId == null) ? 0 : serviceId.hashCode());
+	result = prime * result + ((serviceType == null) ? 0 : serviceType.hashCode());
+	result = prime * result + version;
+	return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+	if (this == obj)
+	    return true;
+	if (obj == null)
+	    return false;
+	if (getClass() != obj.getClass())
+	    return false;
+	EventNodePublicServiceDesc other = (EventNodePublicServiceDesc) obj;
+	if (serviceId == null) {
+	    if (other.serviceId != null)
+		return false;
+	} else if (!serviceId.equals(other.serviceId))
+	    return false;
+	if (serviceType == null) {
+	    if (other.serviceType != null)
+		return false;
+	} else if (!serviceType.equals(other.serviceType))
+	    return false;
+	if (version != other.version)
+	    return false;
+	return true;
+    }
+
+  
+    
 }

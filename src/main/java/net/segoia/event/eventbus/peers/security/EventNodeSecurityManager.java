@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import net.segoia.event.eventbus.peers.EventBusNodeConfig;
 import net.segoia.event.eventbus.peers.EventNodeContext;
 import net.segoia.event.eventbus.peers.PeerContext;
 import net.segoia.event.eventbus.peers.PeerEventContext;
@@ -38,6 +39,7 @@ import net.segoia.event.eventbus.peers.exceptions.PeerRequestRejectedException;
 import net.segoia.event.eventbus.peers.exceptions.PeerSessionException;
 import net.segoia.event.eventbus.peers.manager.states.PeerStateContext;
 import net.segoia.event.eventbus.peers.security.rules.PeerRuleEngine;
+import net.segoia.event.eventbus.peers.util.EventNodeLogger;
 import net.segoia.event.eventbus.peers.vo.NodeInfo;
 import net.segoia.event.eventbus.peers.vo.RequestRejectReason;
 import net.segoia.event.eventbus.peers.vo.auth.PeerAuthRejected;
@@ -48,7 +50,6 @@ import net.segoia.event.eventbus.peers.vo.auth.id.SharedIdentityType;
 import net.segoia.event.eventbus.peers.vo.auth.id.SharedNodeIdentity;
 import net.segoia.event.eventbus.peers.vo.auth.id.SpkiFullIdentityType;
 import net.segoia.event.eventbus.peers.vo.auth.id.SpkiFullNodeIdentity;
-import net.segoia.event.eventbus.peers.vo.auth.id.SpkiNodeIdentity;
 import net.segoia.event.eventbus.peers.vo.comm.CommunicationProtocol;
 import net.segoia.event.eventbus.peers.vo.comm.CommunicationProtocolConfig;
 import net.segoia.event.eventbus.peers.vo.comm.CommunicationProtocolDefinition;
@@ -77,7 +78,7 @@ import net.segoia.event.eventbus.vo.services.ServiceContract;
 
 public abstract class EventNodeSecurityManager {
     private EventNodeSecurityConfig securityConfig;
-
+    private EventBusNodeConfig nodeConfig;
     protected Map<Integer, PrivateIdentityData> privateIdentities = new HashMap<>();
 
     protected Map<Class<? extends NodeIdentity>, PublicIdentityManagerFactory<?>> publicIdentityBuilders;
@@ -103,14 +104,20 @@ public abstract class EventNodeSecurityManager {
     public EventNodeSecurityManager() {
 	super();
     }
+    
+    public EventNodeSecurityManager(EventBusNodeConfig nodeConfig) {
+	this.nodeConfig = nodeConfig;
+	this.securityConfig = nodeConfig.getSecurityConfig();
+	init();
+    }
 
     public EventNodeSecurityManager(EventNodeSecurityConfig securityConfig) {
 	super();
 
-	this.securityConfig = securityConfig;// JsonUtils.copyObject(securityConfig);
+	this.securityConfig = securityConfig;
 	init();
     }
-
+    
     protected void init() {
 	loadIdentities();
 	initCommProtocolContextBuilders();
@@ -306,6 +313,10 @@ public abstract class EventNodeSecurityManager {
 	    l.load();
 	    PrivateIdentityData<?> data = (PrivateIdentityData) l.getData();
 
+	    if(data == null) {
+		continue;
+	    }
+	    
 	    /* save private identity under the index of the position in the node identities */
 	    int index = nodeIdentities.size();
 	    privateIdentities.put(index, data);
@@ -315,6 +326,17 @@ public abstract class EventNodeSecurityManager {
 
 	    nodeIdentities.add(publicNodeIdentity);
 	}
+	
+	if(nodeIdentities.size() == 0) {
+	    handleNoIdentity();
+	}
+    }
+    
+    /**
+     * This is called if no identity could be loaded for this node
+     */
+    protected void handleNoIdentity() {
+	/* by default, we do nothing */
     }
 
     protected abstract void initIdentityRoles();
@@ -1060,4 +1082,13 @@ public abstract class EventNodeSecurityManager {
         
         return sign(data, signCommOperationDef);
     }
+
+    public EventNodeSecurityConfig getSecurityConfig() {
+        return securityConfig;
+    }
+
+    public EventNodeLogger getLogger() {
+	return nodeConfig.getLogger();
+    }
+    
 }

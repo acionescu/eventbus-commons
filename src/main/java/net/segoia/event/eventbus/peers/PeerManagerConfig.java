@@ -19,19 +19,31 @@ package net.segoia.event.eventbus.peers;
 import java.util.List;
 
 import net.segoia.event.conditions.Condition;
+import net.segoia.event.conditions.ConditionsUtil;
+import net.segoia.event.conditions.FalseCondition;
 import net.segoia.event.conditions.TrueCondition;
+import net.segoia.event.eventbus.peers.events.NewPeerEvent;
+import net.segoia.event.eventbus.peers.events.PeerAcceptedEvent;
+import net.segoia.event.eventbus.peers.events.PeerLeavingEvent;
+import net.segoia.event.eventbus.peers.events.PeerLeftEvent;
+import net.segoia.event.eventbus.peers.events.bind.ConnectToPeerRequestEvent;
+import net.segoia.event.eventbus.peers.events.bind.DisconnectFromPeerRequestEvent;
 
 public class PeerManagerConfig {
     /**
-     * If set to true, will allow relays on received events
-     * <br/>
+     * If set to true, will allow relays on received events <br/>
      * Defaults to false
      */
     private boolean allowPeerRelays;
-    
+
     private List<PeerManagerAgent> peerManagerAgents;
-    private Condition peerBindAcceptCondition=new TrueCondition();
-    private Condition peerEventAcceptCondition=new TrueCondition();
+    private Condition peerBindAcceptCondition = new TrueCondition();
+    private Condition peerEventAcceptCondition = ConditionsUtil.buildRejectedEventsList("core-peer-events-guard",
+	    ConnectToPeerRequestEvent.ET, DisconnectFromPeerRequestEvent.ET, NewPeerEvent.ET, PeerAcceptedEvent.ET, PeerLeavingEvent.ET, PeerLeftEvent.ET);
+    /**
+     * Controls what events can be forwarded to this peer
+     */
+    private Condition eventsForwardingCondition = new FalseCondition();
 
     public List<PeerManagerAgent> getPeerManagerAgents() {
 	return peerManagerAgents;
@@ -42,27 +54,35 @@ public class PeerManagerConfig {
     }
 
     public boolean isAllowPeerRelays() {
-        return allowPeerRelays;
+	return allowPeerRelays;
     }
 
     public void setAllowPeerRelays(boolean allowPeerRelays) {
-        this.allowPeerRelays = allowPeerRelays;
+	this.allowPeerRelays = allowPeerRelays;
     }
 
     public Condition getPeerEventAcceptCondition() {
-        return peerEventAcceptCondition;
+	return peerEventAcceptCondition;
     }
 
     public void setPeerEventAcceptCondition(Condition peerEventAcceptCondition) {
-        this.peerEventAcceptCondition = peerEventAcceptCondition;
+	this.peerEventAcceptCondition = peerEventAcceptCondition;
     }
 
     public Condition getPeerBindAcceptCondition() {
-        return peerBindAcceptCondition;
+	return peerBindAcceptCondition;
     }
 
     public void setPeerBindAcceptCondition(Condition peerBindAcceptCondition) {
-        this.peerBindAcceptCondition = peerBindAcceptCondition;
+	this.peerBindAcceptCondition = peerBindAcceptCondition;
+    }
+
+    public Condition getEventsForwardingCondition() {
+	return eventsForwardingCondition;
+    }
+
+    public void setEventsForwardingCondition(Condition eventsForwardingCondition) {
+	this.eventsForwardingCondition = eventsForwardingCondition;
     }
 
 }
