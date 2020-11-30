@@ -18,11 +18,12 @@ package net.segoia.event.eventbus.peers;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import net.segoia.event.eventbus.Event;
-import net.segoia.event.eventbus.peers.agents.RemotePeerDataContext;
 import net.segoia.event.eventbus.peers.vo.PeerInfo;
 import net.segoia.event.eventbus.vo.services.EventNodePublicServiceDesc;
 import net.segoia.event.eventbus.vo.services.EventNodeServiceDefinition;
@@ -37,6 +38,11 @@ public class GlobalAgentEventNodeContext extends LocalAgentEventNodeContext {
     private PeersManager peersManager;
     private List<EventNodeServiceDefinition> providedServices;
     private Map<String, EventNodePublicServiceDesc> publicServices = new HashMap<>();
+
+    /**
+     * Remote interop peers
+     */
+    private Set<String> interopPeersIds = new HashSet<>();
 
     public GlobalAgentEventNodeContext(EventNodeContext nodeContext, PeersManager peersManager) {
 	super(nodeContext);
@@ -113,5 +119,39 @@ public class GlobalAgentEventNodeContext extends LocalAgentEventNodeContext {
 
     public PeerManager getPeerManager(String peerId) {
 	return peersManager.getPeerManagerById(peerId);
+    }
+
+    public boolean addInteropPeerId(String peerId) {
+	return interopPeersIds.add(peerId);
+    }
+
+    public boolean removeInteropPeerId(String peerId) {
+	return interopPeersIds.remove(peerId);
+    }
+
+    /**
+     * Forwards this event to the peers added as interop peers
+     * 
+     * @param event
+     */
+    public void forwardToInteropPeers(Event event) {
+
+	String lastRelay = event.getLastRelay();
+
+	for (String peerId : interopPeersIds) {
+	    /* check that we didn't get this event via one of the peers */
+	    if (peerId.equals(lastRelay)) {
+		continue;
+	    }
+
+	    /* check that we don't have a noForward for this peer */
+	    if (!event.isNoForward(peerId)) {
+		if (isDebugEnabled()) {
+		    debug("forwarding event to interop peer " + peerId + " -> " + event.toJson());
+		}
+		/* forward this event to the peer */
+		forwardTo(event, peerId);
+	    }
+	}
     }
 }

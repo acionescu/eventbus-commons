@@ -33,7 +33,7 @@ public class PeerInfo {
     private NodeInfo nodeInfo;
     
     /**
-     * An alias to recognize thie peer by
+     * An alias to recognize this peer by
      */
     private String alias;
 

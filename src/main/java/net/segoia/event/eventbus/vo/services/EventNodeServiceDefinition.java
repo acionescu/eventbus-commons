@@ -16,7 +16,16 @@
  */
 package net.segoia.event.eventbus.vo.services;
 
+import net.segoia.event.conditions.Condition;
+import net.segoia.event.conditions.TrueCondition;
+
 public class EventNodeServiceDefinition {
+    /**
+     * The condition that a consumer needs to satisfy to allow it to access this service
+     * <br>
+     * By default, allow everyone
+     */
+    private Condition consumerCondition=new TrueCondition();
     private EventNodePublicServiceDesc serviceDesc;
 
     public EventNodePublicServiceDesc getServiceDesc() {
@@ -25,6 +34,14 @@ public class EventNodeServiceDefinition {
 
     public void setServiceDesc(EventNodePublicServiceDesc serviceDesc) {
 	this.serviceDesc = serviceDesc;
+    }
+
+    public Condition getConsumerCondition() {
+        return consumerCondition;
+    }
+
+    public void setConsumerCondition(Condition consumerCondition) {
+        this.consumerCondition = consumerCondition;
     }
 
 }

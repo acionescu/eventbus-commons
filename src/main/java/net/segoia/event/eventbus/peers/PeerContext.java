@@ -266,7 +266,10 @@ public class PeerContext {
 	
 	event.getHeader().removeRelay(nodeContext.getLocalNodeId());
 	
-//        System.out.println(getNodeContext().getLocalNodeId() +" sending to "+peerId +" "+event.toJson());
+	if(nodeContext.getLogger().isDebugEnabled()) {
+	        nodeContext.getLogger().debug(nodeContext.getLocalNodeId() +" sending to "+peerId +" "+event.toJson());
+	}
+
 	relay.sendEvent(event);
        
     }

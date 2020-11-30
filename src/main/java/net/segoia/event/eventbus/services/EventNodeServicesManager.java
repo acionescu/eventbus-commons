@@ -50,6 +50,10 @@ public class EventNodeServicesManager {
 	return new ArrayList<>(publicServicesDesc);
     }
     
+    public Map<EventNodeServiceRef, EventNodeServiceContext> getServices() {
+        return services;
+    }
+
     public EventNodePublicServiceDesc getServiceMatch(String serviceId, Collection<EventNodePublicServiceDesc> l1, Collection<EventNodePublicServiceDesc> l2) {
 	if(l1 != null && l2 != null) {
 	    for(EventNodePublicServiceDesc s1 : l1) {

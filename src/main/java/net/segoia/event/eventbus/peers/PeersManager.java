@@ -230,9 +230,14 @@ public class PeersManager extends GlobalEventNodeAgent {
 	/* Notify everybody that we have a new peer */
 	NewPeerEvent newPeerEvent = new NewPeerEvent(data);
 	EventHeader header = event.getHeader();
-	newPeerEvent.getHeader().setSourceAlias(header.getSourceAlias());
-	newPeerEvent.getHeader().setSourceType(header.getSourceType());
-	context.postEvent(newPeerEvent);
+	EventHeader newEventHeader = newPeerEvent.getHeader();
+	
+	newEventHeader.setChannel(header.getChannel());
+	newEventHeader.setSourceAlias(header.getSourceAlias());
+	newEventHeader.setSourceType(header.getSourceType());
+//	context.postEvent(newPeerEvent);
+	/* we don't want to override the channel */
+	nodeContext.postEvent(newPeerEvent);
     }
 
     public void handleConnectToPeerRequest(CustomEventContext<ConnectToPeerRequestEvent> c) {
@@ -658,7 +663,9 @@ public class PeersManager extends GlobalEventNodeAgent {
 	header.setChannel(reasonHeader.getChannel());
 	header.setSourceAgentId(reasonHeader.getSourceAgentId());
 	header.setRootAgentId(reasonHeader.getRootAgentId());
-	context.postEvent(event);
+//	context.postEvent(event);
+	/* we don't want to override the channel */
+	nodeContext.postEvent(event);
     }
 
     protected void removePeer(String peerId) {

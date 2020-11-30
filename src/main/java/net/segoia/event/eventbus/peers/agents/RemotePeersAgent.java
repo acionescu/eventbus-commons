@@ -151,6 +151,23 @@ public class RemotePeersAgent extends PeersManagerAgent {
 	    }
 
 	    if (!handled && autoCreateCondition != null && autoCreateCondition.test(c)) {
+		if(event.getHeader().relayHops() == 2) {
+		    if(context.getIdForRemotePeerByPath(event.getLastRelay(), event.from()) == null) {
+			 if(context.isDebugEnabled()) {
+				context.debug("Will not auto create controller. No remote peer manager exists "+event.toJson());
+			    }
+			/* will create controller only if a remote peer manager exists */
+			return;
+		    }
+		}
+		else {
+		    /* create controller only for level 2 peers */
+		    if(context.isDebugEnabled()) {
+			context.debug("Will not auto create controller for level "+event.getHeader().relayHops()+" event."+event.toJson());
+		    }
+		    return;
+		}
+		
 		context.logger().debug(TYPE + ": Autocreating remote peer controller from event " + event.getEt()
 			+ " on gateway controller " + lastRelay+" root event "+event.getHeader().getRootEvent());
 

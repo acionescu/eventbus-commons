@@ -30,6 +30,7 @@ import net.segoia.event.eventbus.peers.util.EventNodeLogger;
 import net.segoia.event.eventbus.peers.vo.auth.id.SpkiNodeIdentity;
 import net.segoia.event.eventbus.peers.vo.bind.ConnectToPeerRequest;
 import net.segoia.event.eventbus.peers.vo.bind.DisconnectFromPeerRequest;
+import net.segoia.event.eventbus.services.EventNodeServicesManager;
 import net.segoia.event.eventbus.vo.security.EventNodeSecurityException;
 import net.segoia.event.eventbus.vo.security.IdsLinkData;
 import net.segoia.event.eventbus.vo.security.NodeIdLinkData;
@@ -172,5 +173,13 @@ public class LocalAgentEventNodeContext {
     
     public List<EventNodePublicServiceDesc> getNodePublicServices(){
 	return nodeContext.getServicesManager().getPublicServicesDesc();
+    }
+    
+    public EventNodeServicesManager getServicesManager() {
+	return nodeContext.getServicesManager();
+    }
+    
+    public boolean isEventLocal(Event event) {
+	return LOCAL.equals(event.getHeader().getChannel());
     }
 }
