@@ -16,6 +16,7 @@
  */
 package net.segoia.event.eventbus.peers;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -78,6 +79,19 @@ public class GlobalAgentEventNodeContext extends LocalAgentEventNodeContext {
 
     public void forwardTo(Event event, Collection<String> peerIds) {
 	peersManager.forwardTo(event, peerIds);
+    }
+    
+    public void forwardTo(Event event, Collection<String> peerIds, Collection<String> noForwardList) {
+	peersManager.forwardTo(event, peerIds, noForwardList);
+    }
+    
+    public void forwardTo(Event event, Collection<String> peerIds, String... noForwardList) {
+	if(noForwardList != null) {
+	    peersManager.forwardTo(event, peerIds, Arrays.asList(noForwardList));
+	}
+	else {
+	    peersManager.forwardTo(event, peerIds);
+	}
     }
 
     public void forwardToDirectPeers(Event event) {

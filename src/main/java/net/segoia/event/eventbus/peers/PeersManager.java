@@ -470,8 +470,12 @@ public class PeersManager extends GlobalEventNodeAgent {
 //    protected void forwardTo(Event event, List<String> peerIds) {
 //	forwardTo(event, peerIds);
 //    }
-
+    
     protected void forwardTo(Event event, Collection<String> peerIds) {
+	forwardTo(event, peerIds, null);
+    }
+
+    protected void forwardTo(Event event, Collection<String> peerIds, Collection<String> noForwardList) {
 	/* check if if we are targeted by the event as well */
 	// if (peerIds.contains(getLocalNodeId())) {
 	// postInternally(event);
@@ -487,11 +491,11 @@ public class PeersManager extends GlobalEventNodeAgent {
 	EventHeader header = event.getHeader();
 	List<String> noForward = header.getNoForward();
 	header.clearNoForward();
-
+	
 	RemotePeerManager rpm = null;
 	EventContext ec = new EventContext(event);
 	for (String cto : peerIds) {
-	    if (noForward != null && noForward.contains(cto)) {
+	    if ( (noForward != null && noForward.contains(cto)) || (noForwardList != null && noForwardList.contains(cto))) {
 		/* skip if the target is in no forward */
 		continue;
 	    }
@@ -830,9 +834,9 @@ public class PeersManager extends GlobalEventNodeAgent {
 	if (!event.isHandled() && event.getHeader().getRelayedBy().size() <= 1) {
 	    nodeContext.postEvent(event);
 	}
-	else if(nodeContext.getLogger().isDebugEnabled()){
-	    nodeContext.getLogger().debug("discarding peer event handled="+event.isHandled()+" -> "+event.toJson());
-	}
+//	else if(nodeContext.getLogger().isDebugEnabled()){
+//	    nodeContext.getLogger().debug("discarding peer event handled="+event.isHandled()+" -> "+event.toJson());
+//	}
 
     }
 

@@ -21,6 +21,7 @@ import java.util.Map;
 
 import net.segoia.event.conditions.Condition;
 import net.segoia.event.conditions.StrictChannelMatchCondition;
+import net.segoia.event.eventbus.EBusVM;
 import net.segoia.event.eventbus.Event;
 import net.segoia.event.eventbus.EventContext;
 import net.segoia.event.eventbus.FilteringEventBus;
@@ -160,6 +161,16 @@ public class LocalAgentEventNodeContext {
     
     public CryptoHelper crypto() {
 	return nodeContext.getSecurityManager().getCryptoHelper();
+    }
+    
+    public String genereateNewSessionId(Map<String,?> indexMap) {
+	String streamSessionId = null;
+	/* make sure we generate a unique session */
+	do {
+	    streamSessionId = EBusVM.getInstance().getHelper().generateSessionId();
+	} while (indexMap.containsKey(streamSessionId));
+
+	return streamSessionId;
     }
     
     public SpkiNodeIdentity getDefaultNodeIdentity() {

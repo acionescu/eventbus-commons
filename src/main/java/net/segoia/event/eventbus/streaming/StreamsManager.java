@@ -1,3 +1,19 @@
+/**
+ * eventbus-commons - Core classes for net.segoia.event-bus framework
+ * Copyright (C) 2016  Adrian Cristian Ionescu - https://github.com/acionescu
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package net.segoia.event.eventbus.streaming;
 
 import java.util.HashMap;
@@ -6,10 +22,13 @@ import java.util.Map;
 
 import net.segoia.event.eventbus.CustomEventContext;
 import net.segoia.event.eventbus.EBusVM;
+import net.segoia.event.eventbus.Event;
 import net.segoia.event.eventbus.app.EventNodeControllerContext;
 import net.segoia.event.eventbus.app.EventNodeGenericController;
 import net.segoia.event.eventbus.peers.events.PeerLeftEvent;
 import net.segoia.event.eventbus.peers.util.EventNodeLogger;
+import net.segoia.event.eventbus.peers.vo.ClosePeerData;
+import net.segoia.event.eventbus.peers.vo.PeerInfo;
 import net.segoia.event.eventbus.streaming.events.EndStreamData;
 import net.segoia.event.eventbus.streaming.events.EndStreamEvent;
 import net.segoia.event.eventbus.streaming.events.PeerStreamData;
@@ -37,6 +56,7 @@ public class StreamsManager extends EventNodeGenericController<EventNodeControll
     private StreamsManagerConfig config = new StreamsManagerConfig();
     private Map<String, StreamController> streamControllers = new HashMap<>();
     private ListMap<String, String> streamsByPeers = new ListMap<>();
+    private ListMap<String, String> streamsByRemotePeers=new ListMap<>();
     public static final String TYPE_SEPARATOR = "/";
 
     public StreamsManager() {
@@ -66,8 +86,36 @@ public class StreamsManager extends EventNodeGenericController<EventNodeControll
 
 	/* listen on peer left events */
 	controllerContext.getGlobalContext().addEventHandler(PeerLeftEvent.class, (c) -> {
-
+	    handlePeerLeft(c);
 	});
+    }
+    
+    private void handleRemotePeerStreamStarted(CustomEventContext<PeerStreamStartedEvent> c) {
+	
+    }
+    
+    private void handleRemotePeerStreamEnded(CustomEventContext<PeerStreamEndedEvent> c) {
+	
+    }
+    
+    private void handlePeerLeft(CustomEventContext<PeerLeftEvent> c) {
+	PeerLeftEvent event = c.getEvent();
+	PeerInfo peerInfo = event.getData();
+	String peerId = peerInfo.getPeerId();
+	
+	/* remove active streams from this peer */
+	List<String> streamsList = streamsByPeers.remove(peerId);
+	
+	if(streamsList == null ) {
+	    /* nothing to do here */
+	    return;
+	}
+	
+	/* remove all the streams for this peer */
+	for(String streamSessionId : streamsList) {
+	    removeStream(streamSessionId, StreamConstants.PEER_LEFT, event);
+	}
+	
     }
 
     private void handleStartStreamRequest(CustomEventContext<StartStreamRequestEvent> c) {
@@ -107,14 +155,16 @@ public class StreamsManager extends EventNodeGenericController<EventNodeControll
 	} 
 
 	String streamSessionId = genereateNewSessionId();
+	
+	addStreamController(streamSessionId, streamInfo, peerId);
 
-	StreamContext streamContext = new StreamContext(streamSessionId, streamInfo, peerId);
-
-	StreamController streamController = new StreamController(
-		new StreamControllerContext(controllerContext.getGlobalContext(), streamContext));
-
-	streamControllers.put(streamSessionId, streamController);
-	streamsByPeers.add(peerId, streamSessionId);
+//	StreamContext streamContext = new StreamContext(streamSessionId, streamInfo, peerId);
+//
+//	StreamController streamController = new StreamController(
+//		new StreamControllerContext(controllerContext.getGlobalContext(), streamContext));
+//
+//	streamControllers.put(streamSessionId, streamController);
+//	streamsByPeers.add(peerId, streamSessionId);
 
 	/* send stream accepted event */
 	StreamData streamData = new StreamData(streamSessionId, streamInfo);
@@ -131,7 +181,7 @@ public class StreamsManager extends EventNodeGenericController<EventNodeControll
 	/* send to the peer */
 	controllerContext.sendToPeer(streamAcceptedEvent, peerId);
     }
-
+    
     private void handleEndStream(CustomEventContext<EndStreamEvent> c) {
 	EndStreamEvent event = c.getEvent();
 	EndStreamData data = event.getData();
@@ -155,8 +205,31 @@ public class StreamsManager extends EventNodeGenericController<EventNodeControll
 		    .logError("Got invalid end stream event from " + peerId + " for session " + streamSessionId);
 	    return;
 	}
+	
+	removeStream(streamSessionId, data.getReason(), event);
 
-	StreamController sc = streamControllers.get(streamSessionId);
+//	StreamController sc = streamControllers.remove(streamSessionId);
+//
+//	if (sc == null) {
+//	    return;
+//	}
+//
+//	StreamContext streamContext = sc.getStreamContext();
+//
+//	PeerStreamData peerStreamData = new PeerStreamData(streamContext.getSourcePeerId(),
+//		new StreamData(streamSessionId, streamContext.getStreamInfo()));
+//
+//	PeerStreamEndedEvent peerStreamEndedEvent = new PeerStreamEndedEvent(
+//		new PeerStreamEndedData(peerStreamData, data.getReason()));
+//
+//	event.setAsCauseFor(peerStreamEndedEvent);
+//
+//	/* post a peer stream ended event */
+//	controllerContext.postEvent(peerStreamEndedEvent);
+    }
+
+    public void removeStream(String streamSessionId, ClosePeerData closeReason, Event causeEvent) {
+	StreamController sc = streamControllers.remove(streamSessionId);
 
 	if (sc == null) {
 	    return;
@@ -168,14 +241,14 @@ public class StreamsManager extends EventNodeGenericController<EventNodeControll
 		new StreamData(streamSessionId, streamContext.getStreamInfo()));
 
 	PeerStreamEndedEvent peerStreamEndedEvent = new PeerStreamEndedEvent(
-		new PeerStreamEndedData(peerStreamData, data.getReason()));
+		new PeerStreamEndedData(peerStreamData, closeReason));
 
-	event.setAsCauseFor(peerStreamEndedEvent);
+	causeEvent.setAsCauseFor(peerStreamEndedEvent);
 
 	/* post a peer stream ended event */
 	controllerContext.postEvent(peerStreamEndedEvent);
     }
-
+    
     private String genereateNewSessionId() {
 	String streamSessionId = null;
 	/* make sure we generate a unique session */
@@ -186,6 +259,20 @@ public class StreamsManager extends EventNodeGenericController<EventNodeControll
 	return streamSessionId;
     }
 
+    private void addStreamController(String streamSessionId, StreamInfo streamInfo, String peerId) {
+	StreamContext streamContext = new StreamContext(streamSessionId, streamInfo, peerId);
+
+	StreamController streamController = new StreamController(
+		new StreamControllerContext(controllerContext.getGlobalContext(), streamContext));
+
+	streamControllers.put(streamSessionId, streamController);
+	streamsByPeers.add(peerId, streamSessionId);
+    }
+    
+    private void addStreamController(String peerId, StreamData streamData) {
+	addStreamController(streamData.getStreamSessionId(), streamData.getStreamInfo(), peerId);
+    }
+    
     private boolean isTypeAllowed(String streamType) {
 	/* we have to use the helper method to be compatible with CN1 as well */
 	String[] types = EBusVM.getInstance().getHelper().splitString(streamType, TYPE_SEPARATOR);
@@ -205,6 +292,18 @@ public class StreamsManager extends EventNodeGenericController<EventNodeControll
 	}
 	return sc.getStreamContext();
     }
+    
+    public void addRemotePeerStream(String remotePeerId, StreamData streamData) {
+	addStreamController(remotePeerId, streamData);
+    }
+    
+//    public boolean removeRemotePeerStream(String remotePeerId, String streamSessionId) {
+//	return streamsByRemotePeers.remove(remotePeerId, streamSessionId);
+//    }
+//    
+//    public boolean isRemotePeerStreamSessionValid(String remotePeerId, String streamSessionId) {
+//	return streamsByRemotePeers.containsValueForKey(remotePeerId, streamSessionId);
+//    }
 
     public StreamsManagerConfig getConfig() {
 	return config;

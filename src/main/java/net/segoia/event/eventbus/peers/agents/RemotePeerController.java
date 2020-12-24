@@ -71,8 +71,8 @@ public class RemotePeerController extends PeersAgentController {
     public boolean handleRemotePeerEvent(PeerEventContext<Event> c) {
 	Event event = c.getEvent();
 	
-	if(context.logger().isDebugEnabled()) {
-	    context.logger().info(TYPE+" -> "+data.getFullRemotePeerPath()+" handle "+event.toJson());
+	if(context.isDebugEnabled()) {
+	    context.logDebug(TYPE+" -> "+data.getFullRemotePeerPath()+" handle "+event.getEt());
 	}
 	
 	if(remotePeerManager != null) {

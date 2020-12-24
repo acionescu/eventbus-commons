@@ -133,9 +133,9 @@ public class RemotePeersAgent extends PeersManagerAgent {
 
     private void handleRemotePeerEvent(PeerEventContext<Event> c) {
 	Event event = c.getEvent();
-	if (context.logger().isDebugEnabled()) {
-	    context.logger().debug(TYPE + ": remote agent got event: " + event.toJson());
-	}
+//	if (context.logger().isDebugEnabled()) {
+//	    context.logger().debug(TYPE + ": remote agent got event: " + event.toJson());
+//	}
 
 	EventHeader header = event.getHeader();
 	if (header.getRelayedBy().size() > 1) {
@@ -163,7 +163,7 @@ public class RemotePeersAgent extends PeersManagerAgent {
 		else {
 		    /* create controller only for level 2 peers */
 		    if(context.isDebugEnabled()) {
-			context.debug("Will not auto create controller for level "+event.getHeader().relayHops()+" event."+event.toJson());
+			context.debug("Will not auto create controller for level "+event.getHeader().relayHops()+" event."+event.getEt());
 		    }
 		    return;
 		}
@@ -181,6 +181,9 @@ public class RemotePeersAgent extends PeersManagerAgent {
 		    context.logger().debug("handling remote event after creating peer controller "+event.getEt());
 		    gatewayPeerController.handleRemotePeerEvent(c);
 		}
+	    }
+	    else if(context.isDebugEnabled()){
+		context.debug(TYPE+" discarding event. Condition: "+autoCreateCondition);
 	    }
 	}
 
