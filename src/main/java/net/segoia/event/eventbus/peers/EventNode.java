@@ -154,17 +154,16 @@ public abstract class EventNode {
 	EventsRepository.getInstance().load();
 	setupStartAgents();
     }
-    
+
     protected void setupStartAgents() {
 	List<AgentRegisterRequest<?>> startAgents = config.getAgents();
-	if(startAgents != null) {
-	    for(AgentRegisterRequest<?> regReq : startAgents) {
-		config.getLogger().info("Registering agent from config: "+regReq.getAgent());
-		if(regReq instanceof GlobalAgentRegisterRequest) {
-		    registerGlobalAgent((GlobalAgentRegisterRequest)regReq);
-		}
-		else {
-		    registerLocalAgent((LocalAgentRegisterRequest)regReq);
+	if (startAgents != null) {
+	    for (AgentRegisterRequest<?> regReq : startAgents) {
+		config.getLogger().info("Registering agent from config: " + regReq.getAgent());
+		if (regReq instanceof GlobalAgentRegisterRequest) {
+		    registerGlobalAgent((GlobalAgentRegisterRequest) regReq);
+		} else {
+		    registerLocalAgent((LocalAgentRegisterRequest) regReq);
 		}
 	    }
 	}
@@ -299,7 +298,7 @@ public abstract class EventNode {
 	addAgent(agent);
 	GlobalAgentEventNodeContext globalAgentContext = new GlobalAgentEventNodeContext(context, peersManager);
 	agent.initGlobalContext(globalAgentContext);
-	
+
 	List<EventNodeServiceDefinition> providedServices = registerRequest.getProvidedServices();
 	if (providedServices == null) {
 	    return;
@@ -418,12 +417,20 @@ public abstract class EventNode {
 	addBusHandler(new EventClassMatchCondition(eventClass), handler);
     }
 
+    protected void addEventHandler(Class<?> eventClass, CustomEventListener<?> handler, int priority) {
+	addBusHandler(new EventClassMatchCondition(eventClass), handler, priority);
+    }
+
     protected void addEventHandler(String eventType, CustomEventListener<?> handler) {
 	addBusHandler(new StrictEventMatchCondition(eventType), handler);
     }
 
     protected <E extends Event> void addEventHandler(Class<E> eventClass, CustomEventHandler<E> handler) {
 	addEventHandler(eventClass, new CustomEventListener<>(handler));
+    }
+
+    protected <E extends Event> void addEventHandler(Class<E> eventClass, CustomEventHandler<E> handler, int priority) {
+	addEventHandler(eventClass, new CustomEventListener<>(handler), priority);
     }
 
     protected <E extends Event> void addEventHandler(String eventType, CustomEventHandler<E> handler) {
@@ -434,9 +441,18 @@ public abstract class EventNode {
 	addBusHandler(cond, new CustomEventListener<>(handler));
     }
 
+    protected void addEventHandler(Condition cond, CustomEventHandler<?> handler, int priority) {
+	addBusHandler(cond, new CustomEventListener<>(handler), priority);
+    }
+
     private void addBusHandler(Condition cond, CustomEventListener<?> handler) {
 	initInternalBus();
 	internalBus.registerListener(cond, handler);
+    }
+
+    private void addBusHandler(Condition cond, CustomEventListener<?> handler, int priority) {
+	initInternalBus();
+	internalBus.registerListener(cond, handler, priority);
     }
 
     protected <E extends Event> void addEventHandler(CustomEventHandler<E> handler) {
@@ -508,7 +524,7 @@ public abstract class EventNode {
 	    throw new RuntimeException("Warning! Internal bus for node " + getId() + " is not initialized");
 	}
     }
-    
+
     protected void postInternally(EventContext ec) {
 
 	if (internalBus != null) {
@@ -585,7 +601,7 @@ public abstract class EventNode {
     }
 
     public EventNodeServicesManager getServicesManager() {
-        return servicesManager;
+	return servicesManager;
     }
 
     /**

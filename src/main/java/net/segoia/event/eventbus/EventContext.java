@@ -49,6 +49,11 @@ public class EventContext {
      * Provides a way for local agents to share data when processing an event
      */
     private SharedDataContext dataContext;
+    
+    /**
+     * This flag is set to true after all processing ends on this event context, regardless if it succeeds or not
+     */
+    private boolean finished;
 
     public EventContext(Event event) {
 	super();
@@ -166,10 +171,12 @@ public class EventContext {
     }
 
     public boolean dispatch() {
+	boolean res=false;
 	if (delegateDispatcher != null) {
-	    return delegateDispatcher.dispatchEvent(this);
+	    res = delegateDispatcher.dispatchEvent(this);
 	}
-	return false;
+	setFinished();
+	return res;
     }
 
     public EventHandle getEventHandle() {
@@ -186,6 +193,17 @@ public class EventContext {
 
     public void setProcessed(boolean processed) {
 	this.processed = processed;
+    }
+    
+    
+
+    public boolean isFinished() {
+        return finished;
+    }
+
+    public void setFinished() {
+	System.out.println(event.getEt() + " finished "+this);
+        this.finished = true;
     }
 
     public void addLocalData(Object obj) {

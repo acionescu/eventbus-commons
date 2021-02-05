@@ -16,8 +16,13 @@
  */
 package net.segoia.event.eventbus.streaming;
 
+import net.segoia.event.eventbus.CustomEventContext;
 import net.segoia.event.eventbus.app.EventNodeGenericController;
+import net.segoia.event.eventbus.peers.events.PeerLeftEvent;
+import net.segoia.event.eventbus.streaming.events.EndStreamEvent;
+import net.segoia.event.eventbus.streaming.events.StartStreamRequestEvent;
 import net.segoia.event.eventbus.streaming.events.StreamContext;
+import net.segoia.event.eventbus.streaming.events.StreamPacketEvent;
 
 public class StreamController extends EventNodeGenericController<StreamControllerContext>{
 
@@ -33,7 +38,33 @@ public class StreamController extends EventNodeGenericController<StreamControlle
 
     @Override
     protected void registerEventHandlers() {
-	// TODO Auto-generated method stub
+	
+	addEventHandler(StartStreamRequestEvent.class, (c) -> {
+	    handleStartStreamRequest(c);
+	});
+
+	addEventHandler(StreamPacketEvent.class, (c) -> {
+	    handleStreamPacket(c);
+	});
+
+	addEventHandler(EndStreamEvent.class, (c) -> {
+	    handleStreamEnd(c);
+	});
+	
+	addEventHandler(PeerLeftEvent.class, (c) -> {
+	    terminate();
+	});
+    }
+    
+    protected void handleStartStreamRequest(CustomEventContext<StartStreamRequestEvent> c) {
+	
+    }
+    
+    protected void handleStreamPacket(CustomEventContext<StreamPacketEvent> c) {
+	
+    }
+    
+    protected void handleStreamEnd(CustomEventContext<EndStreamEvent> c) {
 	
     }
     

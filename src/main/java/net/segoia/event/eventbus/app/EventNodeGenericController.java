@@ -52,6 +52,13 @@ public abstract class EventNodeGenericController<C> {
 	this.controllerContext = controllerContext;
 	registerEventHandlers();
     }
+    
+    /**
+     * Override this to handle termination of this controller
+     */
+    public void terminate() {
+	
+    }
 
     public void processEvent(EventContext ec) {
 	eventsProcessor.processEvent(ec);
@@ -96,4 +103,5 @@ public abstract class EventNodeGenericController<C> {
     protected <E extends Event> void addEventHandler(Condition cond, CustomEventHandler<E> handler) {
 	eventsProcessor.addEventHandler(cond, handler);
     }
+    
 }

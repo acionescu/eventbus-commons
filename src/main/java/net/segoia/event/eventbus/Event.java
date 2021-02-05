@@ -158,7 +158,9 @@ public class Event implements Cloneable {
      * {@link #toString()}
      */
     protected void lazyInit() {
-	this.id = EBusVM.getInstance().getHelper().generateEventId();
+	if(id == null) {
+	    this.id = EBusVM.getInstance().getHelper().generateEventId();
+	}
 	if (et == null) {
 	    /**
 	     * event type - we can formalize this as: <scope>:<category>:<name> ( e.g. system:error:db-connection-failed

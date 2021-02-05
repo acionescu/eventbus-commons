@@ -21,10 +21,14 @@ import net.segoia.event.eventbus.peers.GlobalAgentEventNodeContext;
 import net.segoia.event.eventbus.streaming.events.StreamContext;
 
 public class StreamControllerContext extends GenericEventNodeControllerContext {
+    /* the manager of this stream controller */
+    private StreamsManager streamManager;
     private StreamContext streamContext;
+    private StreamControllerRuntimeData runtimeData= new StreamControllerRuntimeData();
 
-    public StreamControllerContext(GlobalAgentEventNodeContext globalContext, StreamContext streamContext) {
+    public StreamControllerContext(StreamsManager streamManager, GlobalAgentEventNodeContext globalContext, StreamContext streamContext) {
 	super(globalContext);
+	this.streamManager=streamManager;
 	this.streamContext=streamContext;
     }
 
@@ -34,6 +38,10 @@ public class StreamControllerContext extends GenericEventNodeControllerContext {
 
     public void setStreamContext(StreamContext streamContext) {
 	this.streamContext = streamContext;
+    }
+
+    public StreamControllerRuntimeData getRuntimeData() {
+        return runtimeData;
     }
 
 }

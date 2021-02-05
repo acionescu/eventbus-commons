@@ -16,9 +16,7 @@
  */
 package net.segoia.event.eventbus.app;
 
-import net.segoia.event.conditions.Condition;
 import net.segoia.event.eventbus.Event;
-import net.segoia.event.eventbus.peers.CustomEventHandler;
 
 public abstract class EventNodeAppController<C extends EventNodeControllerContext>
 	extends EventNodeGenericController<C> {

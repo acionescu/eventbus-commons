@@ -21,6 +21,7 @@ import java.util.Map;
 
 import net.segoia.event.conditions.Condition;
 import net.segoia.event.conditions.StrictChannelMatchCondition;
+import net.segoia.event.eventbus.CustomEvent;
 import net.segoia.event.eventbus.EBusVM;
 import net.segoia.event.eventbus.Event;
 import net.segoia.event.eventbus.EventContext;
@@ -69,6 +70,10 @@ public class LocalAgentEventNodeContext {
 
     public <E extends Event> void addEventHandler(Condition cond, CustomEventHandler<E> handler) {
 	nodeContext.getNode().addEventHandler(cond, handler);
+    }
+    
+    public <E extends Event> void addEventHandler(Class<E> eventClass, CustomEventHandler<E> handler, int priority) {
+	nodeContext.getNode().addEventHandler(eventClass, handler, priority);
     }
 
     public void postEvent(Event event) {
@@ -192,5 +197,9 @@ public class LocalAgentEventNodeContext {
     
     public boolean isEventLocal(Event event) {
 	return LOCAL.equals(event.getHeader().getChannel());
+    }
+    
+    public boolean testEventDataPresent(CustomEvent<?> event) {
+	return (event.getData() != null);
     }
 }

@@ -24,7 +24,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import net.segoia.event.eventbus.CustomEvent;
 import net.segoia.event.eventbus.Event;
+import net.segoia.event.eventbus.constants.ErrorEvents;
 import net.segoia.event.eventbus.peers.vo.PeerInfo;
 import net.segoia.event.eventbus.vo.services.EventNodePublicServiceDesc;
 import net.segoia.event.eventbus.vo.services.EventNodeServiceDefinition;
@@ -168,4 +170,21 @@ public class GlobalAgentEventNodeContext extends LocalAgentEventNodeContext {
 	    }
 	}
     }
+
+    @Override
+    public boolean testEventDataPresent(CustomEvent<?> event) {
+	
+	boolean valid =  super.testEventDataPresent(event);
+	
+	if(!valid) {
+	    String from = event.from();
+	    if(from != null) {
+		/* send error */
+		forwardTo(ErrorEvents.buildEvenDataMissingError(event.getEt()),from);
+	    }
+	}
+	return valid;
+    }
+    
+    
 }
