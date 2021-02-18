@@ -1,3 +1,19 @@
+/**
+ * eventbus-commons - Core classes for net.segoia.event-bus framework
+ * Copyright (C) 2016  Adrian Cristian Ionescu - https://github.com/acionescu
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package net.segoia.util.data.storage;
 
 import java.io.InputStream;
@@ -93,6 +109,13 @@ public interface Storage {
      * @return
      */
     public StorageEntityInfo[] listEntities();
+    
+    /**
+     * List with filter
+     * @param filter
+     * @return
+     */
+    public StorageEntityInfo[] listEntities(StorageFilter filter);
 
     /**
      * Creates a child storage directly under this storage
@@ -100,7 +123,7 @@ public interface Storage {
      * @param key
      * @return
      */
-    public Storage createStorage(String key);
+    public Storage createStorage(String key) throws StorageException;
 
     /**
      * Returns the storage identified by the given key, representing a hierarchy of storages delimited by
@@ -119,7 +142,7 @@ public interface Storage {
      * @param keys
      * @return
      */
-    public Storage createStorageHierarchy(String... keys);
+    public Storage createStorageHierarchy(String... keys)  throws StorageException;
 
     /**
      * Tests if the entity identified by the key is actually a child storage instead of a data file
@@ -154,5 +177,23 @@ public interface Storage {
      * @throws StorageException if the key has an invalid format
      */
     public String getRelativePath(String key) throws StorageException;
+    
+    /**
+     * Moves an entity inside this storage
+     * @param sourceKey
+     * @param destPath
+     * @return
+     * @throws StorageException
+     */
+    public boolean move(String sourceKey, String destPath) throws StorageException;
+    
+    /**
+     * Renames an entity, keeping it under the same parent directory
+     * @param key
+     * @param newName
+     * @return
+     * @throws StorageException
+     */
+    public boolean rename(String key, String newName) throws StorageException;
 
 }

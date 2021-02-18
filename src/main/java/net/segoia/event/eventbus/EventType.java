@@ -25,4 +25,6 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 public @interface EventType {
     String value();
+    String className() default "";
+    String packageName() default "";
 }

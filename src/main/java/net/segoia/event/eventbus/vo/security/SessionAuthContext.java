@@ -14,25 +14,39 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.segoia.util.data.storage;
+package net.segoia.event.eventbus.vo.security;
 
-public abstract class AbstractStorage implements Storage {
+import java.util.HashSet;
+import java.util.Set;
+
+import net.segoia.event.conditions.Condition;
+
+public class SessionAuthContext {
+    private long createdTs;
     /**
-     * The parent storage. Null if none
+     * Auth conditions verified in this context
      */
-    private Storage parent;
+    private Set<Condition> authConditions=new HashSet<>();
 
-    public AbstractStorage() {
+    public SessionAuthContext() {
 	super();
+	createdTs=System.currentTimeMillis();
     }
 
-    public AbstractStorage(Storage parent) {
-	super();
-	this.parent = parent;
+    public long getCreatedTs() {
+        return createdTs;
     }
-
-    public Storage getParent() {
-	return parent;
+    
+    public void addAuthCondition(Condition c) {
+	authConditions.add(c);
     }
-
+    
+    /**
+     * Returns true if the specified condition was previously added
+     * @param c
+     * @return
+     */
+    public boolean isVerified(Condition c) {
+	return authConditions.contains(c);
+    }
 }

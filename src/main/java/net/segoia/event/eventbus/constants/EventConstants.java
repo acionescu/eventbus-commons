@@ -21,4 +21,9 @@ public class EventConstants {
     public static final String ET = "et";
     public static final String CAUSE_EVENT_ID = "causeId";
     public static final String ID="id";
+    
+    /**
+     * Used to store session auth info on root event header
+     */
+    public static final String AUTH_SESSION="AUTH_SESSION";
 }

@@ -22,5 +22,6 @@ public class EventParams {
     public static final String peers="peers";
     public static final String clientId="clientId";
     public static final String reason="reason";
+    public static final String authRequired="authRequired";
     
 }

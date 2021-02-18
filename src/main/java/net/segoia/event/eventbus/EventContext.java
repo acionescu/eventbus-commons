@@ -202,7 +202,6 @@ public class EventContext {
     }
 
     public void setFinished() {
-	System.out.println(event.getEt() + " finished "+this);
         this.finished = true;
     }
 

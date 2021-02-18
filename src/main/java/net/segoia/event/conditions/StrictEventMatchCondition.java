@@ -16,11 +16,11 @@
  */
 package net.segoia.event.conditions;
 
+import java.util.Collection;
 import java.util.Map;
 
 import net.segoia.event.eventbus.Event;
 import net.segoia.event.eventbus.EventContext;
-
 
 public class StrictEventMatchCondition extends LooseEventMatchCondition {
     /**
@@ -33,16 +33,13 @@ public class StrictEventMatchCondition extends LooseEventMatchCondition {
     private Map<String, Object> params;
 
     public StrictEventMatchCondition(String id) {
-	this(id,id);
+	this(id, id);
     }
-    
-    
 
     public StrictEventMatchCondition(String id, String et) {
 	super(id);
 	this.et = et;
     }
-
 
     @Override
     public boolean test(EventContext input) {
@@ -78,8 +75,46 @@ public class StrictEventMatchCondition extends LooseEventMatchCondition {
     }
 
     @Override
+    public Collection<String> getRequiredParamsNames() {
+	if (params == null) {
+	    return null;
+	}
+	return params.keySet();
+    }
+
+    @Override
     public String toString() {
 	return "StrictEventMatchCondition [getId()=" + getId() + ", et=" + et + ", params=" + params + "]";
     }
 
+    @Override
+    public int hashCode() {
+	final int prime = 31;
+	int result = super.hashCode();
+	result = prime * result + ((et == null) ? 0 : et.hashCode());
+	result = prime * result + ((params == null) ? 0 : params.hashCode());
+	return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+	if (this == obj)
+	    return true;
+	if (!super.equals(obj))
+	    return false;
+	if (getClass() != obj.getClass())
+	    return false;
+	StrictEventMatchCondition other = (StrictEventMatchCondition) obj;
+	if (et == null) {
+	    if (other.et != null)
+		return false;
+	} else if (!et.equals(other.et))
+	    return false;
+	if (params == null) {
+	    if (other.params != null)
+		return false;
+	} else if (!params.equals(other.params))
+	    return false;
+	return true;
+    }
 }

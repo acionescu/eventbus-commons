@@ -1,3 +1,19 @@
+/**
+ * eventbus-commons - Core classes for net.segoia.event-bus framework
+ * Copyright (C) 2016  Adrian Cristian Ionescu - https://github.com/acionescu
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package net.segoia.util.data.storage;
 
 import java.io.ByteArrayInputStream;
@@ -157,12 +173,12 @@ public class DefaultDataStore implements DataStore {
     }
 
     @Override
-    public DataStore createStorage(String key) {
+    public DataStore createStorage(String key)  throws StorageException{
 	return new DefaultDataStore(storage.createStorage(key));
     }
 
     @Override
-    public DataStore createStorageHierarchy(String... keys) {
+    public DataStore createStorageHierarchy(String... keys)  throws StorageException{
 	return new DefaultDataStore(storage.createStorageHierarchy(keys));
     }
 
@@ -219,5 +235,20 @@ public class DefaultDataStore implements DataStore {
     @Override
     public String getRelativePath(String key) throws StorageException {
 	return storage.getRelativePath(key);
+    }
+
+    @Override
+    public boolean move(String sourceKey, String destPath) throws StorageException {
+	return storage.move(sourceKey, destPath);
+    }
+
+    @Override
+    public StorageEntityInfo[] listEntities(StorageFilter filter) {
+	return storage.listEntities(filter);
+    }
+
+    @Override
+    public boolean rename(String key, String newName) throws StorageException {
+	return storage.rename(key, newName);
     }
 }

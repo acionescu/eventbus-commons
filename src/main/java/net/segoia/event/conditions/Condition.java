@@ -16,6 +16,8 @@
  */
 package net.segoia.event.conditions;
 
+import java.util.Collection;
+
 import net.segoia.event.eventbus.EventContext;
 
 public abstract class Condition {
@@ -42,6 +44,14 @@ public abstract class Condition {
         this.id = id;
     }
 
+    /**
+     * Override to return the parameters required by the implemented condition
+     * @return
+     */
+    public Collection<String> getRequiredParamsNames(){
+	return null;
+    }
+    
     /* (non-Javadoc)
      * @see java.lang.Object#hashCode()
      */

@@ -38,6 +38,7 @@ public class PeerManagerConfig {
 
     private List<PeerManagerAgent> peerManagerAgents;
     private Condition peerBindAcceptCondition = new TrueCondition();
+    private Condition peerAuthCondition;
     private Condition peerEventAcceptCondition = ConditionsUtil.buildRejectedEventsList("core-peer-events-guard",
 	    ConnectToPeerRequestEvent.ET, DisconnectFromPeerRequestEvent.ET, NewPeerEvent.ET, PeerAcceptedEvent.ET, PeerLeavingEvent.ET, PeerLeftEvent.ET);
     /**
@@ -83,6 +84,14 @@ public class PeerManagerConfig {
 
     public void setEventsForwardingCondition(Condition eventsForwardingCondition) {
 	this.eventsForwardingCondition = eventsForwardingCondition;
+    }
+
+    public Condition getPeerAuthCondition() {
+        return peerAuthCondition;
+    }
+
+    public void setPeerAuthCondition(Condition peerAuthCondition) {
+        this.peerAuthCondition = peerAuthCondition;
     }
 
 }
